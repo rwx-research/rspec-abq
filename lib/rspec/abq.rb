@@ -430,11 +430,7 @@ module RSpec
                 return @configuration.failure_exit_code
               end
 
-              if RSpec::Abq.enabled?
-                example_groups.map { |g| g.run_abq_mode(reporter) }.all?
-              else
-                example_groups.map { |g| g.run(reporter) }.all?
-              end
+              example_groups.map { |g| g.run_abq_mode(reporter) }.all?
             end
           end
 
