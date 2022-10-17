@@ -1,9 +1,9 @@
-require 'set'
+require "set"
 module RSpec
   # Provides abq-specific extensions of rspec.
   module Abq
-    require 'socket'
-    require 'json'
+    require "socket"
+    require "json"
 
     # @visibility private
     ABQ_SOCKET = "ABQ_SOCKET"
@@ -24,9 +24,9 @@ module RSpec
     # Must be sent to ABQ_SOCKET on startup, if running in ABQ mode.
     # @visibility private
     PROTOCOL_VERSION_MESSAGE = {
-      :type => "abq_protocol_version",
-      :major => CURRENT_PROTOCOL_VERSION_MAJOR,
-      :minor => CURRENT_PROTOCOL_VERSION_MINOR,
+      type: "abq_protocol_version",
+      major: CURRENT_PROTOCOL_VERSION_MAJOR,
+      minor: CURRENT_PROTOCOL_VERSION_MINOR
     }
 
     def self.setup!
@@ -61,13 +61,13 @@ module RSpec
     end
 
     # Whether this rspec process is running in ABQ mode.
-    def self.enabled?(env=ENV)
+    def self.enabled?(env = ENV)
       env.key?(ABQ_SOCKET) && (!env.key?(ABQ_RSPEC_PID) || env[ABQ_RSPEC_PID] == Process.pid.to_s)
     end
 
     # disables tests so we can compare runtime of rspec core vs parallelized version
     def self.disable_tests?
-      enabled? || ENV.key?('ABQ_DISABLE_TESTS')
+      enabled? || ENV.key?("ABQ_DISABLE_TESTS")
     end
 
     # used internally to split off tags from built in rspec metadata
@@ -107,7 +107,7 @@ module RSpec
     #
     # @param socket [TCPSocket]
     # @param msg
-    def self.protocol_write(msg, socket=Abq.socket)
+    def self.protocol_write(msg, socket = Abq.socket)
       json_msg = JSON.dump msg
       begin
         socket.write [json_msg.bytesize].pack("N")
@@ -121,10 +121,10 @@ module RSpec
     #
     # @param socket [TCPSocket]
     # @return msg
-    def self.protocol_read(socket=Abq.socket)
+    def self.protocol_read(socket = Abq.socket)
       len_bytes = socket.read 4
       return :abq_done if len_bytes.nil?
-      len = len_bytes.unpack("N")[0]
+      len = len_bytes.unpack1("N")
       json_msg = socket.read len
       return :abq_done if json_msg.nil?
       JSON.parse json_msg
@@ -135,15 +135,15 @@ module RSpec
       reporter = Reporter.new
       yield(reporter).tap do
         test_result = {
-          :status => reporter.status,
-          :id => reporter.id,
-          :display_name => reporter.display_name,
-          :output => reporter.output,
-          :runtime => reporter.runtime_ms,
-          :tags => reporter.tags,
-          :meta => reporter.meta
+          status: reporter.status,
+          id: reporter.id,
+          display_name: reporter.display_name,
+          output: reporter.output,
+          runtime: reporter.runtime_ms,
+          tags: reporter.tags,
+          meta: reporter.meta
         }
-        test_result_msg = { :test_result => test_result }
+        test_result_msg = {test_result: test_result}
         Abq.protocol_write(test_result_msg)
         Abq.fetch_next_example
       end
@@ -166,8 +166,8 @@ module RSpec
       def self.generate(ordered_groups)
         # TODO: write ordering to manifest meta
         {
-          :manifest => {
-            :members => ordered_groups.map { |group| to_manifest_group(group) }.compact
+          manifest: {
+            members: ordered_groups.map { |group| to_manifest_group(group) }.compact
           }
         }
       end
@@ -181,23 +181,23 @@ module RSpec
           group.ordering_strategy.order(group.filtered_examples).map { |example|
             tags, metadata = Abq.extract_metadata_and_tags(example.metadata)
             {
-              :type => "test",
-              :id => example.id,
-              :tags => tags,
-              :meta => metadata,
+              type: "test",
+              id: example.id,
+              tags: tags,
+              meta: metadata
             }
-          }.
-          concat(
-            group.ordering_strategy.order(group.children).map { |child_group| to_manifest_group(child_group) }.compact
-          )
+          }
+            .concat(
+              group.ordering_strategy.order(group.children).map { |child_group| to_manifest_group(child_group) }.compact
+            )
         return nil if members.empty?
         tags, metadata = Abq.extract_metadata_and_tags(group.metadata)
         {
-          :type => "group",
-          :name => group.id,
-          :tags => tags,
-          :meta => metadata,
-          :members => members,
+          type: "group",
+          name: group.id,
+          tags: tags,
+          meta: metadata,
+          members: members
         }
       end
     end
@@ -371,7 +371,7 @@ module RSpec
           should_run_context_hooks = descendant_filtered_examples.any?
           begin
             RSpec.current_scope = :before_context_hook
-            run_before_context_hooks(new('before(:context) hook')) if should_run_context_hooks
+            run_before_context_hooks(new("before(:context) hook")) if should_run_context_hooks
 
             # If the next example to run is on the surface of this group, scan all
             # the examples; otherwise, we just need to check the children groups.
@@ -403,14 +403,14 @@ module RSpec
             false
           ensure
             RSpec.current_scope = :after_context_hook
-            run_after_context_hooks(new('after(:context) hook')) if should_run_context_hooks
+            run_after_context_hooks(new("after(:context) hook")) if should_run_context_hooks
             reporter.example_group_finished(self)
           end
         end
       end
 
       module Runner
-        def setup(_err,_out)
+        def setup(_err, _out)
           super
 
           RSpec::Abq.setup_after_specs_loaded!
@@ -438,6 +438,7 @@ module RSpec
         end
 
         private
+
         def persist_example_statuses
           if RSpec.configuration.example_status_persistence_file_path
             warn "persisting example status disabled by abq"
@@ -450,7 +451,7 @@ module RSpec
         def files_or_directories_to_run=(*files)
           files = files.flatten
 
-          if (command == 'rspec' || command == 'rspec-abq' || Runner.running_in_drb?) && default_path && files.empty?
+          if (command == "rspec" || command == "rspec-abq" || Runner.running_in_drb?) && default_path && files.empty?
             files << default_path
           end
 

@@ -1,0 +1,3 @@
+fix: true
+parallel: true
+ruby_version: 2.3 # support rspec-core back to ruby 2.3
