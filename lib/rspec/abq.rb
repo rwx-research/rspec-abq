@@ -1,4 +1,5 @@
 require "set"
+require "rspec/core"
 module RSpec
   # Provides abq-specific extensions of rspec.
   module Abq
