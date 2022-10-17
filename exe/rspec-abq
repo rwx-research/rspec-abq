@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require 'rspec/core'
+require 'rspec/abq'
+RSpec::Core::Runner.invoke
