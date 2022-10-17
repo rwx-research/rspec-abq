@@ -32,8 +32,9 @@ module RSpec
     def self.setup!
       return unless enabled?
       ENV[ABQ_RSPEC_PID] = Process.pid.to_s
-      RSpec::Core::ExampleGroup.extend(Abq::ExampleGroup)
-      RSpec::Core::Runner.prepend(Abq::Runner)
+      RSpec::Core::ExampleGroup.extend(Abq::Extensions::ExampleGroup)
+      RSpec::Core::Runner.prepend(Abq::Extensions::Runner)
+      RSpec::Core::Configuration.prepend(Abq::Extensions::Configuration)
     end
 
     def self.setup_after_specs_loaded!
@@ -343,105 +344,122 @@ module RSpec
       end
     end
 
-    module ExampleGroup
-      # @private
-      # same as .run_examples but using abq
-      def run_examples_abq
-        ordering_strategy.order(filtered_examples).map do |example|
-          next unless Abq.current_example.is_example?(example)
-          next if RSpec.world.wants_to_quit
+    module Extensions
+      module ExampleGroup
+        # @private
+        # same as .run_examples but using abq
+        def run_examples_abq
+          ordering_strategy.order(filtered_examples).map do |example|
+            next unless Abq.current_example.is_example?(example)
+            next if RSpec.world.wants_to_quit
 
-          instance = new(example.inspect_output)
-          set_ivars(instance, before_context_ivars)
+            instance = new(example.inspect_output)
+            set_ivars(instance, before_context_ivars)
 
-          Abq.send_test_result_and_advance { |abq_reporter| example.run(instance, abq_reporter) }
-        end.all?
-      end
-
-      # same as .run but using abq
-      def run_abq_mode(reporter)
-        # The next test isn't in this group or any child; we can skip
-        # over this group entirely.
-        return 1 unless Abq.current_example.in_group?(self)
-
-        reporter.example_group_started(self)
-
-        should_run_context_hooks = descendant_filtered_examples.any?
-        begin
-          RSpec.current_scope = :before_context_hook
-          run_before_context_hooks(new('before(:context) hook')) if should_run_context_hooks
-
-          # If the next example to run is on the surface of this group, scan all
-          # the examples; otherwise, we just need to check the children groups.
-          result_for_this_group =
-            if Abq.current_example.directly_in_group? self
-              run_examples_abq
-            else
-              true
-            end
-
-          results_for_descendants = ordering_strategy.order(children).map { |child| child.run_abq_mode(reporter) }.all?
-          result_for_this_group && results_for_descendants
-        rescue Pending::SkipDeclaredInExample => ex
-          for_filtered_examples(reporter) { |example| example.skip_with_exception(reporter, ex) }
-          true
-        rescue Support::AllExceptionsExceptOnesWeMustNotRescue => ex
-          # If an exception reaches here, that means we must fail the entire
-          # group (otherwise we would have handled the exception locally at an
-          # example). Since we know of the examples in the same order as they'll
-          # be sent to us from ABQ, we now loop over all the examples, and mark
-          # every one that we must run in this group as a failure.
-          for_filtered_examples(reporter) do |example|
-            next unless Abq.current_example.is_example? example
-
-            Abq.send_test_result_and_advance { |abq_reporter| example.fail_with_exception(abq_reporter, ex) }
-          end
-
-          RSpec.world.wants_to_quit = true if reporter.fail_fast_limit_met?
-          false
-        ensure
-          RSpec.current_scope = :after_context_hook
-          run_after_context_hooks(new('after(:context) hook')) if should_run_context_hooks
-          reporter.example_group_finished(self)
-        end
-      end
-    end
-
-    module Runner
-      def setup(_err,_out)
-        super
-
-        RSpec::Abq.setup_after_specs_loaded!
-      end
-
-      # Runs the provided example groups.
-      #
-      # @param example_groups [Array<RSpec::Core::ExampleGroup>] groups to run
-      # @return [Fixnum] exit status code. 0 if all specs passed,
-      #   or the configured failure exit code (1 by default) if specs
-      #   failed.
-      def run_specs(example_groups)
-        examples_count = @world.example_count(example_groups)
-        examples_passed = @configuration.reporter.report(examples_count) do |reporter|
-          @configuration.with_suite_hooks do
-            if examples_count == 0 && @configuration.fail_if_no_examples
-              return @configuration.failure_exit_code
-            end
-
-            if RSpec::Abq.enabled?
-              example_groups.map { |g| g.run_abq_mode(reporter) }.all?
-            else
-              example_groups.map { |g| g.run(reporter) }.all?
-            end
-          end
+            Abq.send_test_result_and_advance { |abq_reporter| example.run(instance, abq_reporter) }
+          end.all?
         end
 
-        exit_code(examples_passed)
+        # same as .run but using abq
+        def run_abq_mode(reporter)
+          # The next test isn't in this group or any child; we can skip
+          # over this group entirely.
+          return 1 unless Abq.current_example.in_group?(self)
+
+          reporter.example_group_started(self)
+
+          should_run_context_hooks = descendant_filtered_examples.any?
+          begin
+            RSpec.current_scope = :before_context_hook
+            run_before_context_hooks(new('before(:context) hook')) if should_run_context_hooks
+
+            # If the next example to run is on the surface of this group, scan all
+            # the examples; otherwise, we just need to check the children groups.
+            result_for_this_group =
+              if Abq.current_example.directly_in_group? self
+                run_examples_abq
+              else
+                true
+              end
+
+            results_for_descendants = ordering_strategy.order(children).map { |child| child.run_abq_mode(reporter) }.all?
+            result_for_this_group && results_for_descendants
+          rescue Pending::SkipDeclaredInExample => ex
+            for_filtered_examples(reporter) { |example| example.skip_with_exception(reporter, ex) }
+            true
+          rescue Support::AllExceptionsExceptOnesWeMustNotRescue => ex
+            # If an exception reaches here, that means we must fail the entire
+            # group (otherwise we would have handled the exception locally at an
+            # example). Since we know of the examples in the same order as they'll
+            # be sent to us from ABQ, we now loop over all the examples, and mark
+            # every one that we must run in this group as a failure.
+            for_filtered_examples(reporter) do |example|
+              next unless Abq.current_example.is_example? example
+
+              Abq.send_test_result_and_advance { |abq_reporter| example.fail_with_exception(abq_reporter, ex) }
+            end
+
+            RSpec.world.wants_to_quit = true if reporter.fail_fast_limit_met?
+            false
+          ensure
+            RSpec.current_scope = :after_context_hook
+            run_after_context_hooks(new('after(:context) hook')) if should_run_context_hooks
+            reporter.example_group_finished(self)
+          end
+        end
       end
 
-      private def persist_example_statuses
-        if RSpec.configuration.example_status_persistence_file_path
-          warn "persisting example status disabled by abq"
+      module Runner
+        def setup(_err,_out)
+          super
+
+          RSpec::Abq.setup_after_specs_loaded!
+        end
+
+        # Runs the provided example groups.
+        #
+        # @param example_groups [Array<RSpec::Core::ExampleGroup>] groups to run
+        # @return [Fixnum] exit status code. 0 if all specs passed,
+        #   or the configured failure exit code (1 by default) if specs
+        #   failed.
+        def run_specs(example_groups)
+          examples_count = @world.example_count(example_groups)
+          examples_passed = @configuration.reporter.report(examples_count) do |reporter|
+            @configuration.with_suite_hooks do
+              if examples_count == 0 && @configuration.fail_if_no_examples
+                return @configuration.failure_exit_code
+              end
+
+              if RSpec::Abq.enabled?
+                example_groups.map { |g| g.run_abq_mode(reporter) }.all?
+              else
+                example_groups.map { |g| g.run(reporter) }.all?
+              end
+            end
+          end
+
+          exit_code(examples_passed)
+        end
+
+        private
+        def persist_example_statuses
+          if RSpec.configuration.example_status_persistence_file_path
+            warn "persisting example status disabled by abq"
+          end
+        end
+      end
+
+      module Configuration
+        # @private
+        def files_or_directories_to_run=(*files)
+          files = files.flatten
+
+          if (command == 'rspec' || command == 'rspec-abq' || Runner.running_in_drb?) && default_path && files.empty?
+            files << default_path
+          end
+
+          @files_or_directories_to_run = files
+          @files_to_run = nil
         end
       end
     end
