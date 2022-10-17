@@ -30,7 +30,6 @@ module RSpec
     }
 
     def self.setup!
-      RSpec::Core::Configuration.prepend(Abq::Extensions::Configuration)
       return unless enabled?
       ENV[ABQ_RSPEC_PID] = Process.pid.to_s
       RSpec::Core::ExampleGroup.extend(Abq::Extensions::ExampleGroup)
@@ -47,9 +46,9 @@ module RSpec
       end
 
       RSpec.configuration.color_mode = :on
+      # disable persisting_example_statuses
       RSpec.configuration.example_status_persistence_file_path = nil
       # TODO: read manifest before fetching first example
-
       Abq.fetch_next_example
     end
 
@@ -410,12 +409,6 @@ module RSpec
       end
 
       module Runner
-        def setup(_err, _out)
-          super
-
-          RSpec::Abq.setup_after_specs_loaded!
-        end
-
         # Runs the provided example groups.
         #
         # @param example_groups [Array<RSpec::Core::ExampleGroup>] groups to run
@@ -423,6 +416,8 @@ module RSpec
         #   or the configured failure exit code (1 by default) if specs
         #   failed.
         def run_specs(example_groups)
+          RSpec::Abq.setup_after_specs_loaded!
+          return if RSpec.world.wants_to_quit
           examples_count = @world.example_count(example_groups)
           examples_passed = @configuration.reporter.report(examples_count) do |reporter|
             @configuration.with_suite_hooks do
@@ -443,20 +438,6 @@ module RSpec
           if RSpec.configuration.example_status_persistence_file_path
             warn "persisting example status disabled by abq"
           end
-        end
-      end
-
-      module Configuration
-        # @private
-        def files_or_directories_to_run=(*files)
-          files = files.flatten
-
-          if (command == "rspec" || command == "rspec-abq" || Runner.running_in_drb?) && default_path && files.empty?
-            files << default_path
-          end
-
-          @files_or_directories_to_run = files
-          @files_to_run = nil
         end
       end
     end

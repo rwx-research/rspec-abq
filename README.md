@@ -23,7 +23,7 @@ And then execute:
 Use the included binary with abq:
 
 ```
-../abq/target/debug/abq test -- bundle exec rspec-abq
+../abq/target/debug/abq test -- bundle exec rspec
 ```
 
 ## Development
