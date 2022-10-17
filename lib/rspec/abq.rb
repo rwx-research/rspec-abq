@@ -30,11 +30,11 @@ module RSpec
     }
 
     def self.setup!
+      RSpec::Core::Configuration.prepend(Abq::Extensions::Configuration)
       return unless enabled?
       ENV[ABQ_RSPEC_PID] = Process.pid.to_s
       RSpec::Core::ExampleGroup.extend(Abq::Extensions::ExampleGroup)
       RSpec::Core::Runner.prepend(Abq::Extensions::Runner)
-      RSpec::Core::Configuration.prepend(Abq::Extensions::Configuration)
     end
 
     def self.setup_after_specs_loaded!
