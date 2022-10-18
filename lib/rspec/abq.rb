@@ -349,15 +349,28 @@ module RSpec
         # @private
         # same as .run_examples but using abq
         def run_examples_abq
-          ordering_strategy.order(filtered_examples).map do |example|
-            next unless Abq.current_example.is_example?(example)
+          all_examples_succeeded = true
+          ordering_strategy.order(filtered_examples).each do |considered_example|
+            next unless Abq.current_example.is_example?(considered_example)
             next if RSpec.world.wants_to_quit
 
-            instance = new(example.inspect_output)
+            instance = new(considered_example.inspect_output)
             set_ivars(instance, before_context_ivars)
 
-            Abq.send_test_result_and_advance { |abq_reporter| example.run(instance, abq_reporter) }
-          end.all?
+            all_examples_succeeded &&= Abq.send_test_result_and_advance { |abq_reporter| considered_example.run(instance, abq_reporter) }
+            # performance enhancement: the list we're iterating over doesn't include the current_example
+            #
+            # ...example_group_0 => [...],
+            # [
+            #   example_group_1 => [example_a, example_b],
+            #   example_group_2 => [example_c. example_d]
+            # ],
+            # example_group_n => [...]
+            #
+            # In the case abq advances to a current_example in this example group that is no longer in example_a
+            break unless Abq.current_example.directly_in_group?(self)
+          end
+          all_examples_succeeded
         end
 
         # same as .run but using abq
