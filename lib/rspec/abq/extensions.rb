@@ -41,7 +41,7 @@ module RSpec
         def run_with_abq(reporter)
           # The next test isn't in this group or any child; we can skip
           # over this group entirely.
-          return 1 unless Abq.target_test_case.in_group?(self)
+          return true unless Abq.target_test_case.in_group?(self)
 
           reporter.example_group_started(self)
 
