@@ -1,0 +1,15 @@
+require:
+  - rubocop-performance
+  - rubocop-rake
+  - rubocop-rspec
+  - standard
+
+inherit_gem:
+  standard: config/base.yml
+
+AllCops:
+  TargetRubyVersion: 2.3
+  NewCops: enable
+  Exclude:
+    - '.git/**/*'
+    - 'vendor/**/*' # where github action stores cached bundle
