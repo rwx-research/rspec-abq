@@ -12,11 +12,11 @@ module RSpec
         #
         # This method
         # - iterates over the current ExampleGroup's Examples to find the Example that is the same as
-        #   Abq.current_example
+        #   Abq.target_test_case
         # - runs the example
-        # - and fetches example that is now the `Abq.current_example`a
+        # - and fetches example that is now the `Abq.target_test_case`a
         #
-        # the next current_example is either
+        # the next target_test_case is either
         # - later in this ExampleGroup's examples
         #   - so we continue iterating until we get there
         # - or in another ExampleGroup
@@ -24,7 +24,7 @@ module RSpec
         def run_examples_with_abq
           all_examples_succeeded = true
           ordering_strategy.order(filtered_examples).each do |considered_example|
-            next unless Abq.current_example.is_example?(considered_example)
+            next unless Abq.target_test_case.is_example?(considered_example)
             next if RSpec.world.wants_to_quit
 
             instance = new(considered_example.inspect_output)
@@ -32,7 +32,7 @@ module RSpec
 
             all_examples_succeeded &&= Abq.send_test_result_and_advance { |abq_reporter| considered_example.run(instance, abq_reporter) }
 
-            break unless Abq.current_example.directly_in_group?(self)
+            break unless Abq.target_test_case.directly_in_group?(self)
           end
           all_examples_succeeded
         end
@@ -41,7 +41,7 @@ module RSpec
         def run_with_abq(reporter)
           # The next test isn't in this group or any child; we can skip
           # over this group entirely.
-          return 1 unless Abq.current_example.in_group?(self)
+          return 1 unless Abq.target_test_case.in_group?(self)
 
           reporter.example_group_started(self)
 
@@ -53,7 +53,7 @@ module RSpec
             # If the next example to run is on the surface of this group, scan all
             # the examples; otherwise, we just need to check the children groups.
             result_for_this_group =
-              if Abq.current_example.directly_in_group? self
+              if Abq.target_test_case.directly_in_group? self
                 run_examples_with_abq
               else
                 true
@@ -71,7 +71,7 @@ module RSpec
             # be sent to us from ABQ, we now loop over all the examples, and mark
             # every one that we must run in this group as a failure.
             for_filtered_examples(reporter) do |example|
-              next unless Abq.current_example.is_example? example
+              next unless Abq.target_test_case.is_example? example
 
               Abq.send_test_result_and_advance { |abq_reporter| example.fail_with_exception(abq_reporter, ex) }
             end

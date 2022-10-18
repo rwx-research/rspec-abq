@@ -79,13 +79,13 @@ module RSpec
     end
 
     class << self
-      attr_reader :current_example
+      attr_reader :target_test_case
     end
 
-    # pulls next example from abq and sets it to #current_example
+    # pulls next example from abq and sets it to #target_test_case
     def self.fetch_next_example
       message = protocol_read
-      @current_example =
+      @target_test_case =
         if message == :abq_done
           TestCase.end_marker
         else
