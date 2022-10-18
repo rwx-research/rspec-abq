@@ -8,18 +8,14 @@
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-22.05";
 
   outputs =
-    { self
-    , nixpkgs
-    , flake-utils
-    }:
+    { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
-    let
-      pkgs = import nixpkgs { system = system; };
+    let pkgs = import nixpkgs { system = system; };
     in
     {
+      formatter = pkgs.nixfmt;
       devShell = pkgs.mkShell {
         packages = with pkgs; [
-          nixfmt # formatting _this file!_
           ruby_3_1 # locked to 3.1.2p20, with bundler 2.3.19
           git # locked to 2.36.2
         ];
