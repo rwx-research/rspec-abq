@@ -347,8 +347,7 @@ module RSpec
     module Extensions
       module ExampleGroup
         # @private
-        # same as .run_examples but using abq
-        def run_examples_abq
+        def run_examples_with_abq
           all_examples_succeeded = true
           ordering_strategy.order(filtered_examples).each do |considered_example|
             next unless Abq.current_example.is_example?(considered_example)
@@ -374,7 +373,7 @@ module RSpec
         end
 
         # same as .run but using abq
-        def run_abq_mode(reporter)
+        def run_with_abq(reporter)
           # The next test isn't in this group or any child; we can skip
           # over this group entirely.
           return 1 unless Abq.current_example.in_group?(self)
@@ -390,12 +389,12 @@ module RSpec
             # the examples; otherwise, we just need to check the children groups.
             result_for_this_group =
               if Abq.current_example.directly_in_group? self
-                run_examples_abq
+                run_examples_with_abq
               else
                 true
               end
 
-            results_for_descendants = ordering_strategy.order(children).map { |child| child.run_abq_mode(reporter) }.all?
+            results_for_descendants = ordering_strategy.order(children).map { |child| child.run_with_abq(reporter) }.all?
             result_for_this_group && results_for_descendants
           rescue Pending::SkipDeclaredInExample => ex
             for_filtered_examples(reporter) { |example| example.skip_with_exception(reporter, ex) }
@@ -439,7 +438,7 @@ module RSpec
                 return @configuration.failure_exit_code
               end
 
-              example_groups.map { |g| g.run_abq_mode(reporter) }.all?
+              example_groups.map { |g| g.run_with_abq(reporter) }.all?
             end
           end
 
