@@ -2,6 +2,9 @@ module RSpec
   module Abq
     # A module for abstracting ABQ Manifest
     module Manifest
+      # @visibility private
+      ABQ_GENERATE_MANIFEST = "ABQ_GENERATE_MANIFEST"
+
       # returns true if ABQ wants a manifest
       def self.should_write_manifest?
         !!ENV[ABQ_GENERATE_MANIFEST]

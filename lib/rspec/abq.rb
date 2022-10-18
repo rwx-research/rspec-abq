@@ -16,19 +16,14 @@ module RSpec
     # this is set by the outer-most rspec runner to ensure nested rspecs aren't ABQ aware.
     # if we ever want nested ABQ rspec, we'll need to change this.
     ABQ_RSPEC_PID = "ABQ_RSPEC_PID"
-    # @visibility private
-    ABQ_GENERATE_MANIFEST = "ABQ_GENERATE_MANIFEST"
-    # @visibility private
-    CURRENT_PROTOCOL_VERSION_MAJOR = 0
-    # @visibility private
-    CURRENT_PROTOCOL_VERSION_MINOR = 1
+
     # The [ABQ protocol version message](https://www.notion.so/rwx/ABQ-Worker-Native-Test-Runner-IPC-Interface-0959f5a9144741d798ac122566a3d887#8587ee4fd01e41ec880dcbe212562172).
     # Must be sent to ABQ_SOCKET on startup, if running in ABQ mode.
     # @visibility private
     PROTOCOL_VERSION_MESSAGE = {
       type: "abq_protocol_version",
-      major: CURRENT_PROTOCOL_VERSION_MAJOR,
-      minor: CURRENT_PROTOCOL_VERSION_MINOR
+      major: 0,
+      minor: 1
     }
 
     # Whether this rspec process is running in ABQ mode.
@@ -57,13 +52,13 @@ module RSpec
       # disable persisting_example_statuses
       RSpec.configuration.example_status_persistence_file_path = nil
       # TODO: read manifest before fetching first example
-      Abq.fetch_next_example
+      fetch_next_example
     end
 
     # the socket to communicate with ABQ worker
     def self.socket
       @socket ||= TCPSocket.new(*ENV[ABQ_SOCKET].split(":")).tap do |socket|
-        Abq.protocol_write(PROTOCOL_VERSION_MESSAGE, socket)
+        protocol_write(PROTOCOL_VERSION_MESSAGE, socket)
       end
     end
 
@@ -146,8 +141,8 @@ module RSpec
           meta: reporter.meta
         }
         test_result_msg = {test_result: test_result}
-        Abq.protocol_write(test_result_msg)
-        Abq.fetch_next_example
+        protocol_write(test_result_msg)
+        fetch_next_example
       end
     end
   end
