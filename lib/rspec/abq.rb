@@ -1,16 +1,16 @@
 require "set"
 require "rspec/core"
+require "socket"
+require "json"
 require_relative "abq/version"
 require_relative "abq/manifest"
 require_relative "abq/test_case"
 require_relative "abq/reporter"
 require_relative "abq/extensions"
-module RSpec
-  # Provides abq-specific extensions of rspec.
-  module Abq
-    require "socket"
-    require "json"
 
+module RSpec
+  # An abq adapter for RSpec!
+  module Abq
     # @visibility private
     ABQ_SOCKET = "ABQ_SOCKET"
     # this is set by the outer-most rspec runner to ensure nested rspecs aren't ABQ aware.
