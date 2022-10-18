@@ -13,7 +13,7 @@
     let pkgs = import nixpkgs { system = system; };
     in
     {
-      formatter = pkgs.nixfmt;
+      formatter = pkgs.nixpkgs-fmt;
       devShell = pkgs.mkShell {
         packages = with pkgs; [
           ruby_3_1 # locked to 3.1.2p20, with bundler 2.3.19
