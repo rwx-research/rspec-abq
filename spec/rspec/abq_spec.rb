@@ -1,95 +1,68 @@
-RSpec.describe RSpec::Abq, :unless => RSpec::Abq.disable_tests? do
-  host = '127.0.0.1'
-  after {
-    ENV.delete_if { |k, _v| k.start_with? 'ABQ' }
-    RSpec::Abq.instance_eval { @socket = nil }
+RSpec.describe RSpec::Abq, unless: RSpec::Abq.disable_tests? do
+  host = "127.0.0.1"
+  let(:server) { TCPServer.new(host, 0) }
+  let(:client_sock) { TCPSocket.new(host, server.addr[1]) }
+  let(:server_sock) { server.accept }
 
+  def stringify_keys(hash)
+    hash.map { |k, v| [k.to_s, v.is_a?(Hash) ? stringify_keys(v) : v] }.to_h
+  end
+
+  after {
+    ENV.delete_if { |k, _v| k.start_with? "ABQ" }
+    RSpec::Abq.instance_eval { @socket = nil }
   }
 
-  describe "protocol_write" do
-    require 'socket'
+  describe ".protocol_write" do
+    require "socket"
 
-    it "write messages with a 4-byte header" do
-      server = TCPServer.new host, 0
-      client_sock = TCPSocket.new host, server.addr[1]
-      server_sock = server.accept
+    let(:symbol_payload) { {a: 1, b: 2} }
 
-      RSpec::Abq.protocol_write({ :a =>  1, :b =>  2 }, client_sock)
-      size = ((server_sock.read 4).unpack "N")[0]
-
-      expect(size).to eq(13)
-    end
-
-    it "write messages with payload" do
-      server = TCPServer.new host, 0
-      client_sock = TCPSocket.new host, server.addr[1]
-      server_sock = server.accept
-
-      RSpec::Abq.protocol_write({ :a => 1, :b =>  2 }, client_sock)
-      expected_payload = '{"a":1,"b":2}'
-
-      size = ((server_sock.read 4).unpack "N")[0]
-      expect(size).to eq(expected_payload.length)
-
-      payload = server_sock.read(expected_payload.length)
-      expect(payload).to eq(expected_payload)
-    end
-
-    it "reads messages with a 4-byte header" do
-      server = TCPServer.new host, 0
-      client_sock = TCPSocket.new host, server.addr[1]
-      server_sock = server.accept
-
-      msg_payload = '{"a":1,"b":2}'
-      msg_size = [msg_payload.length].pack("N")
-      client_sock.write msg_size
-      client_sock.write msg_payload
-
-      msg = RSpec::Abq.protocol_read server_sock
-
-      expect(msg.size).to eq(2)
-      expect(msg["a"]).to eq(1)
-      expect(msg["b"]).to eq(2)
+    it "write messages with a 4-byte length header then the payload", :aggregate_failures do
+      RSpec::Abq.protocol_write(symbol_payload, client_sock)
+      payload_length = symbol_payload.to_json.bytesize
+      expect(server_sock.read(4).unpack("N")[0]).to eq(payload_length)
+      expect(server_sock.read(payload_length)).to eq(symbol_payload.to_json)
     end
   end
 
-  describe "config" do
-    def stringify_keys(hash)
-      hash.map { |k, v| [k.to_s, v.is_a?(Hash) ? stringify_keys(v) : v] }.to_h
-    end
+  describe ".protocol_read" do
+    it "reads messages with a 4-byte header" do
+      msg_payload = '{"a":1,"b":2}'
+      client_sock.write([msg_payload.length].pack("N"))
+      client_sock.write(msg_payload)
 
-    it "recognizes if ABQ_SOCKET is set" do
-      server = TCPServer.new host, 0
+      expect(RSpec::Abq.protocol_read(server_sock)).to eq(JSON.parse(msg_payload))
+    end
+  end
+
+  describe "startup" do
+    before do
       ENV["ABQ_SOCKET"] = "#{host}:#{server.addr[1]}"
-
-      protocl_version_message_thread = Thread.new {
-        socket = server.accept
-        RSpec::Abq.protocol_read(socket).tap  { socket.close }
-      }
-
-      RSpec::Abq.socket
-
-      expect(protocl_version_message_thread.value).to(
-        eq(stringify_keys(RSpec::Abq::PROTOCOL_VERSION_MESSAGE))
-      )
     end
 
-    it "recognizes if ABQ_SOCKET and ABQ_GENERATE_MANIFEST is set" do
-      server = TCPServer.new host, 0
-      ENV['ABQ_SOCKET'] = "#{host}:#{server.addr[1]}"
-      ENV['ABQ_GENERATE_MANIFEST'] = "1"
+    after do
+      ENV.delete("ABQ_SOCKET")
+    end
 
-      expect(RSpec::Abq::Manifest.should_write_manifest?).to be(true)
-      RSpec::Abq::Manifest.write_manifest([])
+    describe ".socket" do
+      it "reads socket config and initializes handshake" do
+        RSpec::Abq.socket
+        expect(RSpec::Abq.protocol_read(server_sock)).to(eq(stringify_keys(RSpec::Abq::PROTOCOL_VERSION_MESSAGE)))
+      end
+    end
 
-      socket = server.accept
+    describe "writing manifest" do
+      it "recognizes if ABQ_GENERATE_MANIFEST is set" do
+        ENV["ABQ_GENERATE_MANIFEST"] = "1"
+        expect(RSpec::Abq::Manifest.should_write_manifest?).to be(true)
+      end
 
-      expect(RSpec::Abq.protocol_read(socket)).to(
-        eq(stringify_keys(RSpec::Abq::PROTOCOL_VERSION_MESSAGE))
-      )
-      expect(RSpec::Abq.protocol_read(socket)).to(
-        eq(stringify_keys(RSpec::Abq::Manifest.generate([])))
-      )
+      it "writes manifest over socket" do
+        RSpec::Abq::Manifest.write_manifest([])
+        RSpec::Abq.protocol_read(server_sock) # read handshake
+        expect(RSpec::Abq.protocol_read(server_sock)).to(eq(stringify_keys(RSpec::Abq::Manifest.generate([]))))
+      end
     end
   end
 end
