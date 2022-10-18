@@ -347,6 +347,24 @@ module RSpec
     module Extensions
       module ExampleGroup
         # @private
+        # ExampleGroups are nodes in a tree with
+        # - a (potentially empty) list of Examples (the value of the node)
+        # - AND a (potentialy empty) list of children ExampleGroups (... the ... children ... are the children of the
+        #   node 😅)
+        # ExampleGroups are defined by `context` and `describe` in the RSpec DSL
+        # Examples are defined dby `it` RSpec DSL
+        #
+        # This method
+        # - iterates over the current ExampleGroup's Examples to find the Example that is the same as
+        #   Abq.current_example
+        # - runs the example
+        # - and fetches example that is now the `Abq.current_example`a
+        #
+        # the next current_example is either
+        # - later in this ExampleGroup's examples
+        #   - so we continue iterating until we get there
+        # - or in another ExampleGroup
+        #   - so we bail from this iteration and let the caller (run_with_abq) iterate to the right ExampleGroup
         def run_examples_with_abq
           all_examples_succeeded = true
           ordering_strategy.order(filtered_examples).each do |considered_example|
@@ -357,16 +375,7 @@ module RSpec
             set_ivars(instance, before_context_ivars)
 
             all_examples_succeeded &&= Abq.send_test_result_and_advance { |abq_reporter| considered_example.run(instance, abq_reporter) }
-            # performance enhancement: the list we're iterating over doesn't include the current_example
-            #
-            # ...example_group_0 => [...],
-            # [
-            #   example_group_1 => [example_a, example_b],
-            #   example_group_2 => [example_c. example_d]
-            # ],
-            # example_group_n => [...]
-            #
-            # In the case abq advances to a current_example in this example group that is no longer in example_a
+
             break unless Abq.current_example.directly_in_group?(self)
           end
           all_examples_succeeded
