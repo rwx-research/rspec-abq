@@ -13,19 +13,15 @@ module RSpec
 
     # @visibility private
     ABQ_SOCKET = "ABQ_SOCKET"
-
     # this is set by the outer-most rspec runner to ensure nested rspecs aren't ABQ aware.
     # if we ever want nested ABQ rspec, we'll need to change this.
     ABQ_RSPEC_PID = "ABQ_RSPEC_PID"
-
     # @visibility private
     ABQ_GENERATE_MANIFEST = "ABQ_GENERATE_MANIFEST"
-
     # @visibility private
     CURRENT_PROTOCOL_VERSION_MAJOR = 0
     # @visibility private
     CURRENT_PROTOCOL_VERSION_MINOR = 1
-
     # The [ABQ protocol version message](https://www.notion.so/rwx/ABQ-Worker-Native-Test-Runner-IPC-Interface-0959f5a9144741d798ac122566a3d887#8587ee4fd01e41ec880dcbe212562172).
     # Must be sent to ABQ_SOCKET on startup, if running in ABQ mode.
     # @visibility private
@@ -34,6 +30,11 @@ module RSpec
       major: CURRENT_PROTOCOL_VERSION_MAJOR,
       minor: CURRENT_PROTOCOL_VERSION_MINOR
     }
+
+    # Whether this rspec process is running in ABQ mode.
+    def self.enabled?(env = ENV)
+      env.key?(ABQ_SOCKET) && (!env.key?(ABQ_RSPEC_PID) || env[ABQ_RSPEC_PID] == Process.pid.to_s)
+    end
 
     def self.setup!
       return unless enabled?
@@ -64,11 +65,6 @@ module RSpec
       @socket ||= TCPSocket.new(*ENV[ABQ_SOCKET].split(":")).tap do |socket|
         Abq.protocol_write(PROTOCOL_VERSION_MESSAGE, socket)
       end
-    end
-
-    # Whether this rspec process is running in ABQ mode.
-    def self.enabled?(env = ENV)
-      env.key?(ABQ_SOCKET) && (!env.key?(ABQ_RSPEC_PID) || env[ABQ_RSPEC_PID] == Process.pid.to_s)
     end
 
     # disables tests so we can compare runtime of rspec core vs parallelized version

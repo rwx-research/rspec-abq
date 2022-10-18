@@ -68,11 +68,6 @@ module RSpec
       def self.end_marker
         @end_marker ||= TestCase.new("[]", [], {})
       end
-
-      # stringify but mostly used for debugging
-      def to_s
-        "Test case id: #{id}, tags: #{tags}, meta: #{meta}"
-      end
     end
   end
 end
