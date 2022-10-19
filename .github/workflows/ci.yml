@@ -70,37 +70,13 @@ jobs:
             git status --porcelain
             exit 1
           fi
-  abq-test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 1
-    steps:
-      - name: Download abq
-        run: |
-          ABQ_PATH="$HOME/.abq"
-          echo "$ABQ_PATH" >> $GITHUB_PATH
-
-          mkdir -p $ABQ_PATH
-          pushd $ABQ_PATH
-          curl -L \
-            "https://captain.build/abq/api/releases/latest/abq_latest_linux_x86-64.tar.gz" \
-            -H "Authorization: Bearer ${{ secrets.ABQ_API_KEY }}" \
-            -o abq.tar.gz
-          tar -xf abq.tar.gz --strip-components 1
-          test -x abq
-          rm -f abq.tar.gz
-          popd
-      - name: start abq test
-        run: abq test --reporter dot -- bundle exec rspec
-        env:
-          ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
-          ABQ_API_KEY: ${{ secrets.ABQ_API_KEY }}
   abq-work:
     runs-on: ubuntu-latest
     timeout-minutes: 1
     strategy:
       fail-fast: false
-      matrix:
-        shard: ['1', '2']
+      # matrix:
+      #   shard: ['1', '2']
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -125,7 +101,6 @@ jobs:
           rm -f abq.tar.gz
           popd
       - name: start abq test
-        run: abq work
+        run: abq test --reporter dot -- bundle exec rspec
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
-          ABQ_API_KEY: ${{ secrets.ABQ_API_KEY }}
