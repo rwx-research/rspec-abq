@@ -26,6 +26,8 @@ module RSpec
       minor: 1
     }
 
+    INIT_SUCCESS_MESSAGE = {}
+
     # Whether this rspec process is running in ABQ mode.
     def self.enabled?(env = ENV)
       env.key?(ABQ_SOCKET) && (!env.key?(ABQ_RSPEC_PID) || env[ABQ_RSPEC_PID] == Process.pid.to_s)
@@ -40,7 +42,7 @@ module RSpec
 
     def self.setup_after_specs_loaded!
       if RSpec::Abq::Manifest.should_write_manifest?
-        RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry.fetch(:global).class)
+        RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry.fetch(:global))
         # TODO: why can't we just exit(0) here?
         RSpec.world.wants_to_quit = true
         RSpec.configuration.error_exit_code = 0
@@ -55,10 +57,36 @@ module RSpec
       fetch_next_example
     end
 
+
+    class UnsupportedOrderingClassError < StandardError; end
+
     # the socket to communicate with ABQ worker
     def self.socket
       @socket ||= TCPSocket.new(*ENV[ABQ_SOCKET].split(":")).tap do |socket|
         protocol_write(PROTOCOL_VERSION_MESSAGE, socket)
+
+        unless Manifest.should_write_manifest?
+          init_message = protocol_read(socket)
+          fail(AbqConnBroken, "connection broken during initialization") if init_message == :abq_done
+
+          seed, ordering_class_name = init_message["init_meta"].values_at("seed", "ordering_class")
+          RSpec.configuration.seed = seed
+          registry = RSpec.configuration.ordering_registry
+          registry.register(:global, registry.fetch(
+            case ordering_class_name
+            when "RSpec::Core::Ordering::Identity"
+              :defined
+            when "RSpec::Core::Ordering::RecentlyModified"
+              :recently_modified
+            when "RSpec::Core::Ordering::Random"
+              :random
+            else
+              fail(UnsupportedOrderingClassError, "can't order based on unknown ordering class: #{ordering_class}")
+            end
+          ))
+
+          protocol_write(INIT_SUCCESS_MESSAGE, socket)
+        end
       end
     end
 
