@@ -62,8 +62,8 @@ RSpec.describe RSpec::Abq do
     describe ".write_manifest(example_groups)" do
       it "writes manifest over socket" do
         allow(RSpec::Abq).to receive(:protocol_write)
-        RSpec::Abq::Manifest.write_manifest([])
-        expect(RSpec::Abq).to have_received(:protocol_write).with(RSpec::Abq::Manifest.generate([]))
+        RSpec::Abq::Manifest.write_manifest([], 1, RSpec::Core::Ordering::Random)
+        expect(RSpec::Abq).to have_received(:protocol_write).with(RSpec::Abq::Manifest.generate([], 1, RSpec::Core::Ordering::Random))
       end
     end
 

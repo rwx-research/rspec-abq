@@ -11,16 +11,22 @@ module RSpec
       end
 
       # writes manifest to abq socket
-      def self.write_manifest(ordered_groups)
-        Abq.protocol_write(generate(ordered_groups))
+      def self.write_manifest(ordered_groups, random_seed, global_ordering_class)
+        Abq.protocol_write(generate(ordered_groups, random_seed, global_ordering_class))
       end
 
       # Generates an ABQ Manifest
       # @param ordered_groups [Array<RSpec::Core::ExampleGroup>] ordered groups to assemble into a manifest
-      def self.generate(ordered_groups)
-        # TODO: write ordering to manifest meta
+      def self.generate(ordered_groups, random_seed, global_ordering_class)
         {
           manifest: {
+            init_meta: {
+              # we write the seed to the manifest even if the global ordering isn't random
+              # because (I believe) ExampleGroups can have custom orderings and we want the
+              # ordering for those to be consistent
+              seed: random_seed,
+              ordering_class: global_ordering_class.to_s,
+            },
             members: ordered_groups.map { |group| to_manifest_group(group) }.compact
           }
         }

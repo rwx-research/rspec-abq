@@ -40,7 +40,7 @@ module RSpec
 
     def self.setup_after_specs_loaded!
       if RSpec::Abq::Manifest.should_write_manifest?
-        RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups)
+        RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry.fetch(:global).class)
         # TODO: why can't we just exit(0) here?
         RSpec.world.wants_to_quit = true
         RSpec.configuration.error_exit_code = 0
