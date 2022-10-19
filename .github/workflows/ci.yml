@@ -48,3 +48,20 @@ jobs:
             ]
           job-matrix: ${{ toJSON(matrix) }}
           captain-token: ${{ secrets.VANGUARD_PRODUCTION_RWX_TOKEN }}
+  nixfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: cachix/install-nix-action@v18
+      - run: nix fmt
+      - run: |
+          git_leftovers=$(git status --porcelain)
+          if [ -z $git_leftovers ]
+          then
+            echo "✅ nix fmt didn't change anything"
+          else
+            echo "❌ unformatted changes left behind"
+            git diff
+            git status --porcelain
+            exit 1
+          fi
