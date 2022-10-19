@@ -65,3 +65,23 @@ jobs:
             git status --porcelain
             exit 1
           fi
+  abq:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Download abq
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          repo: 'rwx-research/abq'
+          version: 'tags/init'
+          file: 'abq'
+          target: 'abq/abq'
+          token: ${{ secrets.MICHAELGLASS_READ_ABQ_TOKEN }}
+      - name: Set abq path and make it executable
+        run: |
+          echo "$GITHUB_WORKSPACE/abq" >> $GITHUB_PATH
+          chmod +x $GITHUB_WORKSPACE/abq/abq
+      - name: start abq test
+        run: abq test --reporter dot -- bundle exec rspec
+        env:
+          ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
