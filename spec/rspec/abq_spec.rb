@@ -1,48 +1,44 @@
-RSpec.describe RSpec::Abq, unless: RSpec::Abq.disable_tests? do
-  host = "127.0.0.1"
-  let(:server) { TCPServer.new(host, 0) }
-  let(:client_sock) { TCPSocket.new(host, server.addr[1]) }
-  let(:server_sock) { server.accept }
+require "socket"
 
-  def stringify_keys(hash)
-    hash.map { |k, v| [k.to_s, v.is_a?(Hash) ? stringify_keys(v) : v] }.to_h
-  end
+RSpec.describe RSpec::Abq do
+  context "when using socket communication", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
+    host = "127.0.0.1"
+    let(:server) { TCPServer.new(host, 0) }
+    let(:client_sock) { TCPSocket.new(host, server.addr[1]) }
+    let(:server_sock) { server.accept }
 
-  after {
-    ENV.delete_if { |k, _v| k.start_with? "ABQ" }
-    RSpec::Abq.instance_eval { @socket = nil }
-  }
-
-  describe ".protocol_write" do
-    require "socket"
-
-    let(:symbol_payload) { {a: 1, b: 2} }
-
-    it "write messages with a 4-byte length header then the payload", :aggregate_failures do
-      RSpec::Abq.protocol_write(symbol_payload, client_sock)
-      payload_length = symbol_payload.to_json.bytesize
-      expect(server_sock.read(4).unpack("N")[0]).to eq(payload_length)
-      expect(server_sock.read(payload_length)).to eq(symbol_payload.to_json)
+    def stringify_keys(hash)
+      hash.map { |k, v| [k.to_s, v.is_a?(Hash) ? stringify_keys(v) : v] }.to_h
     end
-  end
 
-  describe ".protocol_read" do
-    it "reads messages with a 4-byte header" do
-      msg_payload = '{"a":1,"b":2}'
-      client_sock.write([msg_payload.length].pack("N"))
-      client_sock.write(msg_payload)
-
-      expect(RSpec::Abq.protocol_read(server_sock)).to eq(JSON.parse(msg_payload))
-    end
-  end
-
-  describe "startup" do
-    before do
+    before do |example|
       ENV["ABQ_SOCKET"] = "#{host}:#{server.addr[1]}"
     end
 
     after do
-      ENV.delete("ABQ_SOCKET")
+      ENV.delete_if { |k, _v| k.start_with? "ABQ" }
+      RSpec::Abq.instance_eval { @socket = nil }
+    end
+
+    describe ".protocol_write" do
+      let(:symbol_payload) { {a: 1, b: 2} }
+
+      it "write messages with a 4-byte length header then the payload", :aggregate_failures do
+        RSpec::Abq.protocol_write(symbol_payload, client_sock)
+        payload_length = symbol_payload.to_json.bytesize
+        expect(server_sock.read(4).unpack("N")[0]).to eq(payload_length)
+        expect(server_sock.read(payload_length)).to eq(symbol_payload.to_json)
+      end
+    end
+
+    describe ".protocol_read" do
+      it "reads messages with a 4-byte header" do
+        msg_payload = '{"a":1,"b":2}'
+        client_sock.write([msg_payload.length].pack("N"))
+        client_sock.write(msg_payload)
+
+        expect(RSpec::Abq.protocol_read(server_sock)).to eq(JSON.parse(msg_payload))
+      end
     end
 
     describe ".socket" do
@@ -51,18 +47,26 @@ RSpec.describe RSpec::Abq, unless: RSpec::Abq.disable_tests? do
         expect(RSpec::Abq.protocol_read(server_sock)).to(eq(stringify_keys(RSpec::Abq::PROTOCOL_VERSION_MESSAGE)))
       end
     end
+  end
 
-    describe "writing manifest" do
+  describe RSpec::Abq::Manifest do
+    describe ".should_write_manifest?" do
       it "recognizes if ABQ_GENERATE_MANIFEST is set" do
-        ENV["ABQ_GENERATE_MANIFEST"] = "1"
-        expect(RSpec::Abq::Manifest.should_write_manifest?).to be(true)
-      end
-
-      it "writes manifest over socket" do
-        RSpec::Abq::Manifest.write_manifest([])
-        RSpec::Abq.protocol_read(server_sock) # read handshake
-        expect(RSpec::Abq.protocol_read(server_sock)).to(eq(stringify_keys(RSpec::Abq::Manifest.generate([]))))
+        ENV.delete("ABQ_GENERATE_MANIFEST")
+        expect { ENV["ABQ_GENERATE_MANIFEST"] = "1" }.to(
+          change(RSpec::Abq::Manifest, :should_write_manifest?).from(false).to(true)
+        )
       end
     end
+
+    describe ".write_manifest(example_groups)" do
+      it "writes manifest over socket" do
+        allow(RSpec::Abq).to receive(:protocol_write)
+        RSpec::Abq::Manifest.write_manifest([])
+        expect(RSpec::Abq).to have_received(:protocol_write).with(RSpec::Abq::Manifest.generate([]))
+      end
+    end
+
+    # note: more manifest generation tests are in spec/features/integration_spec.rb
   end
 end
