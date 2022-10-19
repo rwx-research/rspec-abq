@@ -61,10 +61,10 @@ module RSpec
 
             results_for_descendants = ordering_strategy.order(children).map { |child| child.run_with_abq(reporter) }.all?
             result_for_this_group && results_for_descendants
-          rescue Pending::SkipDeclaredInExample => ex
+          rescue RSpec::Core::Pending::SkipDeclaredInExample => ex
             for_filtered_examples(reporter) { |example| example.skip_with_exception(reporter, ex) }
             true
-          rescue Support::AllExceptionsExceptOnesWeMustNotRescue => ex
+          rescue RSpec::Support::AllExceptionsExceptOnesWeMustNotRescue => ex
             # If an exception reaches here, that means we must fail the entire
             # group (otherwise we would have handled the exception locally at an
             # example). Since we know of the examples in the same order as they'll

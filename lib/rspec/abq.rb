@@ -63,8 +63,9 @@ module RSpec
     end
 
     # disables tests so we can compare runtime of rspec core vs parallelized version
-    def self.disable_tests?
-      enabled? || ENV.key?("ABQ_DISABLE_TESTS")
+    def self.disable_tests_when_run_by_abq?
+      enabled? ||
+        ENV.key?("ABQ_DISABLE_TESTS") # just here to test this
     end
 
     # used internally to split off tags from built in rspec metadata
