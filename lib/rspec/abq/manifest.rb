@@ -1,4 +1,4 @@
-require 'set'
+require "set"
 module RSpec
   module Abq
     # A module for abstracting ABQ Manifest
@@ -33,7 +33,7 @@ module RSpec
               # because (I believe) ExampleGroups can have custom orderings and we want the
               # ordering for those to be consistent
               seed: random_seed,
-              ordering_class: global_ordering.class.to_s,
+              ordering_class: global_ordering.class.to_s
             },
             members: ordered_groups.map { |group| to_manifest_group(group) }.compact
           }

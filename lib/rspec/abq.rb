@@ -57,7 +57,6 @@ module RSpec
       fetch_next_example
     end
 
-
     class UnsupportedOrderingClassError < StandardError; end
 
     # the socket to communicate with ABQ worker
