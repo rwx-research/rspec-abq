@@ -94,6 +94,6 @@ jobs:
           ruby-version: 3.1.0
           bundler-cache: true
       - name: start abq test
-        run: abq test --reporter dot -- bundle exec rspec
+        run: abq test --reporter dot --num-workers 2 -- bundle exec rspec
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
