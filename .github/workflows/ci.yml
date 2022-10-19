@@ -81,6 +81,11 @@ jobs:
         run: |
           echo "$GITHUB_WORKSPACE/abq" >> $GITHUB_PATH
           chmod +x $GITHUB_WORKSPACE/abq/abq
+      - name: setup ruby & bundle install
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1.0
+          bundler-cache: true
       - name: start abq test
         run: abq test --reporter dot -- bundle exec rspec
         env:
