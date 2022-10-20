@@ -97,7 +97,7 @@ jobs:
           rm -f abq.tar.gz
           popd
       - name: start abq test
-        run: abq test --reporter dot -- bundle exec rspec ./spec_fixtures
+        run: abq test --reporter dot -- bundle exec rspec spec_fixtures spec
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
           ABQ_API_KEY: ${{ secrets.ABQ_API_KEY }}
