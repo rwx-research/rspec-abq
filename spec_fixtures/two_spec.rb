@@ -1,5 +1,4 @@
-# called `_specs.rb` to avoid it being called automatically
-# used by integration/abq_spec.rb
+# this is not a real test, but a fixture used by CI and by manifest_spec.rb
 RSpec.describe 'group 2' do
   it 'filtered out example 1', :if => false do end
   it 'filtered in example 2', :if => true do end

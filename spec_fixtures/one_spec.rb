@@ -1,5 +1,4 @@
-# called `_specs.rb` to avoid it being called automatically
-# used by integration/abq_spec.rb
+# this is not a real test, but a fixture used by CI and by manifest_spec.rb
 RSpec.describe 'group 1' do
   it 'example 1 with tags', :foo, :bar do end
   it 'example 2 with tag and value', :foo, bar: 5 do end
