@@ -97,8 +97,9 @@ module RSpec
       message = protocol_read
       init_message = message["init_meta"]
       if init_message
-        Ordering.setup!(init_message, RSpec.configuration)
         protocol_write(INIT_SUCCESS_MESSAGE)
+        # todo: get rid of this unless init_message.empty? as soon as the bug is fixed in abq
+        Ordering.setup!(init_message, RSpec.configuration) unless init_message.empty?
         fetch_next_example
       else
         # to support the old protocol, we don't depend on the initialization method, however we don't support random
