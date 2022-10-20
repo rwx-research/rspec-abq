@@ -14,6 +14,11 @@ module RSpec
   module Abq
     # @visibility private
     ABQ_SOCKET = "ABQ_SOCKET"
+
+    # the abq worker will set this environmental variable if it needs this process to generate a manifest
+    # @visibility private
+    ABQ_GENERATE_MANIFEST = "ABQ_GENERATE_MANIFEST"
+
     # this is set by the outer-most rspec runner to ensure nested rspecs aren't ABQ aware.
     # if we ever want nested ABQ rspec, we'll need to change this.
     ABQ_RSPEC_PID = "ABQ_RSPEC_PID"
@@ -47,7 +52,8 @@ module RSpec
       return if setup?
       ENV[ABQ_RSPEC_PID] = Process.pid.to_s
       RSpec.configuration.example_status_persistence_file_path = nil
-      if RSpec::Abq::Manifest.should_write_manifest?
+      # before abq can start workers, it asks for a manifest
+      if !!ENV[ABQ_GENERATE_MANIFEST] # the abq worker will set this env var if it needs a manifest
         RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry)
         # TODO: why can't we just exit(0) here?
         RSpec.world.wants_to_quit = true

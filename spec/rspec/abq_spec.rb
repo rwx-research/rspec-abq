@@ -53,15 +53,6 @@ RSpec.describe RSpec::Abq do
   end
 
   describe RSpec::Abq::Manifest do
-    describe ".should_write_manifest?" do
-      it "recognizes if ABQ_GENERATE_MANIFEST is set" do
-        ENV.delete("ABQ_GENERATE_MANIFEST")
-        expect { ENV["ABQ_GENERATE_MANIFEST"] = "1" }.to(
-          change(RSpec::Abq::Manifest, :should_write_manifest?).from(false).to(true)
-        )
-      end
-    end
-
     describe ".write_manifest(example_groups)" do
       it "writes manifest over socket" do
         allow(RSpec::Abq).to receive(:protocol_write)
