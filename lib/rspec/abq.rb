@@ -36,12 +36,16 @@ module RSpec
 
     def self.setup!
       return unless enabled?
-      ENV[ABQ_RSPEC_PID] = Process.pid.to_s
-      RSpec::Core::ExampleGroup.extend(Abq::Extensions::ExampleGroup)
-      RSpec::Core::Runner.prepend(Abq::Extensions::Runner)
+      Extensions.setup!
+    end
+
+    def self.setup?
+      !!ENV[ABQ_RSPEC_PID]
     end
 
     def self.setup_after_specs_loaded!
+      return if setup?
+      ENV[ABQ_RSPEC_PID] = Process.pid.to_s
       RSpec.configuration.example_status_persistence_file_path = nil
       if RSpec::Abq::Manifest.should_write_manifest?
         RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry)
