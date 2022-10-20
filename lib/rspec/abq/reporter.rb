@@ -65,6 +65,21 @@ module RSpec
       # does nothing, just here to fulfill reporter api
       def example_group_finished(_)
       end
+
+      # creates a hash that fits the abq worker result protocol
+      def abq_result
+        {
+          test_result: {
+            status: status,
+            id: id,
+            display_name: display_name,
+            output: output,
+            runtime: runtime_ms,
+            tags: tags,
+            meta: meta
+          }
+        }
+      end
     end
   end
 end

@@ -43,27 +43,22 @@ RSpec.describe RSpec::Abq do
 
     describe ".socket" do
       it "reads socket config and initializes handshake" do
-        RSpec::Abq.socket
+        Thread.new {
+          RSpec::Abq.socket
+        }
+        RSpec::Abq.protocol_write({"init_meta" => {"seed" => 4, "ordering_class" => "RSpec::Core::Ordering::Identity"}}, server_sock)
         expect(RSpec::Abq.protocol_read(server_sock)).to(eq(stringify_keys(RSpec::Abq::PROTOCOL_VERSION_MESSAGE)))
       end
     end
   end
 
   describe RSpec::Abq::Manifest do
-    describe ".should_write_manifest?" do
-      it "recognizes if ABQ_GENERATE_MANIFEST is set" do
-        ENV.delete("ABQ_GENERATE_MANIFEST")
-        expect { ENV["ABQ_GENERATE_MANIFEST"] = "1" }.to(
-          change(RSpec::Abq::Manifest, :should_write_manifest?).from(false).to(true)
-        )
-      end
-    end
-
     describe ".write_manifest(example_groups)" do
       it "writes manifest over socket" do
         allow(RSpec::Abq).to receive(:protocol_write)
-        RSpec::Abq::Manifest.write_manifest([])
-        expect(RSpec::Abq).to have_received(:protocol_write).with(RSpec::Abq::Manifest.generate([]))
+        registry = RSpec.configuration.ordering_registry
+        RSpec::Abq::Manifest.write_manifest([], 1, registry)
+        expect(RSpec::Abq).to have_received(:protocol_write).with(RSpec::Abq::Manifest.generate([], 1, registry))
       end
     end
 

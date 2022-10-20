@@ -1,6 +1,12 @@
 module RSpec
   module Abq
     module Extensions
+      def self.setup!
+        RSpec::Core::Configuration.prepend(Configuration)
+        RSpec::Core::ExampleGroup.extend(ExampleGroup)
+        RSpec::Core::Runner.prepend(Runner)
+      end
+
       module ExampleGroup
         # @private
         # ExampleGroups are nodes in a tree with
@@ -86,6 +92,24 @@ module RSpec
         end
       end
 
+      module Configuration
+        def load_spec_files
+          # Where can we load our extensions
+          # - AFTER our gem has been loaded
+          # - AFTER the specs are loaded
+          # - BEFORE any of the state is touched (e.g. before the random seed has been used)
+          # Order of operations:
+          # Runner#run
+          # --> Runner#setup
+          # ----> Runner#configure
+          # ------> Abq.setup!
+          # --------> spec/spec_helper.rb
+          # ----> Configuration#load_spec_files <- maybe here?
+          # --> World#ordered_example_groups
+          super.tap { RSpec::Abq.setup_after_specs_loaded! }
+        end
+      end
+
       module Runner
         # Runs the provided example groups.
         #
@@ -94,8 +118,6 @@ module RSpec
         #   or the configured failure exit code (1 by default) if specs
         #   failed.
         def run_specs(example_groups)
-          RSpec::Abq.setup_after_specs_loaded!
-          return if RSpec.world.wants_to_quit
           examples_count = @world.example_count(example_groups)
           examples_passed = @configuration.reporter.report(examples_count) do |reporter|
             @configuration.with_suite_hooks do

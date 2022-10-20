@@ -1,26 +1,19 @@
+require "set"
 module RSpec
   module Abq
     # A module for abstracting ABQ Manifest
     module Manifest
-      # @visibility private
-      ABQ_GENERATE_MANIFEST = "ABQ_GENERATE_MANIFEST"
-
-      # returns true if ABQ wants a manifest
-      def self.should_write_manifest?
-        !!ENV[ABQ_GENERATE_MANIFEST]
-      end
-
       # writes manifest to abq socket
-      def self.write_manifest(ordered_groups)
-        Abq.protocol_write(generate(ordered_groups))
+      def self.write_manifest(ordered_groups, random_seed, registry)
+        Abq.protocol_write(generate(ordered_groups, random_seed, registry))
       end
 
       # Generates an ABQ Manifest
       # @param ordered_groups [Array<RSpec::Core::ExampleGroup>] ordered groups to assemble into a manifest
-      def self.generate(ordered_groups)
-        # TODO: write ordering to manifest meta
+      def self.generate(ordered_groups, random_seed, registry)
         {
           manifest: {
+            init_meta: RSpec::Abq::Ordering.to_meta(random_seed, registry),
             members: ordered_groups.map { |group| to_manifest_group(group) }.compact
           }
         }
