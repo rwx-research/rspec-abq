@@ -39,7 +39,7 @@ jobs:
           ruby-version: 3.1.0
           bundler-cache: true
       - run: |
-          bundle exec rspec spec \
+          bundle exec rspec spec spec_fixtures \
             --format json --out tmp/rspec.json \
             --format documentation
       - name: Upload test results to Captain
