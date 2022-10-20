@@ -72,7 +72,7 @@ jobs:
           fi
   abq-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 1
     steps:
       - name: Download abq
         run: |
@@ -96,7 +96,7 @@ jobs:
           ABQ_API_KEY: ${{ secrets.ABQ_API_KEY }}
   abq-work:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 1
     strategy:
       fail-fast: false
       matrix:
