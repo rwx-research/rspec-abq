@@ -39,9 +39,10 @@ jobs:
           ruby-version: 3.1.0
           bundler-cache: true
       - run: |
-          bundle exec rspec spec spec_fixtures \
+          bundle exec rspec --pattern 'spec/**/*_spec.rb' \
             --format json --out tmp/rspec.json \
             --format documentation
+      - run: bundle exec rspec --pattern "spec/**/*_spec.rb" \
       - name: Upload test results to Captain
         uses: rwx-research/upload-captain-artifact@v1
         if: always()
