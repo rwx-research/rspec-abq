@@ -60,8 +60,9 @@ module RSpec
       # this should disable persisting_example_statuses
 
       message = protocol_read
-      if message.key?("init_meta")
-        Ordering.setup!(message['init_meta'], RSpec.configuration)
+      init_message = message['init_meta']
+      if init_message
+        Ordering.setup!(init_message, RSpec.configuration)
         protocol_write(INIT_SUCCESS_MESSAGE)
         fetch_next_example
       else
