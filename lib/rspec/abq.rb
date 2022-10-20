@@ -42,6 +42,7 @@ module RSpec
     end
 
     def self.setup_after_specs_loaded!
+      RSpec.configuration.example_status_persistence_file_path = nil
       if RSpec::Abq::Manifest.should_write_manifest?
         RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry)
         # TODO: why can't we just exit(0) here?
@@ -53,7 +54,6 @@ module RSpec
 
       RSpec.configuration.color_mode = :on
       # this should disable persisting_example_statuses
-      RSpec.configuration.example_status_persistence_file_path = nil
 
       message = protocol_read
       if message.key?("init_message")
