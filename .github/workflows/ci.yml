@@ -39,7 +39,7 @@ jobs:
           ruby-version: 3.1.0
           bundler-cache: true
       - run: |
-          bundle exec rspec \
+          bundle exec rspec spec \
             --format json --out tmp/rspec.json \
             --format documentation
       - name: Upload test results to Captain
@@ -95,7 +95,7 @@ jobs:
           rm -f abq.tar.gz
           popd
       - name: start abq test
-        run: abq test --reporter dot -- bundle exec rspec
+        run: abq test --reporter dot -- bundle exec rspec spec spec_fixtures
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
           ABQ_API_KEY: ${{ secrets.ABQ_API_KEY }}
