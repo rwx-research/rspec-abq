@@ -124,7 +124,7 @@ jobs:
           test -x abq
           rm -f abq.tar.gz
           popd
-      - name: start abq test
+      - name: start abq work
         run: abq work
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
