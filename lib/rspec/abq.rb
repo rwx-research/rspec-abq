@@ -102,9 +102,6 @@ module RSpec
       end
     end
 
-    UnsupportedOrderingClassError = Class.new(StandardError)
-    AbqInitFailed = Class.new(StandardError)
-
     # Creates the socket to communicate with the worker and sends the worker the protocol
     # @visibility private
     def self.socket
