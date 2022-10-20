@@ -52,10 +52,16 @@ module RSpec
       end
 
       RSpec.configuration.color_mode = :on
-      # disable persisting_example_statuses
+      # this should disable persisting_example_statuses
       RSpec.configuration.example_status_persistence_file_path = nil
-      # TODO: read manifest before fetching first example
-      fetch_next_example
+
+      message = protocol_read
+      if message.key?("init_message")
+        configure_from_manifest_init_meta(message)
+        fetch_next_example
+      else
+        fetch_next_example(message)
+      end
     end
 
     UnsupportedOrderingClassError = Class.new(StandardError)
@@ -65,15 +71,9 @@ module RSpec
     def self.socket
       @socket ||= TCPSocket.new(*ENV[ABQ_SOCKET].split(":")).tap do |socket|
         protocol_write(PROTOCOL_VERSION_MESSAGE, socket)
-        break socket if Manifest.should_write_manifest?
-
-        init_message = protocol_read(socket)
-        fail(AbqConnBroken, "connection broken during initialization") if init_message == :abq_done
-        fail(AbqInitFailed, "Didn't receive an init message from abq") unless init_message.key?("init_meta")
-
-        Ordering.setup!(init_message["init_meta"], RSpec.configuration)
       end
     end
+
 
     # disables tests so we can compare runtime of rspec core vs parallelized version
     def self.disable_tests_when_run_by_abq?
@@ -96,9 +96,16 @@ module RSpec
       attr_reader :target_test_case
     end
 
+    def self.configure_from_manifest_init_meta!(message)
+      fail(AbqConnBroken, "connection broken during initialization") if message == :abq_done
+      fail(AbqInitFailed, "Didn't receive an init message from abq") unless message.key?("init_meta")
+
+      Ordering.setup!(message["init_meta"], RSpec.configuration)
+      protocol_write(INIT_SUCCESS_MESSAGE)
+    end
+
     # pulls next example from abq and sets it to #target_test_case
-    def self.fetch_next_example
-      message = protocol_read
+    def self.fetch_next_example(message = protocol_read)
       @target_test_case =
         if message == :abq_done
           TestCase.end_marker
