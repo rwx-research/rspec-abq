@@ -56,8 +56,9 @@ module RSpec
       # this should disable persisting_example_statuses
 
       message = protocol_read
-      if message.key?("init_message")
-        configure_from_manifest_init_meta(message)
+      if message.key?("init_meta")
+        Ordering.setup!(message['init_meta'], RSpec.configuration)
+        protocol_write(INIT_SUCCESS_MESSAGE)
         fetch_next_example
       else
         fetch_next_example(message)
@@ -94,14 +95,6 @@ module RSpec
 
     class << self
       attr_reader :target_test_case
-    end
-
-    def self.configure_from_manifest_init_meta!(message)
-      fail(AbqConnBroken, "connection broken during initialization") if message == :abq_done
-      fail(AbqInitFailed, "Didn't receive an init message from abq") unless message.key?("init_meta")
-
-      Ordering.setup!(message["init_meta"], RSpec.configuration)
-      protocol_write(INIT_SUCCESS_MESSAGE)
     end
 
     # pulls next example from abq and sets it to #target_test_case
