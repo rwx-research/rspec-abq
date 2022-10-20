@@ -6,6 +6,7 @@ module RSpec
         RSpec::Core::ExampleGroup.extend(ExampleGroup)
         RSpec::Core::Runner.prepend(Runner)
       end
+
       module ExampleGroup
         # @private
         # ExampleGroups are nodes in a tree with

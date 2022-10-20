@@ -60,7 +60,7 @@ module RSpec
       # this should disable persisting_example_statuses
 
       message = protocol_read
-      init_message = message['init_meta']
+      init_message = message["init_meta"]
       if init_message
         Ordering.setup!(init_message, RSpec.configuration)
         protocol_write(INIT_SUCCESS_MESSAGE)
@@ -79,7 +79,6 @@ module RSpec
         protocol_write(PROTOCOL_VERSION_MESSAGE, socket)
       end
     end
-
 
     # disables tests so we can compare runtime of rspec core vs parallelized version
     def self.disable_tests_when_run_by_abq?
