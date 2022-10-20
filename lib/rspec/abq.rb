@@ -2,11 +2,12 @@ require "set"
 require "rspec/core"
 require "socket"
 require "json"
-require_relative "abq/version"
-require_relative "abq/manifest"
-require_relative "abq/test_case"
-require_relative "abq/reporter"
 require_relative "abq/extensions"
+require_relative "abq/manifest"
+require_relative "abq/ordering"
+require_relative "abq/reporter"
+require_relative "abq/test_case"
+require_relative "abq/version"
 
 module RSpec
   # An abq adapter for RSpec!
@@ -42,7 +43,7 @@ module RSpec
 
     def self.setup_after_specs_loaded!
       if RSpec::Abq::Manifest.should_write_manifest?
-        RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry.fetch(:global))
+        RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry)
         # TODO: why can't we just exit(0) here?
         RSpec.world.wants_to_quit = true
         RSpec.configuration.error_exit_code = 0
@@ -57,35 +58,20 @@ module RSpec
       fetch_next_example
     end
 
-    class UnsupportedOrderingClassError < StandardError; end
+    UnsupportedOrderingClassError = Class.new(StandardError)
+    AbqInitFailed = Class.new(StandardError)
 
     # the socket to communicate with ABQ worker
     def self.socket
       @socket ||= TCPSocket.new(*ENV[ABQ_SOCKET].split(":")).tap do |socket|
         protocol_write(PROTOCOL_VERSION_MESSAGE, socket)
-
         break socket if Manifest.should_write_manifest?
 
         init_message = protocol_read(socket)
         fail(AbqConnBroken, "connection broken during initialization") if init_message == :abq_done
+        fail(AbqInitFailed, "Didn't receive an init message from abq") unless init_message.key?("init_meta")
 
-        seed, ordering_class_name = init_message["init_meta"].values_at("seed", "ordering_class")
-        RSpec.configuration.seed = seed
-        registry = RSpec.configuration.ordering_registry
-        registry.register(:global, registry.fetch(
-          case ordering_class_name
-          when "RSpec::Core::Ordering::Identity"
-            :defined
-          when "RSpec::Core::Ordering::RecentlyModified"
-            :recently_modified
-          when "RSpec::Core::Ordering::Random"
-            :random
-          else
-            fail(UnsupportedOrderingClassError, "can't order based on unknown ordering class: #{ordering_class}")
-          end
-        ))
-
-        protocol_write(INIT_SUCCESS_MESSAGE, socket)
+        Ordering.setup!(init_message["init_meta"], RSpec.configuration)
       end
     end
 
