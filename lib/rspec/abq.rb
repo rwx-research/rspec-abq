@@ -45,7 +45,16 @@ module RSpec
     # Whether this rspec process is running in ABQ mode.
     # @return [Boolean]
     def self.enabled?(env = ENV)
-      env.key?(ABQ_SOCKET) && (!env.key?(ABQ_RSPEC_PID) || env[ABQ_RSPEC_PID] == Process.pid.to_s)
+      env.key?(ABQ_SOCKET) && # this is the basic check for rspec being called from an abq worker
+        (!env.key?(ABQ_RSPEC_PID) || env[ABQ_RSPEC_PID] == Process.pid.to_s) # and this check ensures that any _nested_ processes do not communicate with the worker.
+    end
+
+    # Disables tests so we can compare runtime of rspec core vs parallelized version. Additionally, disables tests
+    # if forced via ABQ_DISABLE_TESTS env var.
+    # @return [Boolean]
+    def self.disable_tests_when_run_by_abq?
+      enabled? ||
+        ENV.key?("ABQ_DISABLE_TESTS")
     end
 
     # This is the main entry point for abq-rspec, and it's called when the gem is loaded
@@ -56,12 +65,9 @@ module RSpec
       Extensions.setup!
     end
 
-    def self.setup?
-      !!ENV[ABQ_RSPEC_PID]
-    end
-
+    # @visisbility private
+    # @return [Boolean]
     def self.setup_after_specs_loaded!
-      return if setup?
       ENV[ABQ_RSPEC_PID] = Process.pid.to_s
       # ABQ doesn't support writing example status to disk yet.
       # in its simple implementation, status persistance write the status of all tests which ends up hanging with under
@@ -72,10 +78,10 @@ module RSpec
       # before abq can start workers, it asks for a manifest
       if !!ENV[ABQ_GENERATE_MANIFEST] # the abq worker will set this env var if it needs a manifest
         RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry)
-        # TODO: why can't we just exit(0) here?
-        RSpec.world.wants_to_quit = true
-        RSpec.configuration.error_exit_code = 0
-        RSpec.world.non_example_failure = true
+        # ... Maybe it's fine to just exit(0)
+        RSpec.world.wants_to_quit = true # ask rspec to exit
+        RSpec.configuration.error_exit_code = 0 # exit without error
+        RSpec.world.non_example_failure = true # exit has nothing to do with tests
         return
       end
 
@@ -108,12 +114,6 @@ module RSpec
       @socket ||= TCPSocket.new(*ENV[ABQ_SOCKET].split(":")).tap do |socket|
         protocol_write(PROTOCOL_VERSION_MESSAGE, socket)
       end
-    end
-
-    # disables tests so we can compare runtime of rspec core vs parallelized version
-    def self.disable_tests_when_run_by_abq?
-      enabled? ||
-        ENV.key?("ABQ_DISABLE_TESTS") # just here to test this
     end
 
     # These are the metadata keys that rspec uses internally on examples and groups
@@ -184,22 +184,14 @@ module RSpec
     end
 
     # sends test results to ABQ and advances by one
-    def self.send_test_result_and_advance
+    # @visibility private
+    def self.send_test_result_and_advance(&block)
       reporter = Reporter.new
-      yield(reporter).tap do
-        test_result = {
-          status: reporter.status,
-          id: reporter.id,
-          display_name: reporter.display_name,
-          output: reporter.output,
-          runtime: reporter.runtime_ms,
-          tags: reporter.tags,
-          meta: reporter.meta
-        }
-        test_result_msg = {test_result: test_result}
-        protocol_write(test_result_msg)
-        fetch_next_example
-      end
+      test_succeeded = block.call(reporter)
+      protocol_write(reporter.abq_result)
+      fetch_next_example
+      # return whether the test succeeded or not
+      test_succeeded
     end
   end
 end
