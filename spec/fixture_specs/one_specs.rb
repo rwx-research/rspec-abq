@@ -1,3 +1,4 @@
+require 'spec_helper'
 # called `_specs.rb` to avoid it being called automatically
 # used by integration/abq_spec.rb
 RSpec.describe 'group 1' do
