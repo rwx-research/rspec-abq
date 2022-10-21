@@ -1,0 +1,39 @@
+#!/bin/bash
+set -Eeuo pipefail
+
+# borrowed from
+# https://github.com/rspec/rspec-core/blob/71823ba11ec17a73b25bdc24ebab195494c270dc/script/functions.sh#L149-L183
+
+echo "bundle exec yard stats --list-undoc"
+
+bundle exec yard stats --list-undoc | ruby -e "
+  while line = gets
+    has_warnings ||= line.start_with?('[warn]:')
+    coverage ||= line[/([\d\.]+)% documented/, 1]
+    puts line
+  end
+
+  unless Float(coverage) == 100
+    puts \"\n\nMissing documentation coverage (currently at #{coverage}%)\"
+    exit(1)
+  end
+
+  if has_warnings
+    puts \"\n\nYARD emitted documentation warnings.\"
+    exit(1)
+  end
+"
+
+# Some warnings only show up when generating docs, so do that as well.
+bundle exec yard doc --no-cache | ruby -e "
+  while line = gets
+    has_warnings ||= line.start_with?('[warn]:')
+    has_errors   ||= line.start_with?('[error]:')
+    puts line
+  end
+
+  if has_warnings || has_errors
+    puts \"\n\nYARD emitted documentation warnings or errors.\"
+    exit(1)
+  end
+"

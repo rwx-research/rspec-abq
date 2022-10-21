@@ -59,6 +59,9 @@ GEM
       rubocop (= 1.35.1)
       rubocop-performance (= 1.14.3)
     unicode-display_width (2.3.0)
+    webrick (1.7.0)
+    yard (0.9.28)
+      webrick (~> 1.7.0)
 
 PLATFORMS
   x86_64-darwin-21
@@ -74,6 +77,7 @@ DEPENDENCIES
   rubocop-rake
   rubocop-rspec
   standard
+  yard
 
 BUNDLED WITH
    2.3.24
