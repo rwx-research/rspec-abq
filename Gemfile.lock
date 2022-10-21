@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     rspec-abq (0.1.0)
-      rspec-core (~> 3.0)
+      rspec-core (~> 3.11.0)
 
 GEM
   remote: https://rubygems.org/
