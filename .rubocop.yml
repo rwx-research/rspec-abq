@@ -13,7 +13,7 @@ AllCops:
   Exclude:
     - '.git/**/*'
     - 'vendor/**/*' # where github action stores cached bundle
-    - 'spec/abq/**/*'
+    - 'spec/fixture_specs/**/*'
 
 RSpec/DescribedClass:
   EnforcedStyle: explicit
