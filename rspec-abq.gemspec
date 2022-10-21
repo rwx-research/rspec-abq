@@ -13,13 +13,12 @@ Gem::Specification.new do |spec|
   spec.homepage = "https://github.com/rwx-research/rspec-abq"
   spec.license = "MIT"
   spec.metadata = {
-    "homepage_uri" => spec.homepage
-    'bug_tracker_uri'   => 'https://github.com/rwx-research/rspec-abq/issues',
-    'changelog_uri'     => "https://github.com/rwx-research/rspec-abq/releases",
-    'documentation_uri' => 'https://rwx-research.github.io/rspec-abq/',
-    'source_code_uri'   => "https://github.com/rwx-research/rspec-abq",
+    "homepage_uri" => spec.homepage,
+    "bug_tracker_uri" => "https://github.com/rwx-research/rspec-abq/issues",
+    "changelog_uri" => "https://github.com/rwx-research/rspec-abq/releases",
+    "documentation_uri" => "https://rwx-research.github.io/rspec-abq/",
+    "source_code_uri" => "https://github.com/rwx-research/rspec-abq"
   }
-
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files` loads the files in the RubyGem that have been added into git.
