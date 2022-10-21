@@ -82,7 +82,7 @@ module RSpec
         RSpec.world.wants_to_quit = true # ask rspec to exit
         RSpec.configuration.error_exit_code = 0 # exit without error
         RSpec.world.non_example_failure = true # exit has nothing to do with tests
-        return
+        return true
       end
 
       # after the manfiest has been sent to the worker, the rspec process will quit and the workers will each start a
@@ -107,6 +107,7 @@ module RSpec
         # deterministic seed to all workers.
         fetch_next_example(message)
       end
+      nil
     end
 
     # Creates the socket to communicate with the worker and sends the worker the protocol
