@@ -9,27 +9,28 @@ require_relative "abq/reporter"
 require_relative "abq/test_case"
 require_relative "abq/version"
 
+# We nest our patch into RSpec's module -- why not?
 module RSpec
   # An abq adapter for RSpec!
   module Abq
     # the socket used to communicate to the abq worker
     # looks like "ip.address.3.4:port" e.g. "0.0.0.0:1234"
-    # @visibility private
+    # @!visibility private
     ABQ_SOCKET = "ABQ_SOCKET"
 
     # the abq worker will set this environmental variable if it needs this process to generate a manifest
-    # @visibility private
+    # @!visibility private
     ABQ_GENERATE_MANIFEST = "ABQ_GENERATE_MANIFEST"
 
     # this is set by the outer-most rspec runner to ensure nested rspecs aren't ABQ aware.
     # if we ever want nested ABQ rspec, we'll need to change this.
     # this env var is unrelated to the abq worker!
-    # @visibility private
+    # @!visibility private
     ABQ_RSPEC_PID = "ABQ_RSPEC_PID"
 
     # The [ABQ protocol version message](https://www.notion.so/rwx/ABQ-Worker-Native-Test-Runner-IPC-Interface-0959f5a9144741d798ac122566a3d887#8587ee4fd01e41ec880dcbe212562172).
     # Must be sent to ABQ_SOCKET on startup.
-    # @visibility private
+    # @!visibility private
     PROTOCOL_VERSION_MESSAGE = {
       type: "abq_protocol_version",
       major: 0,
@@ -39,7 +40,7 @@ module RSpec
     # The [ABQ initialization success
     # message](https://www.notion.so/rwx/ABQ-Worker-Native-Test-Runner-IPC-Interface-0959f5a9144741d798ac122566a3d887#538582a3049f4934a5cb563d815c1247)
     # Must be sent after receiving the ABQ initialization message.
-    # @visibility private
+    # @!visibility private
     INIT_SUCCESS_MESSAGE = {}
 
     # Whether this rspec process is running in ABQ mode.
@@ -58,14 +59,14 @@ module RSpec
     end
 
     # This is the main entry point for abq-rspec, and it's called when the gem is loaded
-    # @visisbility private
+    # @!visibility private
     # @return [void]
     def self.setup!
       return unless enabled?
       Extensions.setup!
     end
 
-    # @visisbility private
+    # @!visibility private
     # @return [Boolean]
     def self.setup_after_specs_loaded!
       ENV[ABQ_RSPEC_PID] = Process.pid.to_s
@@ -111,7 +112,7 @@ module RSpec
     end
 
     # Creates the socket to communicate with the worker and sends the worker the protocol
-    # @visibility private
+    # @!visibility private
     def self.socket
       @socket ||= TCPSocket.new(*ENV[ABQ_SOCKET].split(":")).tap do |socket|
         protocol_write(PROTOCOL_VERSION_MESSAGE, socket)
@@ -120,13 +121,13 @@ module RSpec
 
     # These are the metadata keys that rspec uses internally on examples and groups
     # When we want to report custom tags that rspec-users write, we need to remove these from the example metadata
-    # @visibility private
+    # @!visibility private
     RESERVED_METADATA_KEYS = Set.new(RSpec::Core::Metadata::RESERVED_KEYS + [:if, :unless])
 
     # Takes group or example metadata and returns a two-element array:
     # a tag is any piece of metadata that has a value of true
-    # @returns [Array<Array<Symbol>, Hash<Symbol, Object>>] tags and metadata
-    # @visibility private
+    # @return [Array<Array<Symbol>, Hash<Symbol, Object>>] tags and metadata
+    # @!visibility private
     def self.extract_metadata_and_tags(metadata)
       # we use `.dup.reject! because `.reject` raises a warning (because it doesn't dup procs)`
       user_metadata = metadata.dup.reject! { |k, _v| RESERVED_METADATA_KEYS.include?(k) }
@@ -136,12 +137,12 @@ module RSpec
 
     class << self
       # the target_test_case is the test case the abq worker wants results for
-      # @visibility private
+      # @!visibility private
       attr_reader :target_test_case
     end
 
     # pulls next example from the abq worker and sets it to #target_test_case
-    # @visibility private
+    # @!visibility private
     def self.fetch_next_example(message = protocol_read)
       @target_test_case =
         if message == :abq_done
@@ -186,7 +187,7 @@ module RSpec
     end
 
     # sends test results to ABQ and advances by one
-    # @visibility private
+    # @!visibility private
     def self.send_test_result_and_advance(&block)
       reporter = Reporter.new
       test_succeeded = block.call(reporter)

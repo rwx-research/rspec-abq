@@ -1,20 +1,21 @@
 module RSpec
   module Abq
+    # A few extensions to RSpec::Core classes to hook in abq
     module Extensions
+      # adds our functionality to RSpec::Core::Configuration
+      # @!visibility private
       def self.setup!
         RSpec::Core::ExampleGroup.extend(ExampleGroup)
         RSpec::Core::Runner.prepend(Runner)
       end
 
+      # ExampleGroups are nodes in a tree with
+      # - a (potentially empty) list of Examples (the value of the node)
+      # - AND a (potentialy empty) list of children ExampleGroups (... the ... children ... are the children of the
+      #   node 😅)
+      # ExampleGroups are defined by `context` and `describe` in the RSpec DSL
+      # Examples are defined dby `it` RSpec DSL
       module ExampleGroup
-        # @private
-        # ExampleGroups are nodes in a tree with
-        # - a (potentially empty) list of Examples (the value of the node)
-        # - AND a (potentialy empty) list of children ExampleGroups (... the ... children ... are the children of the
-        #   node 😅)
-        # ExampleGroups are defined by `context` and `describe` in the RSpec DSL
-        # Examples are defined dby `it` RSpec DSL
-        #
         # This method
         # - iterates over the current ExampleGroup's Examples to find the Example that is the same as
         #   Abq.target_test_case
@@ -91,6 +92,7 @@ module RSpec
         end
       end
 
+      # Runner is class responsbile for execution in RSpec
       module Runner
         # Runs the provided example groups.
         #

@@ -1,9 +1,15 @@
 module RSpec
   module Abq
+    # This module is responsible for recording ordering for the manifest
+    # and reading the ordering from `init_meta` to set up the current processes settings
     module Ordering
+      # notably: we don't support custom orderings
       SUPPORTED_ORDERINGS = [:defined, :recently_modified, :random]
+
+      # Raised when we experience an ordering that doesn't exist in SUPPORTED_ORDERINGS
       UnsupportedOrderingError = Class.new(StandardError)
 
+      # takes a seed and a registry and produces a hash for the manifest
       def self.to_meta(seed, registry)
         global_ordering = registry.fetch(:global)
         ordering_name = SUPPORTED_ORDERINGS.find { |name| registry.fetch(name) == global_ordering }
@@ -14,6 +20,7 @@ module RSpec
         }
       end
 
+      # takes the meta (prodced in .to_meta) and applies the settings to the current process
       def self.setup!(init_meta, configuration)
         configuration.seed = init_meta["seed"]
         registry = configuration.ordering_registry
