@@ -1,5 +1,3 @@
-require "json"
-
 # rubocop:disable RSpec/ExampleLength
 RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
   host = "127.0.0.1"
