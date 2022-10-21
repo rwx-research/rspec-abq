@@ -4,7 +4,7 @@ require_relative "lib/rspec/abq/version"
 
 Gem::Specification.new do |spec|
   spec.name = "rspec-abq"
-  spec.version = Rspec::Abq::VERSION
+  spec.version = RSpec::Abq::VERSION
   spec.authors = ["Ayaz Hafiz", "Michael Glass"]
   spec.email = ["ayaz@rwx.com", "me@rwx.com"]
 

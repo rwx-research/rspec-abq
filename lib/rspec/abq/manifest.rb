@@ -19,7 +19,7 @@ module RSpec
         }
       end
 
-      # @visibility private
+      # @!visibility private
       # @param group [RSpec::Core::ExampleGroup]
       private_class_method def self.to_manifest_group(group)
         # NB: It's important to write examples first and then children groups,
