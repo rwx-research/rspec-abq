@@ -16,3 +16,4 @@ gem "rubocop-rake", require: false
 gem "rubocop-rspec", require: false
 gem "standard", require: false
 gem "yard", require: false
+gem "gem-release", require: false
