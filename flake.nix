@@ -18,6 +18,7 @@
         packages = with pkgs; [
           ruby_3_1 # locked to 3.1.2p20, with bundler 2.3.19
           git # locked to 2.36.2
+          gh # github cli, used by release_gem.rb
         ];
       };
     });
