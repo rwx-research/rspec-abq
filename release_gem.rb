@@ -4,6 +4,13 @@ require_relative "lib/rspec/abq/version"
 require "tempfile"
 require "yaml"
 
+def run_and_print(cmd)
+  puts "$ #{cmd}"
+  puts `#{cmd}`
+end
+
+GEM_NAME = "rspec-abq"
+
 gh_auth_path = "#{ENV["HOME"]}/.config/gh/hosts.yml"
 
 github_token = File.exist?(gh_auth_path) && YAML.load_file(gh_auth_path).dig("github.com", "oauth_token")
@@ -20,24 +27,31 @@ unless github_token
   end
 end
 
+unless system("gem signin --silent")
+  puts "you aren't signed into rubygems. Please sign in ..."
+  exec("gem signin")
+end
+
 unless `git status --porcelain`.empty?
   puts "Uncommitted changes found. Please commit or stash. Aborting."
   exit(1)
 end
 
-GEM_NAME = "rspec-abq"
 puts "💎releasing a new version of version of #{GEM_NAME}!💎"
 
 latest_released_version = `gem info -r #{GEM_NAME}`.match(/\((\d+[^)]+)\)/) & [1]
 if latest_released_version
   puts "latest released version is #{latest_released_version}"
+  puts `gem owner #{GEM_NAME}`
+  puts "are you one of the owners? (y/n): "
+  if gets.chomp.downcase != "y"
+    puts "please ask one of the owners for access
+    they can add you with `gem owner rspec-abq your@email.com`
+    "
+    exit(1)
+  end
 else
   puts "no released version yet! Welcome to the illustrious world of gem publishing"
-end
-
-def run_and_print(cmd)
-  puts "$ #{cmd}"
-  puts `#{cmd}`
 end
 
 VERSION_PROMPT = <<~VERSION_PROMPT
@@ -93,6 +107,9 @@ Tempfile.create do |f|
 
   `#{ENV["VISUAL"] || ENV["EDITOR"] || "nano"} #{f.path}`
   f.rewind
+
+  puts "if you have a rubygems OTP, please insert it now (or just press enter): "
+  ENV["GEM_HOST_OTP_CODE"] = gets.chomp
 
   run_and_print("gem release --token #{github_token} --github --description '$(<#{f.path})'")
 end
