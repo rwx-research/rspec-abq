@@ -17,7 +17,8 @@ Gem::Specification.new do |spec|
     "bug_tracker_uri" => "https://github.com/rwx-research/rspec-abq/issues",
     "changelog_uri" => "https://github.com/rwx-research/rspec-abq/releases",
     "documentation_uri" => "https://rwx-research.github.io/rspec-abq/",
-    "source_code_uri" => "https://github.com/rwx-research/rspec-abq"
+    "source_code_uri" => "https://github.com/rwx-research/rspec-abq",
+    "rubygems_mfa_required" => "true"
   }
 
   # Specify which files should be added to the gem when it is released.
