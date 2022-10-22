@@ -39,7 +39,7 @@ end
 
 puts "💎releasing a new version of version of #{GEM_NAME}!💎"
 
-latest_released_version = `gem info -r #{GEM_NAME}`.match(/\((\d+[^)]+)\)/) & [1]
+latest_released_version = `gem info -r #{GEM_NAME}`.match(/\((\d+[^)]+)\)/)&.[](1)
 if latest_released_version
   puts "latest released version is #{latest_released_version}"
   puts `gem owner #{GEM_NAME}`
@@ -108,10 +108,20 @@ Tempfile.create do |f|
   `#{ENV["VISUAL"] || ENV["EDITOR"] || "nano"} #{f.path}`
   f.rewind
 
-  puts "if you have a rubygems OTP, please insert it now (or just press enter): "
-  ENV["GEM_HOST_OTP_CODE"] = gets.chomp
+  puts "please enter your rubygems OTP"
+  otp = gets.chomp
+  until otp =~ /^\d{6}$/
+    puts "otp is the wrong format"
+    otp = gets.chomp
+  end
 
-  run_and_print("gem release --token #{github_token} --github --description '$(<#{f.path})'")
+  ENV["GEM_HOST_OTP_CODE"] = otp
+
+  run_and_print(%{gem release --token #{github_token} --github --description "$(<#{f.path})"})
 end
 
-puts "🎉 released! 🎉"
+if $?.success?
+  puts "🎉 released! 🎉"
+else
+  puts "💣 something might have gone wrong ... 🧨"
+end
