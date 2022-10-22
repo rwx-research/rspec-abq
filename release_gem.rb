@@ -39,7 +39,7 @@ end
 
 puts "💎releasing a new version of version of #{GEM_NAME}!💎"
 
-latest_released_version = `gem info -r #{GEM_NAME}`.match(/\((\d+[^)]+)\)/) & [1]
+latest_released_version = `gem info -r #{GEM_NAME}`.match(/\((\d+[^)]+)\)/)&.[](1)
 if latest_released_version
   puts "latest released version is #{latest_released_version}"
   puts `gem owner #{GEM_NAME}`
@@ -110,7 +110,7 @@ Tempfile.create do |f|
 
   puts "please enter your rubygems OTP"
   otp = gets.chomp
-  until otp.match(/^\d{6}$/)
+  until otp =~ /^\d{6}$/
     puts "otp is the wrong format"
     otp = gets.chomp
   end
