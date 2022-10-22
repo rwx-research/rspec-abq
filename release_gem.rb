@@ -117,7 +117,7 @@ Tempfile.create do |f|
 
   ENV["GEM_HOST_OTP_CODE"] = otp
 
-  run_and_print("gem release --token #{github_token} --github --description '$(<#{f.path})'")
+  run_and_print(%{gem release --token #{github_token} --github --description "$(<#{f.path})"})
 end
 
 if $?.success?
