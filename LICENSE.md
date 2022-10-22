@@ -1,4 +1,4 @@
-The MIT License (MIT)
+# MIT LICENSE
 
 Copyright (c) 2022 RWX Research
 
