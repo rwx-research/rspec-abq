@@ -37,6 +37,11 @@ unless `git status --porcelain`.empty?
   exit(1)
 end
 
+unless `git branch --show-current`.chomp == "main"
+  puts "Can only release the gem from the main branch"
+  exit(1)
+end
+
 puts "💎releasing a new version of version of #{GEM_NAME}!💎"
 
 latest_released_version = `gem info -r #{GEM_NAME}`.match(/\((\d+[^)]+)\)/)&.[](1)
