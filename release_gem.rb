@@ -18,11 +18,12 @@ github_token = File.exist?(gh_auth_path) && YAML.load_file(gh_auth_path).dig("gi
 unless github_token
   if `which gh`.empty?
     puts "this script requires github cli to function. Installing...\n"
-    `brew install gh`
+    run_and_print("brew install gh")
   end
 
   unless system("gh auth status")
     puts "you need to auth with the github before running this script...\n"
+    # exec yields the ruby process so that `gh auth login` is automatic
     exec("gh auth login")
   end
 end
@@ -37,16 +38,21 @@ unless `git status --porcelain`.empty?
   exit(1)
 end
 
+unless `git branch --show-current`.chomp == "main"
+  puts "Can only release the gem from the main branch"
+  exit(1)
+end
+
 puts "💎releasing a new version of version of #{GEM_NAME}!💎"
 
 latest_released_version = `gem info -r #{GEM_NAME}`.match(/\((\d+[^)]+)\)/)&.[](1)
 if latest_released_version
   puts "latest released version is #{latest_released_version}"
-  puts `gem owner #{GEM_NAME}`
+  run_and_print "gem owner #{GEM_NAME}"
   puts "are you one of the owners? (y/n): "
   if gets.chomp.downcase != "y"
     puts "please ask one of the owners for access
-    they can add you with `gem owner rspec-abq your@email.com`
+    they can add you with `gem owner rspec-abq an@email.com`
     "
     exit(1)
   end
