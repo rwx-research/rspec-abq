@@ -56,20 +56,9 @@ jobs:
   nixfmt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: cachix/install-nix-action@v18
-      - run: nix fmt
-      - run: |
-          git_leftovers=$(git status --porcelain)
-          if [ -z $git_leftovers ]
-          then
-            echo "✅ nix fmt didn't change anything"
-          else
-            echo "❌ unformatted changes left behind"
-            git diff
-            git status --porcelain
-            exit 1
-          fi
+      - run: nix fmt -- --check flake.nix
   abq-test:
     runs-on: ubuntu-latest
     timeout-minutes: 1
