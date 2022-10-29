@@ -66,11 +66,14 @@ module RSpec
       Extensions.setup!
     end
 
+    # raised if we try to load rspec-abq twice
+    # perhaps RSpec or a plugin has changed behavior to break assumptions we've made with rspec-abq
+    AbqLoadedTwiceError = Class.new(StandardError)
+
     # @!visibility private
     # @return [Boolean]
-    NestedAbqError = Class.new(StandardError)
     def self.setup_after_specs_loaded!
-      fail NestedAbqError, "tried to setup abq-rspec twice" if ENV[ABQ_RSPEC_PID]
+      fail AbqLoadedTwiceError, "tried to setup abq-rspec twice" if ENV[ABQ_RSPEC_PID]
       ENV[ABQ_RSPEC_PID] ||= Process.pid.to_s
 
       # ABQ doesn't support writing example status to disk yet.

@@ -22,7 +22,7 @@ RSpec.describe RSpec::Abq do
 
     it "prevents being called twice" do
       RSpec::Abq.setup_after_specs_loaded!
-      expect { RSpec::Abq.setup_after_specs_loaded! }.to raise_error(RSpec::Abq::NestedAbqError)
+      expect { RSpec::Abq.setup_after_specs_loaded! }.to raise_error(RSpec::Abq::AbqLoadedTwiceError)
     end
 
     it "if the env var is set, it writes the manifest and quites", :aggregate_failures do
