@@ -68,8 +68,11 @@ module RSpec
 
     # @!visibility private
     # @return [Boolean]
+    NestedAbqError = Class.new(StandardError)
     def self.setup_after_specs_loaded!
-      ENV[ABQ_RSPEC_PID] = Process.pid.to_s
+      fail NestedAbqError, "tried to setup abq-rspec twice" if ENV[ABQ_RSPEC_PID]
+      ENV[ABQ_RSPEC_PID] ||= Process.pid.to_s
+
       # ABQ doesn't support writing example status to disk yet.
       # in its simple implementation, status persistance write the status of all tests which ends up hanging with under
       # abq because we haven't run most of the tests in this worker. (maybe it's running the tests?). In any case:
