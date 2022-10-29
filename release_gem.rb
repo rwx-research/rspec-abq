@@ -38,11 +38,6 @@ unless `git status --porcelain`.empty?
   exit(1)
 end
 
-unless `git branch --show-current`.chomp == "main"
-  puts "Can only release the gem from the main branch"
-  exit(1)
-end
-
 puts "💎releasing a new version of version of #{GEM_NAME}!💎"
 
 latest_released_version = `gem info -r #{GEM_NAME}`.match(/\((\d+[^)]+)\)/)&.[](1)
@@ -59,6 +54,8 @@ if latest_released_version
 else
   puts "no released version yet! Welcome to the illustrious world of gem publishing"
 end
+
+current_branch = `git branch --show-current`.chomp
 
 VERSION_PROMPT = <<~VERSION_PROMPT
   🔢version in `RSpec::Abq::VERSION is the same as the latest version.
@@ -87,7 +84,25 @@ if version_to_release == latest_released_version
   when "3"
     ["major", [major + 1, minor, patch + 1].join(".")]
   end
+
+  if current_branch == "main"
+    puts "Can't commit directly to main, opening a new branch"
+    run_and_print("git checkout --branch prep-for-#{version_to_release}")
+  end
+
   run_and_print("gem bump --version #{what_to_bump}")
+  run_and_print("bundle install") # update gemfile.lock
+  run_and_print("git add Gemfile.lock")
+  run_and_print("git commit --amend --no-edit")
+  run_and_print("git push origin HEAD")
+  run_and_print('gh pr create --title "prepare release v$next_version" --fill')
+  puts "Now: merge a PR with this version and then continue releasing the gem from the main branch."
+  exit(0)
+end
+
+unless current_branch == "main"
+  puts "Can only release the gem from the main branch"
+  exit(1)
 end
 
 run_and_print("gem tag --push")
