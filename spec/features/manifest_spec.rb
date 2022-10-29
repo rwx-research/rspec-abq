@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/ExampleLength
 RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
   host = "127.0.0.1"
   ordered_manifest = {"manifest" => {"init_meta" => {"ordering" => "defined"}, "members" => [{"members" => [{"id" => "./spec/fixture_specs/one_specs.rb[1:1]", "meta" => {}, "tags" => %w[bar foo], "type" => "test"}, {"id" => "./spec/fixture_specs/one_specs.rb[1:2]", "meta" => {"bar" => 5}, "tags" => ["foo"], "type" => "test"}, {"members" => [{"id" => "./spec/fixture_specs/one_specs.rb[1:3:1]", "meta" => {"skip" => "Temporarily skipped with xit"}, "tags" => ["foo"], "type" => "test"}, {"id" => "./spec/fixture_specs/one_specs.rb[1:3:2]", "meta" => {}, "tags" => ["foo"], "type" => "test"}], "meta" => {}, "name" => "./spec/fixture_specs/one_specs.rb[1:3]", "tags" => ["foo"], "type" => "group"}], "meta" => {}, "name" => "./spec/fixture_specs/one_specs.rb[1]", "tags" => [], "type" => "group"}, {"members" => [{"id" => "./spec/fixture_specs/two_specs.rb[1:2]", "meta" => {}, "tags" => [], "type" => "test"}, {"members" => [{"id" => "./spec/fixture_specs/two_specs.rb[1:3:1]", "meta" => {"skip" => "Temporarily skipped with xdescribe"}, "tags" => [], "type" => "test"}, {"id" => "./spec/fixture_specs/two_specs.rb[1:3:2]", "meta" => {"skip" => "Temporarily skipped with xdescribe"}, "tags" => [], "type" => "test"}], "meta" => {"skip" => "Temporarily skipped with xdescribe"}, "name" => "./spec/fixture_specs/two_specs.rb[1:3]", "tags" => [], "type" => "group"}], "meta" => {}, "name" => "./spec/fixture_specs/two_specs.rb[1]", "tags" => [], "type" => "group"}]}}
@@ -36,5 +35,3 @@ RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_
     expect(manifest["manifest"]["init_meta"]).to eq({"seed" => 2, "ordering" => "random"})
   end
 end
-
-# rubocop:enable RSpec/ExampleLength
