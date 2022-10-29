@@ -1,5 +1,9 @@
 require "socket"
 
+def stringify_keys(hash)
+  hash.map { |k, v| [k.to_s, v.is_a?(Hash) ? stringify_keys(v) : v] }.to_h
+end
+
 RSpec.describe RSpec::Abq do
   describe ".setup_after_specs_loaded!", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
     after { ENV.delete_if { |k, v| k.start_with?("ABQ_") } }
@@ -55,7 +59,7 @@ RSpec.describe RSpec::Abq do
       let(:init_message) { {init_meta: {invalid_but_nonempty: true}} }
 
       it "sets up ordering and starts testing", :aggregate_failures do
-        expect(RSpec::Abq::Ordering).to receive(:setup!)
+        expect(RSpec::Abq::Ordering).to receive(:setup!).with(stringify_keys(init_message[:init_meta]), anything)
         expect(RSpec::Abq).to receive(:fetch_next_example)
         RSpec::Abq.setup_after_specs_loaded!
       end
@@ -67,10 +71,6 @@ RSpec.describe RSpec::Abq do
     let(:server) { TCPServer.new(host, 0) }
     let(:client_sock) { TCPSocket.new(host, server.addr[1]) }
     let(:server_sock) { server.accept }
-
-    def stringify_keys(hash)
-      hash.map { |k, v| [k.to_s, v.is_a?(Hash) ? stringify_keys(v) : v] }.to_h
-    end
 
     before do |example|
       ENV["ABQ_SOCKET"] = "#{host}:#{server.addr[1]}"
