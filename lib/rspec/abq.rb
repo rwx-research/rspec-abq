@@ -66,10 +66,16 @@ module RSpec
       Extensions.setup!
     end
 
+    # raised if we try to load rspec-abq twice
+    # perhaps RSpec or a plugin has changed behavior to break assumptions we've made with rspec-abq
+    AbqLoadedTwiceError = Class.new(StandardError)
+
     # @!visibility private
     # @return [Boolean]
     def self.setup_after_specs_loaded!
-      ENV[ABQ_RSPEC_PID] = Process.pid.to_s
+      fail AbqLoadedTwiceError, "tried to setup abq-rspec twice" if ENV[ABQ_RSPEC_PID]
+      ENV[ABQ_RSPEC_PID] ||= Process.pid.to_s
+
       # ABQ doesn't support writing example status to disk yet.
       # in its simple implementation, status persistance write the status of all tests which ends up hanging with under
       # abq because we haven't run most of the tests in this worker. (maybe it's running the tests?). In any case:
@@ -95,18 +101,12 @@ module RSpec
       # the first message is the init_meta block of the manifest. This is used to share runtime configuration
       # information amongst worker processes. In RSpec, it is used to ensure that random ordering between workers
       # shares the same seed, so can be deterministic.
-      message = protocol_read
-      init_message = message["init_meta"]
-      if init_message
-        protocol_write(INIT_SUCCESS_MESSAGE)
-        # todo: get rid of this unless init_message.empty? as soon as the bug is fixed in abq
-        Ordering.setup!(init_message, RSpec.configuration) unless init_message.empty?
+      init_message = protocol_read
+      protocol_write(INIT_SUCCESS_MESSAGE)
+      # TODO: delete the check for empty init_meta when https://github.com/rwx-research/abq/pull/216 is merged
+      if !init_message["fast_exit"] && init_message["init_meta"].any?
+        Ordering.setup!(init_message["init_meta"], RSpec.configuration)
         fetch_next_example
-      else
-        # to support the old protocol, we don't depend on the initialization method, however we don't support random
-        # ordering via config, only via a shared command line seed. `abq test -- rspec --seed 4` will pass the
-        # deterministic seed to all workers.
-        fetch_next_example(message)
       end
       nil
     end

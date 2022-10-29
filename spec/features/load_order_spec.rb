@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/ExampleLength
 RSpec.describe "load order spec", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
   it "runs when .rspec doesn't load the gem", :aggregate_failures do
     host = "127.0.0.1"
@@ -13,5 +12,3 @@ RSpec.describe "load order spec", unless: RSpec::Abq.disable_tests_when_run_by_a
     expect($?).to be_success
   end
 end
-
-# rubocop:enable RSpec/ExampleLength

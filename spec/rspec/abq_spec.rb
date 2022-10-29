@@ -1,15 +1,76 @@
 require "socket"
 
+def stringify_keys(hash)
+  hash.map { |k, v| [k.to_s, v.is_a?(Hash) ? stringify_keys(v) : v] }.to_h
+end
+
 RSpec.describe RSpec::Abq do
-  context "when using socket communication", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
+  describe ".setup_after_specs_loaded!", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
+    after { ENV.delete_if { |k, v| k.start_with?("ABQ_") } }
+
+    let(:init_message) { {fast_exit: true} }
+
+    before do
+      # stub out socket communication
+      socket_double = instance_double(TCPSocket)
+      allow(socket_double).to receive(:read).with(4)
+      allow(socket_double).to receive(:read) { init_message.to_json }
+      allow(socket_double).to receive(:write)
+
+      allow(RSpec::Abq).to receive(:socket) { socket_double }
+    end
+
+    it "prevents being called twice" do
+      RSpec::Abq.setup_after_specs_loaded!
+      expect { RSpec::Abq.setup_after_specs_loaded! }.to raise_error(RSpec::Abq::AbqLoadedTwiceError)
+    end
+
+    it "if the env var is set, it writes the manifest and quites", :aggregate_failures do
+      ENV[RSpec::Abq::ABQ_GENERATE_MANIFEST] = "true"
+
+      expect(RSpec::Abq::Manifest).to receive(:write_manifest)
+      expect(RSpec.world).to receive(:wants_to_quit=).with(true)
+      expect(RSpec.configuration).to receive(:error_exit_code=).with(0)
+      expect(RSpec.world).to receive(:non_example_failure=).with(true)
+      expect(RSpec::Abq.setup_after_specs_loaded!).to be true
+    end
+
+    context "when the init message empty" do
+      let(:init_message) { {init_meta: {}} }
+
+      it "does nothing", :aggregate_failures do
+        expect(RSpec::Abq::Ordering).not_to receive(:setup)
+        expect(RSpec::Abq).not_to receive(:fetch_next_example)
+        RSpec::Abq.setup_after_specs_loaded!
+      end
+    end
+
+    context "when the init message asks to fast exit" do
+      let(:init_message) { {fast_exit: true} }
+
+      it "does nothing", :aggregate_failures do
+        expect(RSpec::Abq::Ordering).not_to receive(:setup)
+        expect(RSpec::Abq).not_to receive(:fetch_next_example)
+        RSpec::Abq.setup_after_specs_loaded!
+      end
+    end
+
+    context "when the init message is not empty" do
+      let(:init_message) { {init_meta: {invalid_but_nonempty: true}} }
+
+      it "sets up ordering and starts testing", :aggregate_failures do
+        expect(RSpec::Abq::Ordering).to receive(:setup!).with(stringify_keys(init_message[:init_meta]), anything)
+        expect(RSpec::Abq).to receive(:fetch_next_example)
+        RSpec::Abq.setup_after_specs_loaded!
+      end
+    end
+  end
+
+  describe "socket communication", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
     host = "127.0.0.1"
     let(:server) { TCPServer.new(host, 0) }
     let(:client_sock) { TCPSocket.new(host, server.addr[1]) }
     let(:server_sock) { server.accept }
-
-    def stringify_keys(hash)
-      hash.map { |k, v| [k.to_s, v.is_a?(Hash) ? stringify_keys(v) : v] }.to_h
-    end
 
     before do |example|
       ENV["ABQ_SOCKET"] = "#{host}:#{server.addr[1]}"
@@ -57,8 +118,8 @@ RSpec.describe RSpec::Abq do
       it "writes manifest over socket" do
         allow(RSpec::Abq).to receive(:protocol_write)
         registry = RSpec.configuration.ordering_registry
+        expect(RSpec::Abq).to receive(:protocol_write).with(RSpec::Abq::Manifest.generate([], 1, registry))
         RSpec::Abq::Manifest.write_manifest([], 1, registry)
-        expect(RSpec::Abq).to have_received(:protocol_write).with(RSpec::Abq::Manifest.generate([], 1, registry))
       end
     end
 

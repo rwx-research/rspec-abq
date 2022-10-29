@@ -18,3 +18,9 @@ AllCops:
 
 RSpec/DescribedClass:
   EnforcedStyle: explicit
+
+RSpec/ExampleLength:
+  Max: 10
+
+RSpec/MessageSpies:
+  EnforcedStyle: receive
