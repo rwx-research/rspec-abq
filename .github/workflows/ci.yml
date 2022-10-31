@@ -25,7 +25,7 @@ jobs:
           use_bundler: true
           rubocop_flags: '--config .rubocop.yml'
           fail_on_error: true
-  rspec:
+  rspec-matrix:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -72,13 +72,40 @@ jobs:
             ]
           job-matrix: ${{ toJSON(matrix) }}
           captain-token: ${{ secrets.VANGUARD_PRODUCTION_RWX_TOKEN }}
+  rspec-after-matrix: # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
+    needs: rspec-matrix # run after shards
+    runs-on: ubuntu-latest
+    if: success() # only run when matrix passed
+    # store success output flag for ci job
+    outputs:
+      success: ${{ steps.setoutput.outputs.success }}
+    steps:
+      - id: setoutput
+        run: echo "::set-output name=success::true"
+  rspec:
+    runs-on: ubuntu-latest
+    if: always() # always run, so we never skip the check
+    needs: rspec-after-matrix
+    steps:
+      # pass step only when output of previous after-shards job is set
+      # in case at least one of the shard fails, after-shards is skipped
+      # and the output will not be set, which will then cause the ci job to fail
+      - run: |
+          passed="${{ needs.rspec-after-matrix.outputs.success }}"
+          if [[ $passed == "true" ]]; then
+            echo "Shards passed"
+            exit 0
+          else
+            echo "Shards failed"
+            exit 1
+          fi
   nixfmt:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: cachix/install-nix-action@v18
       - run: nix fmt -- --check flake.nix
-  abq-test:
+  abq-test-matrix:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     strategy:
@@ -105,6 +132,33 @@ jobs:
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
           ABQ_API_KEY: ${{ secrets.ABQ_API_KEY }}
+  abq-test-after-matrix: # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
+    needs: abq-test-matrix # run after shards
+    runs-on: ubuntu-latest
+    if: success() # only run when matrix passed
+    # store success output flag for ci job
+    outputs:
+      success: ${{ steps.setoutput.outputs.success }}
+    steps:
+      - id: setoutput
+        run: echo "::set-output name=success::true"
+  abq-test:
+    runs-on: ubuntu-latest
+    if: always() # always run, so we never skip the check
+    needs: abq-test-after-matrix
+    steps:
+      # pass step only when output of previous after-shards job is set
+      # in case at least one of the shard fails, after-shards is skipped
+      # and the output will not be set, which will then cause the ci job to fail
+      - run: |
+          passed="${{ needs.abq-test-after-matrix.outputs.success }}"
+          if [[ $passed == "true" ]]; then
+            echo "Shards passed"
+            exit 0
+          else
+            echo "Shards failed"
+            exit 1
+          fi
   abq-work:
     runs-on: ubuntu-latest
     timeout-minutes: 5
