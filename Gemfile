@@ -5,19 +5,20 @@ source "https://rubygems.org"
 # Specify your gem's dependencies in rspec-abq.gemspec
 gemspec
 
-gem "rake", "~> 13.0"
-gem "rspec", "~> 3.0"
-
-gem "pry"
-gem "ruby-lsp"
-gem "rubocop", require: false
-# and a bunch of rubocop plugins
-gem "rubocop-performance", require: false
-gem "rubocop-rake", require: false
-gem "rubocop-rspec", require: false
-gem "standard", require: false
-gem "yard", require: false
-gem "gem-release", require: false
 
 # and the specific patch version of rspec
-gem "rspec-core", "~> 3.12.0"
+gem "rspec", "~> 3.12"
+
+group :development do
+  gem "rake", "~> 13.0"
+  gem "pry"
+  gem "ruby-lsp"
+  gem "rubocop", require: false
+  # and a bunch of rubocop plugins
+  gem "rubocop-performance", require: false
+  gem "rubocop-rake", require: false
+  gem "rubocop-rspec", require: false
+  gem "standard", require: false
+  gem "yard", require: false
+  gem "gem-release", require: false
+end

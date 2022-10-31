@@ -81,9 +81,8 @@ DEPENDENCIES
   gem-release
   pry
   rake (~> 13.0)
-  rspec (~> 3.0)
+  rspec (~> 3.12)
   rspec-abq!
-  rspec-core (~> 3.12.0)
   rubocop
   rubocop-performance
   rubocop-rake

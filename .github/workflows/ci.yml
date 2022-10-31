@@ -27,6 +27,8 @@ jobs:
           fail_on_error: true
   rspec:
     runs-on: ubuntu-latest
+    env:
+      BUNDLE_WITHOUT: 'development'
     strategy:
       matrix:
         ruby:
@@ -42,7 +44,6 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
       - run: |
-          gem update --system
           bundle exec rspec \
             --format json --out tmp/rspec.json \
             --format documentation
