@@ -30,7 +30,6 @@ jobs:
     strategy:
       matrix:
         ruby:
-          - 2.5
           - 2.6
           - 2.7
           - 3.0
@@ -43,6 +42,7 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
       - run: |
+          gem update --system
           bundle exec rspec \
             --format json --out tmp/rspec.json \
             --format documentation
