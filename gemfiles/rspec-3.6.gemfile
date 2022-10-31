@@ -1,0 +1,9 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+# Specify your gem's dependencies in rspec-abq.gemspec
+gemspec(path: "..")
+
+# and the specific patch version of rspec
+gem "rspec", "~> 3.6", "< 3.7"

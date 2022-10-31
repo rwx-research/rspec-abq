@@ -25,13 +25,32 @@ jobs:
           use_bundler: true
           rubocop_flags: '--config .rubocop.yml'
           fail_on_error: true
-  rspec:
+  rspec-matrix:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby:
+          - 2.6
+          - 2.7
+          - '3.0'
+          - 3.1
+        gemfile:
+          - 3.5
+          - 3.6
+          - 3.7
+          - 3.8
+          - 3.9
+          - '3.10'
+          - 3.11
+          - 3.12
+    env:
+      BUNDLE_WITHOUT: 'development'
+      BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/rspec-${{ matrix.gemfile }}.gemfile
     steps:
       - uses: actions/checkout@v3
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.1.0
+          ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
       - run: |
           bundle exec rspec \
@@ -39,7 +58,7 @@ jobs:
             --format documentation
       - name: Upload test results to Captain
         uses: rwx-research/upload-captain-artifact@v1
-        if: always()
+        if: ${{ matrix.ruby == 3.1 && matrix.gemfile == 3.12 && always() }}
         continue-on-error: true
         with:
           artifacts: |
@@ -53,46 +72,129 @@ jobs:
             ]
           job-matrix: ${{ toJSON(matrix) }}
           captain-token: ${{ secrets.VANGUARD_PRODUCTION_RWX_TOKEN }}
+  rspec-after-matrix: # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
+    needs: rspec-matrix # run after shards
+    runs-on: ubuntu-latest
+    if: success() # only run when matrix passed
+    # store success output flag for ci job
+    outputs:
+      success: ${{ steps.setoutput.outputs.success }}
+    steps:
+      - id: setoutput
+        run: echo "::set-output name=success::true"
+  rspec:
+    runs-on: ubuntu-latest
+    if: always() # always run, so we never skip the check
+    needs: rspec-after-matrix
+    steps:
+      # pass step only when output of previous after-shards job is set
+      # in case at least one of the shard fails, after-shards is skipped
+      # and the output will not be set, which will then cause the ci job to fail
+      - run: |
+          passed="${{ needs.rspec-after-matrix.outputs.success }}"
+          if [[ $passed == "true" ]]; then
+            echo "Shards passed"
+            exit 0
+          else
+            echo "Shards failed"
+            exit 1
+          fi
   nixfmt:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: cachix/install-nix-action@v18
       - run: nix fmt -- --check flake.nix
-  abq-test:
+  abq-test-matrix:
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 5
+    strategy:
+      matrix:
+        ruby:
+          - 2.6
+          - 3.1
+        gemfile:
+          - 3.5
+          - 3.6
+          - 3.7
+          - 3.8
+          - 3.9
+          - '3.10'
+          - 3.11
+          - 3.12
     steps:
       - name: Setup abq
         uses: rwx-research/setup-abq@v1
         with:
           abq-token: ${{ secrets.ABQ_API_KEY }}
       - name: start abq test
-        run: abq test --reporter dot -- bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'
+        run: abq test --reporter dot --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" -- bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
           ABQ_API_KEY: ${{ secrets.ABQ_API_KEY }}
+  abq-test-after-matrix: # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
+    needs: abq-test-matrix # run after shards
+    runs-on: ubuntu-latest
+    if: success() # only run when matrix passed
+    # store success output flag for ci job
+    outputs:
+      success: ${{ steps.setoutput.outputs.success }}
+    steps:
+      - id: setoutput
+        run: echo "::set-output name=success::true"
+  abq-test:
+    runs-on: ubuntu-latest
+    if: always() # always run, so we never skip the check
+    needs: abq-test-after-matrix
+    steps:
+      # pass step only when output of previous after-shards job is set
+      # in case at least one of the shard fails, after-shards is skipped
+      # and the output will not be set, which will then cause the ci job to fail
+      - run: |
+          passed="${{ needs.abq-test-after-matrix.outputs.success }}"
+          if [[ $passed == "true" ]]; then
+            echo "Shards passed"
+            exit 0
+          else
+            echo "Shards failed"
+            exit 1
+          fi
   abq-work:
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 5
     strategy:
       fail-fast: false
       matrix:
         shard: ['1', '2']
+        ruby:
+          - 2.6
+          - 3.1
+        gemfile:
+          - 3.5
+          - 3.6
+          - 3.7
+          - 3.8
+          - 3.9
+          - '3.10'
+          - 3.11
+          - 3.12
+    env:
+      BUNDLE_WITHOUT: 'development'
+      BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/rspec-${{ matrix.gemfile }}.gemfile
     steps:
       - name: Check out code
         uses: actions/checkout@v3
       - name: setup ruby & bundle install
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.1.0
+          ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
       - name: Setup abq
         uses: rwx-research/setup-abq@v1
         with:
           abq-token: ${{ secrets.ABQ_API_KEY }}
       - name: start abq work
-        run: abq work
+        run: abq work --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}"
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
           ABQ_API_KEY: ${{ secrets.ABQ_API_KEY }}

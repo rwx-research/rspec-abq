@@ -86,9 +86,13 @@ module RSpec
       if !!ENV[ABQ_GENERATE_MANIFEST] # the abq worker will set this env var if it needs a manifest
         RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry)
         # ... Maybe it's fine to just exit(0)
-        RSpec.world.wants_to_quit = true # ask rspec to exit
-        RSpec.configuration.error_exit_code = 0 # exit without error
-        RSpec.world.non_example_failure = true # exit has nothing to do with tests
+        if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.10.0")
+          RSpec.world.wants_to_quit = true # ask rspec to exit
+          RSpec.configuration.error_exit_code = 0
+          RSpec.world.non_example_failure = true # exit has nothing to do with tests
+        else
+          exit(0)
+        end
         return true
       end
 
@@ -96,7 +100,12 @@ module RSpec
       # new rspec process
 
       # enabling colors allows us to pass through nicer error messages
-      RSpec.configuration.color_mode = :on
+
+      if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.6.0")
+        RSpec.configuration.color_mode = :on
+      else
+        RSpec.configuration.color = true
+      end
 
       # the first message is the init_meta block of the manifest. This is used to share runtime configuration
       # information amongst worker processes. In RSpec, it is used to ensure that random ordering between workers

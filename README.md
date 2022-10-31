@@ -16,7 +16,9 @@ end
 
 And then execute:
 
-    $ bundle
+```
+bundle
+```
 
 ## Usage
 
@@ -25,6 +27,10 @@ Use the included binary with abq:
 ```
 abq test -- bundle exec rspec
 ```
+
+## Compatibility
+
+This gem is actively tested against rubies 2.6-3.1 and rspecs 3.5-3.12
 
 ## Development
 
@@ -38,7 +44,7 @@ use the release script, `./release_gem.rb`
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/rwx-research/rspec-abq. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+Bug reports and pull requests are welcome on GitHub at <https://github.com/rwx-research/rspec-abq>. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
 ## Code of Conduct
 

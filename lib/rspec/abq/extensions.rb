@@ -53,7 +53,9 @@ module RSpec
 
           should_run_context_hooks = descendant_filtered_examples.any?
           begin
-            RSpec.current_scope = :before_context_hook
+            if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.11.0")
+              RSpec.current_scope = :before_context_hook
+            end
             run_before_context_hooks(new("before(:context) hook")) if should_run_context_hooks
 
             # If the next example to run is on the surface of this group, scan all
@@ -85,7 +87,9 @@ module RSpec
             RSpec.world.wants_to_quit = true if reporter.fail_fast_limit_met?
             false
           ensure
-            RSpec.current_scope = :after_context_hook
+            if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.11.0")
+              RSpec.current_scope = :after_context_hook
+            end
             run_after_context_hooks(new("after(:context) hook")) if should_run_context_hooks
             reporter.example_group_finished(self)
           end
