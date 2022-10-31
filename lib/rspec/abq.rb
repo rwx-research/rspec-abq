@@ -86,11 +86,13 @@ module RSpec
       if !!ENV[ABQ_GENERATE_MANIFEST] # the abq worker will set this env var if it needs a manifest
         RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry)
         # ... Maybe it's fine to just exit(0)
-        RSpec.world.wants_to_quit = true # ask rspec to exit
         if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.10.0")
+          RSpec.world.wants_to_quit = true # ask rspec to exit
           RSpec.configuration.error_exit_code = 0
+          RSpec.world.non_example_failure = true # exit has nothing to do with tests
+        else
+          exit(0)
         end
-        RSpec.world.non_example_failure = true # exit has nothing to do with tests
         return true
       end
 
