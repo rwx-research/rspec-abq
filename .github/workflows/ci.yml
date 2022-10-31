@@ -58,7 +58,7 @@ jobs:
             --format documentation
       - name: Upload test results to Captain
         uses: rwx-research/upload-captain-artifact@v1
-        if: always()
+        if: ${{ matrix.ruby == 3.1 && matrix.gemfile == 3.12 && always() }}
         continue-on-error: true
         with:
           artifacts: |
