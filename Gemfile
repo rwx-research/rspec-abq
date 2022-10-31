@@ -18,3 +18,6 @@ gem "rubocop-rspec", require: false
 gem "standard", require: false
 gem "yard", require: false
 gem "gem-release", require: false
+
+# and the specific patch version of rspec
+gem "rspec-core", "~> 3.12.0"
