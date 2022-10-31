@@ -43,7 +43,6 @@ jobs:
           - 3.10
           - 3.11
           - 3.12
-
     env:
       BUNDLE_WITHOUT: 'development'
       BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/rspec-${{ matrix.gemfile }}.gemfile
@@ -82,13 +81,29 @@ jobs:
   abq-test:
     runs-on: ubuntu-latest
     timeout-minutes: 1
+    strategy:
+      matrix:
+        ruby:
+          - 2.6
+          - 2.7
+          - 3.0
+          - 3.1
+        gemfile:
+          - 3.5
+          - 3.6
+          - 3.7
+          - 3.8
+          - 3.9
+          - 3.10
+          - 3.11
+          - 3.12
     steps:
       - name: Setup abq
         uses: rwx-research/setup-abq@v1
         with:
           abq-token: ${{ secrets.ABQ_API_KEY }}
       - name: start abq test
-        run: abq test --reporter dot -- bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'
+        run: abq test --reporter dot --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" -- bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
           ABQ_API_KEY: ${{ secrets.ABQ_API_KEY }}
@@ -99,20 +114,37 @@ jobs:
       fail-fast: false
       matrix:
         shard: ['1', '2']
+        ruby:
+          - 2.6
+          - 2.7
+          - 3.0
+          - 3.1
+        gemfile:
+          - 3.5
+          - 3.6
+          - 3.7
+          - 3.8
+          - 3.9
+          - 3.10
+          - 3.11
+          - 3.12
+    env:
+      BUNDLE_WITHOUT: 'development'
+      BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/rspec-${{ matrix.gemfile }}.gemfile
     steps:
       - name: Check out code
         uses: actions/checkout@v3
       - name: setup ruby & bundle install
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.1.0
+          ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
       - name: Setup abq
         uses: rwx-research/setup-abq@v1
         with:
           abq-token: ${{ secrets.ABQ_API_KEY }}
       - name: start abq work
-        run: abq work
+        run: abq work --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}"
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
           ABQ_API_KEY: ${{ secrets.ABQ_API_KEY }}
