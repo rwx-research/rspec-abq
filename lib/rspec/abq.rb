@@ -113,7 +113,7 @@ module RSpec
       init_message = protocol_read
       protocol_write(INIT_SUCCESS_MESSAGE)
       # TODO: delete the check for empty init_meta when https://github.com/rwx-research/abq/pull/216 is merged
-      if !init_message["fast_exit"] && init_message["init_meta"].any?
+      unless init_message["fast_exit"]
         Ordering.setup!(init_message["init_meta"], RSpec.configuration)
         fetch_next_example
       end

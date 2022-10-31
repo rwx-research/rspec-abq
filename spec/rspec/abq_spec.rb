@@ -38,16 +38,6 @@ RSpec.describe RSpec::Abq do
       expect(RSpec::Abq.setup_after_specs_loaded!).to be true
     end
 
-    context "when the init message empty" do
-      let(:init_message) { {init_meta: {}} }
-
-      it "does nothing", :aggregate_failures do
-        expect(RSpec::Abq::Ordering).not_to receive(:setup)
-        expect(RSpec::Abq).not_to receive(:fetch_next_example)
-        RSpec::Abq.setup_after_specs_loaded!
-      end
-    end
-
     context "when the init message asks to fast exit" do
       let(:init_message) { {fast_exit: true} }
 
