@@ -30,7 +30,10 @@ RSpec.describe RSpec::Abq do
 
       expect(RSpec::Abq::Manifest).to receive(:write_manifest)
       expect(RSpec.world).to receive(:wants_to_quit=).with(true)
-      expect(RSpec.configuration).to receive(:error_exit_code=).with(0)
+
+      if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.10.0")
+        expect(RSpec.configuration).to receive(:error_exit_code=).with(0)
+      end
       expect(RSpec.world).to receive(:non_example_failure=).with(true)
       expect(RSpec::Abq.setup_after_specs_loaded!).to be true
     end

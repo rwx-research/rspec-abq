@@ -4,7 +4,12 @@ module RSpec
     # and reading the ordering from `init_meta` to set up the current processes settings
     module Ordering
       # notably: we don't support custom orderings
-      SUPPORTED_ORDERINGS = [:defined, :recently_modified, :random]
+      SUPPORTED_ORDERINGS =
+        if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.11.0")
+          [:defined, :recently_modified, :random]
+        else
+          [:defined, :random]
+        end
 
       # Raised when we experience an ordering that doesn't exist in SUPPORTED_ORDERINGS
       UnsupportedOrderingError = Class.new(StandardError)
