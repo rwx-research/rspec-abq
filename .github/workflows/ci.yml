@@ -80,7 +80,7 @@ jobs:
       - run: nix fmt -- --check flake.nix
   abq-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 5
     strategy:
       matrix:
         ruby:
@@ -109,7 +109,7 @@ jobs:
           ABQ_API_KEY: ${{ secrets.ABQ_API_KEY }}
   abq-work:
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 5
     strategy:
       fail-fast: false
       matrix:
