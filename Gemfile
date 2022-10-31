@@ -5,7 +5,6 @@ source "https://rubygems.org"
 # Specify your gem's dependencies in rspec-abq.gemspec
 gemspec
 
-
 # and the specific patch version of rspec
 gem "rspec", "~> 3.12"
 
