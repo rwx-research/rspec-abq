@@ -2,8 +2,9 @@
 
 GEMFILES = Dir['gemfiles/*.gemfile'] + ["Gemfile"]
 
-GEMFILES.each do |gemfile|
-  ENV['BUNDLE_GEMFILE'] = gemfile
-  puts gemfile
-  puts `bundle lock --add-platform x86_64-linux`
-end
+GEMFILES.map do |gemfile|
+  Thread.new do
+    ENV['BUNDLE_GEMFILE'] = gemfile
+    puts `bundle install`
+  end
+end.map(&:join)
