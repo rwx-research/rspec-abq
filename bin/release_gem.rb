@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative "lib/rspec/abq/version"
+require_relative "../lib/rspec/abq/version"
 require "tempfile"
 require "yaml"
 
@@ -95,7 +95,7 @@ if version_to_release == latest_released_version
   run_and_print("git add Gemfile.lock")
   run_and_print("git commit --amend --no-edit")
   run_and_print("git push origin HEAD")
-  run_and_print(%(gh pr create --title "prepare release v#{next_version}" --fill))
+  run_and_print(%(gh pr create --title "prepare release v#{version_to_release}" --fill))
   puts "Now: merge a PR with this version and then continue releasing the gem from the main branch."
   exit(0)
 end
