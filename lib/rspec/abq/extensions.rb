@@ -36,7 +36,13 @@ module RSpec
             instance = new(considered_example.inspect_output)
             set_ivars(instance, before_context_ivars)
 
-            all_examples_succeeded &&= Abq.send_test_result_and_advance { |abq_reporter| considered_example.run(instance, abq_reporter) }
+            # note: it looks like we can inline the next two lines.
+            # DON'T DO IT!
+            # true &&= expression : expression will be run, fine!
+            # false &&= expression: expression will NOT be run! bad!
+            # we want to always run the test, even if the previous test failed.
+            result = Abq.send_test_result_and_advance { |abq_reporter| considered_example.run(instance, abq_reporter) }
+            all_examples_succeeded &&= result
 
             break unless Abq.target_test_case.directly_in_group?(self)
           end

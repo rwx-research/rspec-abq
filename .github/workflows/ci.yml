@@ -123,12 +123,27 @@ jobs:
           - 3.11
           - 3.12
     steps:
+      - name: Check out code
+        uses: actions/checkout@v3
       - name: Setup abq
         uses: rwx-research/setup-abq@v1
         with:
           abq-token: ${{ secrets.ABQ_API_KEY }}
       - name: start abq test
-        run: abq test --reporter dot --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" -- bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'
+        # we run the test and then compare the output to a file checked into the repo
+        # the first line of the test includes the run id, so we slice it off
+        # the last line of the test includes the time to run tests, which is flakey, so we slice it off
+        run: |
+          set +e
+          echo "run tests"
+          abq test --reporter dot --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" -- bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' |
+            tee $tty |
+            head -n -1 |
+            tail -n +2 > test-outputs/rspec-${{matrix.gemfile}}.txt
+          echo "**git diff**"
+          git diff
+          test -z "$(git diff)"
+        shell: bash
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
           ABQ_API_KEY: ${{ secrets.ABQ_API_KEY }}
@@ -194,6 +209,7 @@ jobs:
         with:
           abq-token: ${{ secrets.ABQ_API_KEY }}
       - name: start abq work
+        continue-on-error: true
         run: abq work --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}"
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
