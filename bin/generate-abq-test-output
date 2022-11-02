@@ -1,0 +1,9 @@
+#! /bin/bash
+
+set -uo pipefail
+
+# running this creates an artifact that's diffed against in CI
+abq test --reporter dot -- bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' | tee abq-test-output-expectation-with-last-line
+
+head -n -1 abq-test-output-expectation-with-last-line >abq-test-output-expectation # the last line says "completed in 20 ms" and varies from run to run
+rm abq-test-output-expectation-with-last-line
