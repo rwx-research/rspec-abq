@@ -139,7 +139,7 @@ jobs:
           abq test --reporter dot --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" -- bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' |
             tee $tty |
             head -n -1 |
-            tail -n +2 > abq-test-output-expectation
+            tail -n +2 > test-outputs/rspec-${{matrix.gemfile}}.txt
           echo "**git diff**"
           git diff
           test -z "$(git diff)"
