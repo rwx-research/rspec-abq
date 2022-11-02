@@ -91,8 +91,8 @@ if version_to_release == latest_released_version
   end
 
   run_and_print("gem bump --version #{what_to_bump}")
-  run_and_print("bundle install") # update gemfile.lock
-  run_and_print("git add Gemfile.lock")
+  run_and_print("bin/update_gemfiles.rb") # update gemfile.lock
+  run_and_print("git add Gemfile.lock gemfiles")
   run_and_print("git commit --amend --no-edit")
   run_and_print("git push origin HEAD")
   run_and_print(%(gh pr create --title "prepare release v#{version_to_release}" --fill))
