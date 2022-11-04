@@ -136,7 +136,7 @@ jobs:
         run: |
           set +e
           echo "run tests"
-          abq test --reporter dot --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" -- bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' |
+          abq test --reporter dot --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" -- bin/rspec_without_output_for_abq.sh |
             tee $tty |
             head -n -1 |
             tail -n +2 > test-outputs/rspec-${{matrix.gemfile}}.txt
