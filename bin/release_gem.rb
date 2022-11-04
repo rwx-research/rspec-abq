@@ -87,7 +87,7 @@ if version_to_release == latest_released_version
 
   if current_branch == "main"
     puts "Can't commit directly to main, opening a new branch"
-    run_and_print("git checkout --branch prep-for-#{version_to_release}")
+    run_and_print("git checkout -b prep-for-#{version_to_release}")
   end
 
   run_and_print("gem bump --version #{what_to_bump}")
