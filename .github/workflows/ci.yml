@@ -71,7 +71,7 @@ jobs:
               }
             ]
           job-matrix: ${{ toJSON(matrix) }}
-          captain-token: ${{ secrets.VANGUARD_PRODUCTION_RWX_TOKEN }}
+          captain-token: ${{ secrets.RWX_ACCESS_TOKEN }}
   rspec-after-matrix: # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
     needs: rspec-matrix # run after shards
     runs-on: ubuntu-latest
@@ -128,7 +128,7 @@ jobs:
       - name: Setup abq
         uses: rwx-research/setup-abq@v1
         with:
-          abq-token: ${{ secrets.ABQ_API_KEY }}
+          abq-token: ${{ secrets.RWX_ACCESS_TOKEN }}
       - name: start abq test
         # we run the test and then compare the output to a file checked into the repo
         # the first line of the test includes the run id, so we slice it off
@@ -146,7 +146,7 @@ jobs:
         shell: bash
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
-          ABQ_API_KEY: ${{ secrets.ABQ_API_KEY }}
+          ABQ_API_KEY: ${{ secrets.RWX_ACCESS_TOKEN }}
   abq-test-after-matrix: # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
     needs: abq-test-matrix # run after shards
     runs-on: ubuntu-latest
@@ -207,13 +207,13 @@ jobs:
       - name: Setup abq
         uses: rwx-research/setup-abq@v1
         with:
-          abq-token: ${{ secrets.ABQ_API_KEY }}
+          abq-token: ${{ secrets.RWX_ACCESS_TOKEN }}
       - name: start abq work
         continue-on-error: true
         run: abq work --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}"
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
-          ABQ_API_KEY: ${{ secrets.ABQ_API_KEY }}
+          ABQ_API_KEY: ${{ secrets.RWX_ACCESS_TOKEN }}
   yard:
     runs-on: ubuntu-latest
     steps:
