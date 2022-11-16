@@ -128,7 +128,7 @@ jobs:
       - name: Setup abq
         uses: rwx-research/setup-abq@v1
         with:
-          abq-token: ${{ secrets.RWX_ACCESS_TOKEN }}
+          access-token: ${{ secrets.RWX_ACCESS_TOKEN }}
       - name: start abq test
         # we run the test and then compare the output to a file checked into the repo
         # the first line of the test includes the run id, so we slice it off
@@ -207,7 +207,7 @@ jobs:
       - name: Setup abq
         uses: rwx-research/setup-abq@v1
         with:
-          abq-token: ${{ secrets.RWX_ACCESS_TOKEN }}
+          access-token: ${{ secrets.RWX_ACCESS_TOKEN }}
       - name: start abq work
         continue-on-error: true
         run: abq work --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}"
