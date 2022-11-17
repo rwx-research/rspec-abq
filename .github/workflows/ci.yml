@@ -210,7 +210,7 @@ jobs:
           access-token: ${{ secrets.RWX_ACCESS_TOKEN }}
       - name: start abq work
         continue-on-error: true
-        run: abq work --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}"
+        run: abq work -n cpu-cores --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}"
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
           ABQ_API_KEY: ${{ secrets.RWX_ACCESS_TOKEN }}
