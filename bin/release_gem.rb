@@ -80,9 +80,9 @@ if version_to_release == latest_released_version
   when "1"
     ["patch", [major, minor, patch + 1].join(".")]
   when "2"
-    ["minor", [major, minor + 1, patch].join(".")]
+    ["minor", [major, minor + 1, 0].join(".")]
   when "3"
-    ["major", [major + 1, minor, patch + 1].join(".")]
+    ["major", [major + 1, 0, 0].join(".")]
   end
 
   if current_branch == "main"
