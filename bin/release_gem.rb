@@ -47,7 +47,7 @@ if latest_released_version
   puts "are you one of the owners? (y/n): "
   if gets.chomp.downcase != "y"
     puts "please ask one of the owners for access
-    they can add you with `gem owner rspec-abq an@email.com`
+    they can add you with `gem owner rspec-abq --add an@email.com`
     "
     exit(1)
   end
