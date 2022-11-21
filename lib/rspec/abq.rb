@@ -124,6 +124,7 @@ module RSpec
     # @!visibility private
     def self.socket
       @socket ||= TCPSocket.new(*ENV[ABQ_SOCKET].split(":")).tap do |socket|
+        socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
         protocol_write(PROTOCOL_VERSION_MESSAGE, socket)
       end
     end
