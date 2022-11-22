@@ -174,7 +174,7 @@ jobs:
             echo "Shards failed"
             exit 1
           fi
-  abq-work:
+  abq-work-matrix:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     strategy:
@@ -213,6 +213,33 @@ jobs:
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
           ABQ_API_KEY: ${{ secrets.RWX_ACCESS_TOKEN }}
+  abq-work-after-matrix: # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
+    needs: abq-work-matrix # run after shards
+    runs-on: ubuntu-latest
+    if: success() # only run when matrix passed
+    # store success output flag for ci job
+    outputs:
+      success: ${{ steps.setoutput.outputs.success }}
+    steps:
+      - id: setoutput
+        run: echo "::set-output name=success::true"
+  abq-work:
+    runs-on: ubuntu-latest
+    if: always() # always run, so we never skip the check
+    needs: abq-work-after-matrix
+    steps:
+      # pass step only when output of previous after-shards job is set
+      # in case at least one of the shard fails, after-shards is skipped
+      # and the output will not be set, which will then cause the ci job to fail
+      - run: |
+          passed="${{ needs.abq-work-after-matrix.outputs.success }}"
+          if [[ $passed == "true" ]]; then
+            echo "Shards passed"
+            exit 0
+          else
+            echo "Shards failed"
+            exit 1
+          fi
   yard:
     runs-on: ubuntu-latest
     steps:
