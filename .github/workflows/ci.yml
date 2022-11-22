@@ -72,7 +72,10 @@ jobs:
             ]
           job-matrix: ${{ toJSON(matrix) }}
           captain-token: ${{ secrets.RWX_ACCESS_TOKEN }}
-  rspec-after-matrix: # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
+
+  # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
+  # this is used to summarize the matrix results into a single job (abq-work) that can be used as a required check
+  rspec-github-workflow-wrapup-helper:
     needs: rspec-matrix # run after shards
     runs-on: ubuntu-latest
     if: success() # only run when matrix passed
@@ -85,13 +88,13 @@ jobs:
   rspec:
     runs-on: ubuntu-latest
     if: always() # always run, so we never skip the check
-    needs: rspec-after-matrix
+    needs: rspec-github-workflow-wrapup-helper
     steps:
       # pass step only when output of previous after-shards job is set
       # in case at least one of the shard fails, after-shards is skipped
       # and the output will not be set, which will then cause the ci job to fail
       - run: |
-          passed="${{ needs.rspec-after-matrix.outputs.success }}"
+          passed="${{ needs.rspec-github-workflow-wrapup-helper.outputs.success }}"
           if [[ $passed == "true" ]]; then
             echo "Shards passed"
             exit 0
@@ -137,7 +140,6 @@ jobs:
           set +e
           echo "run tests"
           abq test --reporter dot --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" -- bin/rspec_without_output_for_abq.sh |
-            tee $tty |
             head -n -1 |
             tail -n +2 > test-outputs/rspec-${{matrix.gemfile}}.txt
           echo "**git diff**"
@@ -147,7 +149,10 @@ jobs:
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
           ABQ_API_KEY: ${{ secrets.RWX_ACCESS_TOKEN }}
-  abq-test-after-matrix: # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
+
+  # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
+  # this is used to summarize the matrix results into a single job (abq-work) that can be used as a required check
+  abq-test-github-workflow-wrapup-helper:
     needs: abq-test-matrix # run after shards
     runs-on: ubuntu-latest
     if: success() # only run when matrix passed
@@ -160,13 +165,13 @@ jobs:
   abq-test:
     runs-on: ubuntu-latest
     if: always() # always run, so we never skip the check
-    needs: abq-test-after-matrix
+    needs: abq-test-github-workflow-wrapup-helper
     steps:
       # pass step only when output of previous after-shards job is set
       # in case at least one of the shard fails, after-shards is skipped
       # and the output will not be set, which will then cause the ci job to fail
       - run: |
-          passed="${{ needs.abq-test-after-matrix.outputs.success }}"
+          passed="${{ needs.abq-test-github-workflow-wrapup-helper.outputs.success }}"
           if [[ $passed == "true" ]]; then
             echo "Shards passed"
             exit 0
@@ -174,7 +179,7 @@ jobs:
             echo "Shards failed"
             exit 1
           fi
-  abq-work:
+  abq-work-matrix:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     strategy:
@@ -209,11 +214,44 @@ jobs:
         with:
           access-token: ${{ secrets.RWX_ACCESS_TOKEN }}
       - name: start abq work
-        continue-on-error: true
-        run: abq work -n cpu-cores --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}"
+        # abq work _should_ fail because we have failing tests, but we want to ensure it only has a single line of output
+        run: |
+          set +e
+          echo "run worker"
+          abq work -n cpu-cores --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" 2>&1 |
+            bin/test-worker-output.rb
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
           ABQ_API_KEY: ${{ secrets.RWX_ACCESS_TOKEN }}
+  # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
+  # this is used to summarize the matrix results into a single job (abq-work) that can be used as a required check
+  abq-work-github-workflow-wrapup-helper:
+    needs: abq-work-matrix # run after shards
+    runs-on: ubuntu-latest
+    if: success() # only run when matrix passed
+    # store success output flag for ci job
+    outputs:
+      success: ${{ steps.setoutput.outputs.success }}
+    steps:
+      - id: setoutput
+        run: echo "::set-output name=success::true"
+  abq-work:
+    runs-on: ubuntu-latest
+    if: always() # always run, so we never skip the check
+    needs: abq-work-github-workflow-wrapup-helper
+    steps:
+      # pass step only when output of previous after-shards job is set
+      # in case at least one of the shard fails, after-shards is skipped
+      # and the output will not be set, which will then cause the ci job to fail
+      - run: |
+          passed="${{ needs.abq-work-github-workflow-wrapup-helper.outputs.success }}"
+          if [[ $passed == "true" ]]; then
+            echo "Shards passed"
+            exit 0
+          else
+            echo "Shards failed"
+            exit 1
+          fi
   yard:
     runs-on: ubuntu-latest
     steps:
