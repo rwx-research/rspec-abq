@@ -125,7 +125,7 @@ module RSpec
             end
           end
 
-          if Abq.target_test_case == Abq.end_marker
+          if Abq.target_test_case == Abq::TestCase.end_marker
             exit_code(examples_passed)
           else
             warn "Hit end of test run without being on end marker. Target test case is #{Abq.target_test_case.inspect}"
