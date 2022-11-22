@@ -125,11 +125,15 @@ module RSpec
             end
           end
 
-          if Abq.target_test_case == Abq::TestCase.end_marker
+          if Abq.target_test_case != Abq::TestCase.end_marker
+            warn "Hit end of test run without being on end marker. Target test case is #{Abq.target_test_case.inspect}"
+            example_passed = false
+          end
+
+          if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.10.0")
             exit_code(examples_passed)
           else
-            warn "Hit end of test run without being on end marker. Target test case is #{Abq.target_test_case.inspect}"
-            exit_code(false)
+            example_passed ? 0 : @configuration.failure_exit_code
           end
         end
 
