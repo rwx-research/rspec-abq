@@ -139,7 +139,7 @@ jobs:
         run: |
           set +e
           echo "run tests"
-          output=$(abq test --reporter dot --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" -- bin/rspec_without_output_for_abq.sh)
+          output="$(abq test --reporter dot --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" -- bin/rspec_without_output_for_abq.sh)"
           echo $output
           echo $output |
             head -n -1 |
@@ -219,7 +219,7 @@ jobs:
         # abq work _should_ fail because we have failing tests, but we want to ensure it only has a single line of output
         run: |
           set +e
-          output=$(abq work -n cpu-cores --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" 2>&1)
+          output="$(abq work -n cpu-cores --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" 2>&1)"
           print $output
           lines=print $output | wc -l
           echo "num lines"
