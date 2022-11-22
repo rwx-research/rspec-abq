@@ -218,10 +218,10 @@ jobs:
         run: |
           set +e
           echo "run worker"
-          num_lines=$(abq work -n cpu-cores --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" 2>&1 | wc -l)
+          abq work -n cpu-cores --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" 2>&1 > abq-output.txt
+          cat abq-output.txt
           echo "num lines"
-          echo $num_lines
-          test "1" = "num_lines"
+          cat abq-output.txt | wc -l
         env:
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
           ABQ_API_KEY: ${{ secrets.RWX_ACCESS_TOKEN }}
