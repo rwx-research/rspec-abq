@@ -4,7 +4,9 @@ require "spec_helper"
 RSpec.describe "abq test" do # rubocop:disable RSpec/DescribeClass
   def abq_with(rspec_command, identifier)
     run_id = ENV["RUN_ID"] && "--run-id #{ENV["RUN_ID"]}-#{identifier} "
-    Open3.capture3("abq test --reporter dot #{run_id}-- #{rspec_command}")
+    command = "abq test --reporter dot #{run_id}-- #{rspec_command}"
+    warn "Running: #{command}"
+    Open3.capture3(command)
   end
 
   def write_or_match(test_identifier, matchable_output)
