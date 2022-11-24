@@ -128,6 +128,11 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
+      - name: setup ruby & bundle install
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
       - name: Setup abq
         uses: rwx-research/setup-abq@v1
         with:
@@ -137,16 +142,13 @@ jobs:
         # the first line of the test includes the run id, so we slice it off
         # the last line of the test includes the time to run tests, which is flakey, so we slice it off
         run: |
-          set +e
-          echo "run tests"
-          abq test --reporter dot -- bin/rspec_without_output_for_abq.sh |
-            head -n -1 |
-            tail -n +2 > test-outputs/rspec-${{matrix.gemfile}}.txt
-          echo "**git diff**"
-          git diff
-          test -z "$(git diff)"
+          bundle exec rspec \
+            --format json --out tmp/rspec.json \
+            --format documentation \
+            abq_spec
         shell: bash
         env:
+          BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/rspec-${{ matrix.gemfile }}.gemfile
           ABQ_RUN_ID: ${{env.GITHUB_RUN_ID}}-${{env.GITHUB_RUN_ATTEMPT}}-${{matrix.ruby}}-${{matrix.gemfile}}
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
           ABQ_API_KEY: ${{ secrets.RWX_ACCESS_TOKEN }}
