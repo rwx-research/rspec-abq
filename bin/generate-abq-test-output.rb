@@ -3,6 +3,8 @@
 Dir['gemfiles/*.gemfile'].map do |gemfile|
   Thread.new do
     puts gemfile
-    puts `BUNDLE_GEMFILE=#{gemfile} bundle exec rspec abq_spec/abq_test_spec.rb`
+    ENV['BUNDLE_GEMFILE'] = gemfile
+    ENV['UPDATE_SNAPSHOTS'] = 'true'
+    puts `bundle exec rspec abq_spec/abq_test_spec.rb`
   end
 end.map(&:join)
