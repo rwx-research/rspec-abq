@@ -7,7 +7,7 @@ end
 
 output = $stdin.read
 output.each_line do |line|
-  next if line.start_with?("Worker started with id ") || line.include?(" warning: ")
+  next if line.start_with?("Worker started with id ") || line.include?(" warning: ") || line.match?(/INFO\s*\033\[0m\s*abq_workers/)
   warn "=================="
   warn "unexpected output:"
   warn "=================="
@@ -18,3 +18,5 @@ output.each_line do |line|
   warn output
   exit 1
 end
+
+puts output
