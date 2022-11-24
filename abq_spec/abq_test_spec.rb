@@ -17,7 +17,7 @@ RSpec.describe "abq test" do # rubocop:disable RSpec/DescribeClass
   end
 
   def sanitize_output(output)
-    output.gsub(/completed in \d+ ms/, "completed in 0 ms")
+    output.gsub(/completed in \d+ ms/, "completed in 0 ms").gsub(/^Starting test run with ID.+\n/, "")
   end
 
   def stderr_matcher(stderr)
