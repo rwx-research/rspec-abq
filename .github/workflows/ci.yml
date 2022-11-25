@@ -125,28 +125,32 @@ jobs:
           - '3.10'
           - 3.11
           - 3.12
+    env:
+      BUNDLE_WITHOUT: 'development'
+      BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/rspec-${{ matrix.gemfile }}.gemfile
     steps:
       - name: Check out code
         uses: actions/checkout@v3
+      - name: setup ruby & bundle install
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
       - name: Setup abq
         uses: rwx-research/setup-abq@v1
         with:
           access-token: ${{ secrets.RWX_ACCESS_TOKEN }}
       - name: start abq test
-        # we run the test and then compare the output to a file checked into the repo
-        # the first line of the test includes the run id, so we slice it off
-        # the last line of the test includes the time to run tests, which is flakey, so we slice it off
+        # rspec here runs `abq_test` and compares the output to snapshots. See abq_spec/abq_test_spec.rb
+        # if these tests fail because output changes, try running bin/generate-abq-test-output.rb
         run: |
-          set +e
-          echo "run tests"
-          abq test --reporter dot --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" -- bin/rspec_without_output_for_abq.sh |
-            head -n -1 |
-            tail -n +2 > test-outputs/rspec-${{matrix.gemfile}}.txt
-          echo "**git diff**"
-          git diff
-          test -z "$(git diff)"
+          bundle exec rspec \
+            --format json --out tmp/rspec.json \
+            --format documentation \
+            abq_spec || (echo "ABQ test failed. Run bin/generate-abq-test-output.rb to update tests snapshots." && exit 1)
         shell: bash
         env:
+          RUN_ID: ${{github.run_id}}-${{github.run_attempt}}-${{matrix.ruby}}-${{matrix.gemfile}}
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
           ABQ_API_KEY: ${{ secrets.RWX_ACCESS_TOKEN }}
 
@@ -216,11 +220,10 @@ jobs:
       - name: start abq work
         # abq work _should_ fail because we have failing tests, but we want to ensure it only has a single line of output
         run: |
-          set +e
-          echo "run worker"
-          abq work -n cpu-cores --run-id "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-${{matrix.ruby}}-${{matrix.gemfile}}" 2>&1 |
-            bin/test-worker-output.rb
+          bin/test-worker-output.rb success
+          bin/test-worker-output.rb failure
         env:
+          RUN_ID: ${{github.run_id}}-${{github.run_attempt}}-${{matrix.ruby}}-${{matrix.gemfile}}
           ABQ_LOG: ${{ runner.debug && 'debug' || 'info' }}
           ABQ_API_KEY: ${{ secrets.RWX_ACCESS_TOKEN }}
   # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt

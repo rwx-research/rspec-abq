@@ -9,6 +9,11 @@ F.S..SS
             got: false
 
        (compared using ==)
+
+       Diff:
+       @@ -1 +1 @@
+       -true
+       +false
      # ./spec/fixture_specs/one_specs.rb:6:in `block (2 levels) in <top (required)>'
      # ./lib/rspec/abq/extensions.rb:44:in `block (2 levels) in run_examples_with_abq'
      # ./lib/rspec/abq.rb:205:in `send_test_result_and_advance'
@@ -22,3 +27,4 @@ F.S..SS
      # ./lib/rspec/abq/extensions.rb:119:in `block in run_specs'
      # ./lib/rspec/abq/extensions.rb:118:in `run_specs'
 
+(completed in 0 ms)
