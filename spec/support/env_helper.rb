@@ -1,10 +1,10 @@
 module EnvHelper
   def self.with_env(temp_env, &block)
     original_env = ENV.to_hash
-    ENV.merge!(temp_env)
+    temp_env.each { |k, v| ENV[k] = v } # ENV.merge! introduced in ruby 2.7.0. We can use that once 
     block.call
     ENV.clear
-    ENV.merge!(original_env)
+    ENV.replace(original_env)
   end
 
   def self.with_reset(&block)
