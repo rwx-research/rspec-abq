@@ -1,4 +1,5 @@
 require "socket"
+require "spec_helper"
 
 def stringify_keys(hash)
   hash.map { |k, v| [k.to_s, v.is_a?(Hash) ? stringify_keys(v) : v] }.to_h
