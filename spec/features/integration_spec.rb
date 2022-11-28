@@ -80,31 +80,32 @@ RSpec.describe "abq test" do
     # rubocop:enable RSpec/InstanceVariable
     let(:run_id) { SecureRandom.uuid }
 
-    it "has consistent output for success", :aggregate_failures do
-      test_stdout, test_stderr, test_exit_status = abq_test("bundle exec rspec 'spec/fixture_specs/two_specs.rb'", queue_addr: queue_addr, run_id: run_id)
+    def assert_worker_output_consistent(command, example, success:)
+      test_stdout, test_stderr, test_exit_status = abq_test(command, queue_addr: queue_addr, run_id: run_id)
 
       expect(test_stderr).to be_empty
-      assert_test_output_consistent(sanitize_test_output(test_stdout), test_identifier: "test-stdout-success")
-      expect(test_exit_status).to be_success
+      writable_example_id = example.id[2..-1].tr("/", "-")
+      assert_test_output_consistent(sanitize_test_output(test_stdout), test_identifier: [writable_example_id, "test-stdout"].join("-"))
+      assert_test_output_consistent(sanitize_worker_output(worker_output), test_identifier: [writable_example_id, "work-stdout"].join("-"))
+      assert_test_output_consistent(sanitize_worker_error(worker_error), test_identifier: [writable_example_id, "work-stderr"].join("-"))
 
-      assert_test_output_consistent(sanitize_worker_output(worker_output), test_identifier: "work-stdout-success")
-      assert_test_output_consistent(sanitize_worker_error(worker_error), test_identifier: "work-stderr-success")
-      expect(worker_exit_status).to be_success
+      if success
+        expect(test_exit_status).to be_success
+        expect(worker_exit_status).to be_success
+      else
+        expect(test_exit_status).not_to be_success
+        expect(test_exit_status.exitstatus).to eq 1
+        expect(worker_exit_status).not_to be_success
+        expect(worker_exit_status.exitstatus).to eq 1
+      end
     end
 
-    it "has consistent output for failure", :aggregate_failures do
-      test_stdout, test_stderr, test_exit_status = abq_test("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", queue_addr: queue_addr, run_id: run_id)
+    it "has consistent output for success", :aggregate_failures do |example|
+      assert_worker_output_consistent("bundle exec rspec 'spec/fixture_specs/two_specs.rb'", example, success: true)
+    end
 
-      expect(test_stderr).to be_empty
-      assert_test_output_consistent(sanitize_test_output(test_stdout), test_identifier: "test-stdout-failure")
-
-      assert_test_output_consistent(sanitize_worker_output(worker_output), test_identifier: "work-stdout-failure")
-      assert_test_output_consistent(sanitize_worker_error(worker_error), test_identifier: "work-stderr-failure")
-
-      expect(test_exit_status).not_to be_success
-      expect(test_exit_status.exitstatus).to eq 1
-      expect(worker_exit_status).not_to be_success
-      expect(worker_exit_status.exitstatus).to eq 1
+    it "has consistent output for failure", :aggregate_failures do |example|
+      assert_worker_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
     end
   end
 end

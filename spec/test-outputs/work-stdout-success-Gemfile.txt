@@ -1,1 +1,0 @@
-work-stdout-success-rspec-3.12.gemfile.txt

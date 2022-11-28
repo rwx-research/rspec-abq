@@ -2,6 +2,9 @@
 
 require 'fileutils'
 
+Dir['spec/test-outputs/*'].each do |file|
+  FileUtils.rm file
+end
 Dir['gemfiles/*.gemfile'].map do |gemfile|
   Thread.new do
     puts gemfile

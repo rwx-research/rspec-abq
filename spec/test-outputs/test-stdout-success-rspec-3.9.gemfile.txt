@@ -1,2 +1,0 @@
-Starting test run with ID not-the-real-test-run-id
-.SS
