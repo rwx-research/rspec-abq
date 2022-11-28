@@ -39,20 +39,20 @@ RSpec.describe "abq test" do
     # rubocop:disable RSpec/InstanceVariable
     before(:all) do # rubocop:disable RSpec/BeforeAfterAll
       # start the queue
-      queue_stdin, queue_stdout_fd, @queue_thr = Open3.popen2("abq", "start")
-      queue_stdin.close
+      @queue_stdin_fd, @queue_stdout_fd, @queue_thr = Open3.popen2("abq", "start")
 
       # read queue address
       data = ""
       queue_regex = /(0.0.0.0:\d+)\n/
-      data << queue_stdout_fd.gets until data =~ queue_regex
-      queue_stdout_fd.close
+      data << @queue_stdout_fd.gets until data =~ queue_regex
       @queue_addr = data.match(queue_regex)[1]
     end
 
     after(:all) do # rubocop:disable RSpec/BeforeAfterAll
       # stop the queue
       Process.kill("INT", @queue_thr.pid)
+      @queue_stdout_fd.close
+      @queue_stdin_fd.close
       @queue_thr.value # blocks until the queue is actually stopped
     end
 
