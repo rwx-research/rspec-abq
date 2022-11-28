@@ -22,7 +22,7 @@ RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_
     server = TCPServer.new host, 0
     abq_socket = "#{host}:#{server.addr[1]}"
 
-    EnvHelper.with_env( "ABQ_SOCKET" => abq_socket, "ABQ_GENERATE_MANIFEST" => abq_socket) do
+    EnvHelper.with_env("ABQ_SOCKET" => abq_socket, "ABQ_GENERATE_MANIFEST" => abq_socket) do
       `bundle exec rspec --seed 2 ./spec/fixture_specs/*.rb`
     end
     sock = server.accept

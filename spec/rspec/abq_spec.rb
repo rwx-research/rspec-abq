@@ -68,7 +68,7 @@ RSpec.describe RSpec::Abq do
     let(:server_sock) { server.accept }
 
     around do |example|
-      EnvHelper.with_env( "ABQ_SOCKET" => "#{host}:#{server.addr[1]}") do
+      EnvHelper.with_env("ABQ_SOCKET" => "#{host}:#{server.addr[1]}") do
         example.call
       end
       RSpec::Abq.instance_eval { @socket = nil }
