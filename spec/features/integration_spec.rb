@@ -72,7 +72,7 @@ RSpec.describe "abq test" do
     # rubocop:enable RSpec/InstanceVariable
     let(:run_id) { SecureRandom.uuid }
 
-    it "has consistent output for success", aggregate_failures: true do
+    it "has consistent output for success", :aggregate_failures do
       test_stdout, test_stderr, test_exit_status = abq_test("bundle exec rspec --out /dev/null 'spec/fixture_specs/two_specs.rb'", queue_addr: queue_addr, run_id: run_id)
 
       expect(test_stderr).to be_empty
@@ -83,7 +83,7 @@ RSpec.describe "abq test" do
       expect(worker_exit_status).to be_success
     end
 
-    it "has consistent output for failure", aggregate_failures: true do
+    it "has consistent output for failure", :aggregate_failures do
       test_stdout, test_stderr, test_exit_status = abq_test("bundle exec rspec --out /dev/null --pattern 'spec/fixture_specs/*_specs.rb'", queue_addr: queue_addr, run_id: run_id)
 
       expect(test_stderr).to be_empty
