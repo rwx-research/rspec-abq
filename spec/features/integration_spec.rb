@@ -58,9 +58,9 @@ RSpec.describe "abq test" do
 
     around do |example|
       # start worker
-      Open3.popen3("abq", "work", "--queue-addr", @queue_addr, "--run-id", run_id) do |_work_stdin_fd, work_stdout, work_stderr, work_thr|
-        @work_stdout = work_stdout
-        @work_stderr = work_stderr
+      Open3.popen3("abq", "work", "--queue-addr", @queue_addr, "--run-id", run_id) do |_work_stdin_fd, work_stdout_fd, work_stderr_fd, work_thr|
+        @work_stdout_fd = work_stdout_fd
+        @work_stderr_fd = work_stderr_fd
         @work_thr = work_thr
         # run the example
         example.run
@@ -75,8 +75,8 @@ RSpec.describe "abq test" do
       expect(test_stderr).to be_empty
       writable_example_id = example.id[2..-1].tr("/", "-")
       assert_test_output_consistent(sanitize_test_output(test_stdout), test_identifier: [writable_example_id, "test-stdout"].join("-"))
-      assert_test_output_consistent(sanitize_worker_output(@work_stdout.read), test_identifier: [writable_example_id, "work-stdout"].join("-"))
-      assert_test_output_consistent(sanitize_worker_error(@work_stderr.read), test_identifier: [writable_example_id, "work-stderr"].join("-"))
+      assert_test_output_consistent(sanitize_worker_output(@work_stdout_fd.read), test_identifier: [writable_example_id, "work-stdout"].join("-"))
+      assert_test_output_consistent(sanitize_worker_error(@work_stderr_fd.read), test_identifier: [writable_example_id, "work-stderr"].join("-"))
 
       worker_exit_status = @work_thr.value
       if success
