@@ -80,7 +80,7 @@ RSpec.describe RSpec::Abq do
       it "write messages with a 4-byte length header then the payload", :aggregate_failures do
         RSpec::Abq.protocol_write(symbol_payload, client_sock)
         payload_length = symbol_payload.to_json.bytesize
-        expect(server_sock.read(4).unpack("N")[0]).to eq(payload_length)
+        expect(server_sock.read(4).unpack1("N")).to eq(payload_length)
         expect(server_sock.read(payload_length)).to eq(symbol_payload.to_json)
       end
     end

@@ -37,7 +37,7 @@ module RSpec
       # @param outer [Array<String>] parsed scope
       # @param inner [Array<String>] parsed scope
       def self.scope_leftover(outer, inner)
-        inner[outer.length..-1] || []
+        inner[outer.length..] || []
       end
 
       # @param group [RSpec::Core::ExampleGroup]

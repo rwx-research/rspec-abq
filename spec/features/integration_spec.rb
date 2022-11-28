@@ -73,7 +73,7 @@ RSpec.describe "abq test" do
       test_stdout, test_stderr, test_exit_status = abq_test(command, queue_addr: @queue_addr, run_id: run_id)
 
       expect(test_stderr).to be_empty
-      writable_example_id = example.id[2..-1].tr("/", "-")
+      writable_example_id = example.id[2..].tr("/", "-")
       assert_test_output_consistent(sanitize_test_output(test_stdout), test_identifier: [writable_example_id, "test-stdout"].join("-"))
       assert_test_output_consistent(sanitize_worker_output(@work_stdout_fd.read), test_identifier: [writable_example_id, "work-stdout"].join("-"))
       assert_test_output_consistent(sanitize_worker_error(@work_stderr_fd.read), test_identifier: [writable_example_id, "work-stderr"].join("-"))
