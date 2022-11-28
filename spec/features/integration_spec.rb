@@ -19,17 +19,20 @@ RSpec.describe "abq test" do
   end
 
   # remove unstable parts of the output so we can validate that the rest of the test output is stable between runs
-  def sanitize_output(output)
+  def sanitize_test_output(output)
     output
       .gsub(/completed in \d+ ms/, "completed in 0 ms") # timing is unstable
       .gsub(/^Starting test run with ID.+/, "Starting test run with ID not-the-real-test-run-id") # and so is the test run id
   end
 
-  def assert_worker_output_looks_good(stderr)
-    expect(stderr.lines).to(
-      all(match(/warning: |(?:^Worker started)/)),
-      "stderr should only contain warnings and worker startup messages but it contains:\n #{stderr}"
-    )
+  def sanitize_worker_output(output)
+    output
+      .gsub(/Finished in \d+\.\d+ seconds \(files took \d+\.\d+ seconds to load\)/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
+  end
+
+  def sanitize_worker_error(output)
+    output
+      .gsub(/Worker started with id .+/, "Worker started with id not-the-real-test-run-id") # timing is unstable
   end
 
   context "with queue and worker" do
@@ -55,8 +58,9 @@ RSpec.describe "abq test" do
 
     around do |example|
       # start worker
-      Open3.popen2e("abq", "work", "--queue-addr", @queue_addr, "--run-id", run_id) do |_work_stdin_fd, work_stdout_and_stderr_fd, work_thr|
-        @work_stdout_and_stderr_fd = work_stdout_and_stderr_fd
+      Open3.popen3("abq", "work", "--queue-addr", @queue_addr, "--run-id", run_id) do |_work_stdin_fd, work_stdout, work_stderr, work_thr|
+        @work_stdout = work_stdout
+        @work_stderr = work_stderr
         @work_thr = work_thr
         # run the example
         example.run
@@ -67,28 +71,35 @@ RSpec.describe "abq test" do
     let(:worker_exit_status) { @work_thr.value }
     let(:worker_output) {
       worker_exit_status # wait for the worker to finish
-      @work_stdout_and_stderr_fd.read
+      @work_stdout.read
+    }
+    let(:worker_error) {
+      worker_exit_status # wait for the worker to finish
+      @work_stderr.read
     }
     # rubocop:enable RSpec/InstanceVariable
     let(:run_id) { SecureRandom.uuid }
 
     it "has consistent output for success", :aggregate_failures do
-      test_stdout, test_stderr, test_exit_status = abq_test("bundle exec rspec --out /dev/null 'spec/fixture_specs/two_specs.rb'", queue_addr: queue_addr, run_id: run_id)
+      test_stdout, test_stderr, test_exit_status = abq_test("bundle exec rspec 'spec/fixture_specs/two_specs.rb'", queue_addr: queue_addr, run_id: run_id)
 
       expect(test_stderr).to be_empty
-      assert_test_output_consistent(sanitize_output(test_stdout), test_identifier: "success")
+      assert_test_output_consistent(sanitize_test_output(test_stdout), test_identifier: "test-stdout-success")
       expect(test_exit_status).to be_success
 
-      assert_worker_output_looks_good(worker_output)
+      assert_test_output_consistent(sanitize_worker_output(worker_output), test_identifier: "work-stdout-success")
+      assert_test_output_consistent(sanitize_worker_error(worker_error), test_identifier: "work-stderr-success")
       expect(worker_exit_status).to be_success
     end
 
     it "has consistent output for failure", :aggregate_failures do
-      test_stdout, test_stderr, test_exit_status = abq_test("bundle exec rspec --out /dev/null --pattern 'spec/fixture_specs/*_specs.rb'", queue_addr: queue_addr, run_id: run_id)
+      test_stdout, test_stderr, test_exit_status = abq_test("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", queue_addr: queue_addr, run_id: run_id)
 
       expect(test_stderr).to be_empty
-      assert_test_output_consistent(sanitize_output(test_stdout), test_identifier: "failure")
-      assert_worker_output_looks_good(worker_output)
+      assert_test_output_consistent(sanitize_test_output(test_stdout), test_identifier: "test-stdout-failure")
+
+      assert_test_output_consistent(sanitize_worker_output(worker_output), test_identifier: "work-stdout-failure")
+      assert_test_output_consistent(sanitize_worker_error(worker_error), test_identifier: "work-stderr-failure")
 
       expect(test_exit_status).not_to be_success
       expect(test_exit_status.exitstatus).to eq 1

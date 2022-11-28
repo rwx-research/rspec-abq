@@ -1,0 +1,1 @@
+work-stdout-failure-rspec-3.12.gemfile.txt
