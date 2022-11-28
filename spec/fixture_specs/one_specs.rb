@@ -1,6 +1,6 @@
 require 'spec_helper'
 # called `_specs.rb` to avoid it being called automatically
-# used by integration/abq_spec.rb
+# used by feature specs
 RSpec.describe 'group 1' do
   it 'example 1 with tags', :foo, :bar do
     expect(false).to eq(true)
