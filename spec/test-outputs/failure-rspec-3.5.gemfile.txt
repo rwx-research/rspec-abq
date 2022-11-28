@@ -1,3 +1,4 @@
+Starting test run with ID not-the-real-test-run-id
 F.S..SS
 
 --- group 1 example 1 with tags: FAILED ---
