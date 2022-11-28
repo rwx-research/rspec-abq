@@ -54,17 +54,23 @@ RSpec.describe "abq test" do # rubocop:disable RSpec/DescribeClass
     let(:worker_exit_status) { @work_thr.value.exitstatus }
 
     it "has consistent output for success", aggregate_failures: true do
-      test_stdout, _test_stderr, test_status = abq_test("bundle exec rspec --out /dev/null 'spec/fixture_specs/two_specs.rb'", queue_addr: @queue_addr, run_id: @run_id)
+      test_stdout, test_stderr, test_status = abq_test("bundle exec rspec --out /dev/null 'spec/fixture_specs/two_specs.rb'", queue_addr: @queue_addr, run_id: @run_id)
+
+      expect(test_stderr).to be_empty
       write_or_match("success", sanitize_output(test_stdout))
       expect(test_status.exitstatus).to eq(0)
+
       worker_output_looks_good(worker_output)
       expect(worker_exit_status).to eq(0)
     end
 
     it "has consistent output for failure", aggregate_failures: true do
-      test_stdout, _test_stderr, test_status = abq_test("bundle exec rspec --out /dev/null --pattern 'spec/fixture_specs/*_specs.rb'", queue_addr: @queue_addr, run_id: @run_id)
+      test_stdout, test_stderr, test_status = abq_test("bundle exec rspec --out /dev/null --pattern 'spec/fixture_specs/*_specs.rb'", queue_addr: @queue_addr, run_id: @run_id)
+
+      expect(test_stderr).to be_empty
       write_or_match("failure", sanitize_output(test_stdout))
       worker_output_looks_good(worker_output)
+
       expect(test_status.exitstatus).to eq(1)
       expect(worker_exit_status).to eq(1)
     end
