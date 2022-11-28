@@ -11,5 +11,6 @@ RSpec.describe "load order spec", unless: RSpec::Abq.disable_tests_when_run_by_a
     `bundle exec rspec -O /dev/null ./spec/fixture_specs/one_specs.rb`
 
     expect($?).to be_success
+    ENV.delete_if { |k| k.start_with? "ABQ_" }
   end
 end
