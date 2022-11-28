@@ -44,7 +44,6 @@ jobs:
           - 3.11
           - 3.12
     env:
-      BUNDLE_WITHOUT: 'development'
       BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/rspec-${{ matrix.gemfile }}.gemfile
     steps:
       - uses: actions/checkout@v3
