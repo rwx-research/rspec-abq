@@ -21,7 +21,7 @@ RSpec.describe "abq test" do # rubocop:disable RSpec/DescribeClass
   end
 
   def write_or_match(test_identifier, matchable_output)
-    file_path = "abq_spec/test-outputs/#{test_identifier}-#{File.basename(ENV["BUNDLE_GEMFILE"])}.txt"
+    file_path = "spec/test-outputs/#{test_identifier}-#{File.basename(ENV["BUNDLE_GEMFILE"])}.txt"
     if !File.exist?(file_path) || ENV["UPDATE_SNAPSHOTS"]
       File.write(file_path, matchable_output)
     else

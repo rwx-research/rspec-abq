@@ -1,5 +1,5 @@
 # called `_specs.rb` to avoid it being called automatically
-# used by integration/abq_spec.rb
+# used by feature specs
 RSpec.describe 'group 2' do
   it 'filtered out example 1', :if => false do end
   it 'filtered in example 2', :if => true do end
