@@ -7,8 +7,6 @@ end
 
 RSpec.describe RSpec::Abq do
   describe ".setup_after_specs_loaded!", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
-    after { ENV.delete_if { |k, v| k.start_with?("ABQ_") } }
-
     let(:init_message) { {fast_exit: true} }
 
     before do
@@ -22,13 +20,13 @@ RSpec.describe RSpec::Abq do
     end
 
     it "prevents being called twice" do
-      RSpec::Abq.setup_after_specs_loaded!
-      expect { RSpec::Abq.setup_after_specs_loaded! }.to raise_error(RSpec::Abq::AbqLoadedTwiceError)
+      EnvHelper.with_reset do
+        RSpec::Abq.setup_after_specs_loaded!
+        expect { RSpec::Abq.setup_after_specs_loaded! }.to raise_error(RSpec::Abq::AbqLoadedTwiceError)
+      end
     end
 
-    it "if the env var is set, it writes the manifest and quites", :aggregate_failures do
-      ENV[RSpec::Abq::ABQ_GENERATE_MANIFEST] = "true"
-
+    it "if the env var is set, it writes the manifest and quits", :aggregate_failures do
       expect(RSpec::Abq::Manifest).to receive(:write_manifest)
       expect(RSpec.world).to receive(:wants_to_quit=).with(true)
 
@@ -36,7 +34,10 @@ RSpec.describe RSpec::Abq do
         expect(RSpec.configuration).to receive(:error_exit_code=).with(0)
       end
       expect(RSpec.world).to receive(:non_example_failure=).with(true)
-      expect(RSpec::Abq.setup_after_specs_loaded!).to be true
+
+      EnvHelper.with_env(RSpec::Abq::ABQ_GENERATE_MANIFEST => "true") do
+        expect(RSpec::Abq.setup_after_specs_loaded!).to be true
+      end
     end
 
     context "when the init message asks to fast exit" do
@@ -45,7 +46,7 @@ RSpec.describe RSpec::Abq do
       it "does nothing", :aggregate_failures do
         expect(RSpec::Abq::Ordering).not_to receive(:setup)
         expect(RSpec::Abq).not_to receive(:fetch_next_example)
-        RSpec::Abq.setup_after_specs_loaded!
+        EnvHelper.with_reset { RSpec::Abq.setup_after_specs_loaded! }
       end
     end
 
@@ -55,7 +56,7 @@ RSpec.describe RSpec::Abq do
       it "sets up ordering and starts testing", :aggregate_failures do
         expect(RSpec::Abq::Ordering).to receive(:setup!).with(stringify_keys(init_message[:init_meta]), anything)
         expect(RSpec::Abq).to receive(:fetch_next_example)
-        RSpec::Abq.setup_after_specs_loaded!
+        EnvHelper.with_reset { RSpec::Abq.setup_after_specs_loaded! }
       end
     end
   end
@@ -66,12 +67,10 @@ RSpec.describe RSpec::Abq do
     let(:client_sock) { TCPSocket.new(host, server.addr[1]) }
     let(:server_sock) { server.accept }
 
-    before do |example|
-      ENV["ABQ_SOCKET"] = "#{host}:#{server.addr[1]}"
-    end
-
-    after do
-      ENV.delete_if { |k, _v| k.start_with? "ABQ" }
+    around do |example|
+      EnvHelper.with_env( "ABQ_SOCKET" => "#{host}:#{server.addr[1]}") do
+        example.call
+      end
       RSpec::Abq.instance_eval { @socket = nil }
     end
 
