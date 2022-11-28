@@ -67,28 +67,18 @@ RSpec.describe "abq test" do
       end
     end
 
-    let(:queue_addr) { @queue_addr }
-    let(:worker_exit_status) { @work_thr.value }
-    let(:worker_output) {
-      worker_exit_status # wait for the worker to finish
-      @work_stdout.read
-    }
-    let(:worker_error) {
-      worker_exit_status # wait for the worker to finish
-      @work_stderr.read
-    }
-    # rubocop:enable RSpec/InstanceVariable
     let(:run_id) { SecureRandom.uuid }
 
     def assert_worker_output_consistent(command, example, success:)
-      test_stdout, test_stderr, test_exit_status = abq_test(command, queue_addr: queue_addr, run_id: run_id)
+      test_stdout, test_stderr, test_exit_status = abq_test(command, queue_addr: @queue_addr, run_id: run_id)
 
       expect(test_stderr).to be_empty
       writable_example_id = example.id[2..-1].tr("/", "-")
       assert_test_output_consistent(sanitize_test_output(test_stdout), test_identifier: [writable_example_id, "test-stdout"].join("-"))
-      assert_test_output_consistent(sanitize_worker_output(worker_output), test_identifier: [writable_example_id, "work-stdout"].join("-"))
-      assert_test_output_consistent(sanitize_worker_error(worker_error), test_identifier: [writable_example_id, "work-stderr"].join("-"))
+      assert_test_output_consistent(sanitize_worker_output(@work_stdout.read), test_identifier: [writable_example_id, "work-stdout"].join("-"))
+      assert_test_output_consistent(sanitize_worker_error(@work_stderr.read), test_identifier: [writable_example_id, "work-stderr"].join("-"))
 
+      worker_exit_status = @work_thr.value
       if success
         expect(test_exit_status).to be_success
         expect(worker_exit_status).to be_success
@@ -99,6 +89,7 @@ RSpec.describe "abq test" do
         expect(worker_exit_status.exitstatus).to eq 1
       end
     end
+    # rubocop:enable RSpec/InstanceVariable
 
     it "has consistent output for success", :aggregate_failures do |example|
       assert_worker_output_consistent("bundle exec rspec 'spec/fixture_specs/two_specs.rb'", example, success: true)
