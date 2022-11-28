@@ -45,7 +45,7 @@ RSpec.describe "abq test" do
       # read queue address
       data = ""
       queue_regex = /(0.0.0.0:\d+)\n/
-      data << queue_stdout_fd.read(queue_stdout_fd.stat.size) until data =~ queue_regex
+      data << queue_stdout_fd.gets until data =~ queue_regex
       queue_stdout_fd.close
       @queue_addr = data.match(queue_regex)[1]
     end
