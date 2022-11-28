@@ -1,4 +1,5 @@
 require "open3"
+require 'securerandom'
 require "spec_helper"
 
 RSpec.describe "abq test" do # rubocop:disable RSpec/DescribeClass
@@ -29,29 +30,34 @@ RSpec.describe "abq test" do # rubocop:disable RSpec/DescribeClass
 
   QUEUE_REGEX = /(0.0.0.0:\d+)\n/
   context "with queue and worker" do
-    around do |example|
+    before(:all) do
       # start the queue
-      Open3.popen2("abq", "start") do |_queue_stdin, queue_stdout_fd, queue_thr|
-        # read queue address
-        data = ""
-        data << queue_stdout_fd.read(queue_stdout_fd.stat.size) until data =~ QUEUE_REGEX
-        @queue_addr = data.match(QUEUE_REGEX)[1]
+      _queue_stdin, queue_stdout_fd, @queue_thr = Open3.popen2("abq", "start")
+      # read queue address
+      data = ""
+      data << queue_stdout_fd.read(queue_stdout_fd.stat.size) until data =~ QUEUE_REGEX
+      @queue_addr = data.match(QUEUE_REGEX)[1]
+    end
 
-        # start worker
-        Open3.popen2e("abq", "work", "--queue-addr", @queue_addr, "--run-id", run_id) do |_work_stdin_fd, work_stdout_and_stderr_fd, work_thr|
-          @work_stdout_and_stderr_fd = work_stdout_and_stderr_fd
-          @work_thr = work_thr
-          # run the example
-          example.call
-        end
-        # stop the queue
-        Process.kill("INT", queue_thr.pid)
+    after(:all) do
+
+      # stop the queue
+      Process.kill("INT", @queue_thr.pid)
+    end
+
+    around(:each) do |example|
+      # start worker
+      Open3.popen2e("abq", "work", "--queue-addr", @queue_addr, "--run-id", run_id) do |_work_stdin_fd, work_stdout_and_stderr_fd, work_thr|
+        @work_stdout_and_stderr_fd = work_stdout_and_stderr_fd
+        @work_thr = work_thr
+        # run the example
+        example.run
       end
     end
 
     let(:worker_output) { @work_stdout_and_stderr_fd.read(@work_stdout_and_stderr_fd.stat.size) }
     let(:worker_exit_status) { @work_thr.value }
-    let(:run_id) { 'test-run-id' }
+    let(:run_id) { SecureRandom.uuid }
 
     it "has consistent output for success", aggregate_failures: true do
       test_stdout, test_stderr, test_exit_status = abq_test("bundle exec rspec --out /dev/null 'spec/fixture_specs/two_specs.rb'", queue_addr: @queue_addr, run_id: run_id)
