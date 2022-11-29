@@ -13,7 +13,7 @@ RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_
     "runner_specification" => {
       "type" => "abq_native_runner_specification",
       "name" => "rspec-abq",
-      "version" => "1.0.1"
+      "version" => RSpec::Abq::VERSION
     }
   }
 
