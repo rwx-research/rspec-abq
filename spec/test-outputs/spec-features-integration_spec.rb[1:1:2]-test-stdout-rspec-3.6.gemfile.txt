@@ -12,7 +12,7 @@ F.S..SS
        (compared using ==)
      # ./spec/fixture_specs/one_specs.rb:6:in `block (2 levels) in <top (required)>'
      # ./lib/rspec/abq/extensions.rb:44:in `block (2 levels) in run_examples_with_abq'
-     # ./lib/rspec/abq.rb:205:in `send_test_result_and_advance'
+     # ./lib/rspec/abq.rb:221:in `send_test_result_and_advance'
      # ./lib/rspec/abq/extensions.rb:44:in `block in run_examples_with_abq'
      # ./lib/rspec/abq/extensions.rb:32:in `each'
      # ./lib/rspec/abq/extensions.rb:32:in `run_examples_with_abq'
