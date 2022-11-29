@@ -101,7 +101,7 @@ RSpec.describe RSpec::Abq do
           RSpec::Abq.socket
         }
         RSpec::Abq.protocol_write({"init_meta" => {"seed" => 4, "ordering_class" => "RSpec::Core::Ordering::Identity"}}, server_sock)
-        expect(RSpec::Abq.protocol_read(server_sock)).to(eq(stringify_keys(RSpec::Abq::PROTOCOL_VERSION_MESSAGE)))
+        expect(RSpec::Abq.protocol_read(server_sock)).to(eq(stringify_keys(RSpec::Abq::NATIVE_RUNNER_SPAWNED_MESSAGE)))
       end
     end
   end
