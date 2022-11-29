@@ -1,5 +1,5 @@
 Worker started with id not-the-real-test-run-id
-/Users/michaelglass/Documents/work/rwx/rspec-abq/.gem/7c0f4604e2fa29a18e9d24821c285f7c/gems/rspec-core-3.7.1/lib/rspec/core/configuration_options.rb:171: warning: Passing safe_level with the 2nd argument of ERB.new is deprecated. Do not use it, and specify other arguments as keyword arguments.
-/Users/michaelglass/Documents/work/rwx/rspec-abq/.gem/7c0f4604e2fa29a18e9d24821c285f7c/gems/rspec-core-3.7.1/lib/rspec/core/configuration_options.rb:171: warning: Passing trim_mode with the 3rd argument of ERB.new is deprecated. Use keyword argument like ERB.new(str, trim_mode: ...) instead.
-/Users/michaelglass/Documents/work/rwx/rspec-abq/.gem/7c0f4604e2fa29a18e9d24821c285f7c/gems/rspec-core-3.7.1/lib/rspec/core/configuration_options.rb:171: warning: Passing safe_level with the 2nd argument of ERB.new is deprecated. Do not use it, and specify other arguments as keyword arguments.
-/Users/michaelglass/Documents/work/rwx/rspec-abq/.gem/7c0f4604e2fa29a18e9d24821c285f7c/gems/rspec-core-3.7.1/lib/rspec/core/configuration_options.rb:171: warning: Passing trim_mode with the 3rd argument of ERB.new is deprecated. Use keyword argument like ERB.new(str, trim_mode: ...) instead.
+
+
+
+

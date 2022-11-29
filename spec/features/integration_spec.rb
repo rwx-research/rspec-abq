@@ -22,6 +22,7 @@ RSpec.describe "abq test" do
   def sanitize_test_output(output)
     output
       .gsub(/completed in \d+ ms/, "completed in 0 ms") # timing is unstable
+      .gsub(/^Finished in .* seconds .*$/, "Finished in 0 seconds") # timing is unstable
       .gsub(/^Starting test run with ID.+/, "Starting test run with ID not-the-real-test-run-id") # and so is the test run id
   end
 
@@ -33,6 +34,7 @@ RSpec.describe "abq test" do
   def sanitize_worker_error(output)
     output
       .gsub(/Worker started with id .+/, "Worker started with id not-the-real-test-run-id") # timing is unstable
+      .gsub(/^.*lib\/rspec\/core.*: warning.*$/, "") # strip file path warnings
   end
 
   context "with queue and worker" do

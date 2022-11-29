@@ -24,3 +24,7 @@ F.S..SS
      # ./lib/rspec/abq/extensions.rb:118:in `run_specs'
 
 (completed in 0 ms)
+
+
+Finished in 0 seconds
+7 tests, 1 failures
