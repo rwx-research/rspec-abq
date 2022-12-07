@@ -27,14 +27,23 @@ RSpec.describe "abq test" do
   end
 
   def sanitize_worker_output(output)
-    output
-      .gsub(/Finished in \d+\.\d+ seconds \(files took \d+\.\d+ seconds to load\)/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
+    sanitize_backtraces(
+      output
+        .gsub(/Finished in \d+\.\d+ seconds \(files took \d+\.\d+ seconds to load\)/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
+    )
+  end
+
+  def sanitize_backtraces(output)
+    output.gsub(%r{.+(bundler|rspec-abq|rubygems|gems)/}, '/\1/')
   end
 
   def sanitize_worker_error(output)
-    output
-      .gsub(/Worker started with id .+/, "Worker started with id not-the-real-test-run-id") # timing is unstable
-      .gsub(/^.*lib\/rspec\/core.*: warning.*$/, "") # strip file path warnings
+    sanitize_backtraces(
+      output
+        .gsub(/Worker started with id .+/, "Worker started with id not-the-real-test-run-id") # timing is unstable
+        .gsub(/^.*lib\/rspec\/core.*: warning.*$/, "") # strip file path warnings
+        .gsub(%r{.+(bundler|rspec-abq|rubygems|gems)/}, '/\1/')
+    )
   end
 
   context "with queue and worker" do
