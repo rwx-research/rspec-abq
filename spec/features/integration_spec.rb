@@ -71,24 +71,28 @@ RSpec.describe "abq test" do
 
     let(:run_id) { SecureRandom.uuid }
 
-    def assert_worker_output_consistent(command, example, success:, status_code: 1)
+    def assert_worker_output_consistent(command, example, success:, worker_status_code: 1, test_stderr_empty: true)
       test_stdout, test_stderr, test_exit_status = abq_test(command, queue_addr: @queue_addr, run_id: run_id)
 
-      expect(test_stderr).to be_empty
       writable_example_id = example.id[2..].tr("/", "-")
       assert_test_output_consistent(sanitize_test_output(test_stdout), test_identifier: [writable_example_id, "test-stdout"].join("-"))
       assert_test_output_consistent(sanitize_worker_output(@work_stdout_fd.read), test_identifier: [writable_example_id, "work-stdout"].join("-"))
       assert_test_output_consistent(sanitize_worker_error(@work_stderr_fd.read), test_identifier: [writable_example_id, "work-stderr"].join("-"))
 
+      if test_stderr_empty
+        expect(test_stderr).to be_empty
+      else
+        assert_test_output_consistent(sanitize_test_output(test_stderr), test_identifier: [writable_example_id, "test-stderr"].join("-"))
+      end
       worker_exit_status = @work_thr.value
       if success
         expect(test_exit_status).to be_success
         expect(worker_exit_status).to be_success
       else
         expect(test_exit_status).not_to be_success
-        expect(test_exit_status.exitstatus).to eq status_code
+        expect(test_exit_status.exitstatus).to eq 1
         expect(worker_exit_status).not_to be_success
-        expect(worker_exit_status.exitstatus).to eq status_code
+        expect(worker_exit_status.exitstatus).to eq worker_status_code
       end
     end
     # rubocop:enable RSpec/InstanceVariable
@@ -104,6 +108,14 @@ RSpec.describe "abq test" do
 
     it "has consistent output for specs together", :aggregate_failures do |example|
       assert_worker_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
+    end
+
+    it "has consistent output for specs with syntax errors", :aggregate_failures do |example|
+      assert_worker_output_consistent("bundle exec rspec 'spec/fixture_specs/specs_with_syntax_errors.rb'", example, success: false, worker_status_code: 101, test_stderr_empty: false)
+    end
+
+    it "has consistent output for specs together including a syntax error", :aggregate_failures do |example|
+      assert_worker_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", example, success: false, worker_status_code: 101, test_stderr_empty: false)
     end
   end
 end

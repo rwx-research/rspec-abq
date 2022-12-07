@@ -1,0 +1,41 @@
+
+An error occurred while loading ./spec/fixture_specs/specs_with_syntax_errors.rb.
+Failure/Error: __send__(method, file)
+
+SyntaxError:
+  /Users/michaelglass/Documents/work/rwx/rspec-abq/spec/fixture_specs/specs_with_syntax_errors.rb:8: unterminated string meets end of file
+# /Users/michaelglass/Documents/work/rwx/rspec-abq/.gem/7c0f4604e2fa29a18e9d24821c285f7c/gems/rspec-core-3.12.0/lib/rspec/core/configuration.rb:2117:in `load'
+# /Users/michaelglass/Documents/work/rwx/rspec-abq/.gem/7c0f4604e2fa29a18e9d24821c285f7c/gems/rspec-core-3.12.0/lib/rspec/core/configuration.rb:2117:in `load_file_handling_errors'
+# /Users/michaelglass/Documents/work/rwx/rspec-abq/.gem/7c0f4604e2fa29a18e9d24821c285f7c/gems/rspec-core-3.12.0/lib/rspec/core/configuration.rb:1617:in `block in load_spec_files'
+# /Users/michaelglass/Documents/work/rwx/rspec-abq/.gem/7c0f4604e2fa29a18e9d24821c285f7c/gems/rspec-core-3.12.0/lib/rspec/core/configuration.rb:1615:in `each'
+# /Users/michaelglass/Documents/work/rwx/rspec-abq/.gem/7c0f4604e2fa29a18e9d24821c285f7c/gems/rspec-core-3.12.0/lib/rspec/core/configuration.rb:1615:in `load_spec_files'
+# /Users/michaelglass/Documents/work/rwx/rspec-abq/.gem/7c0f4604e2fa29a18e9d24821c285f7c/gems/rspec-core-3.12.0/lib/rspec/core/runner.rb:102:in `setup'
+# /Users/michaelglass/Documents/work/rwx/rspec-abq/.gem/7c0f4604e2fa29a18e9d24821c285f7c/gems/rspec-core-3.12.0/lib/rspec/core/runner.rb:86:in `run'
+# /Users/michaelglass/Documents/work/rwx/rspec-abq/.gem/7c0f4604e2fa29a18e9d24821c285f7c/gems/rspec-core-3.12.0/lib/rspec/core/runner.rb:71:in `run'
+# /Users/michaelglass/Documents/work/rwx/rspec-abq/.gem/7c0f4604e2fa29a18e9d24821c285f7c/gems/rspec-core-3.12.0/lib/rspec/core/runner.rb:45:in `invoke'
+# /Users/michaelglass/Documents/work/rwx/rspec-abq/.gem/7c0f4604e2fa29a18e9d24821c285f7c/gems/rspec-core-3.12.0/exe/rspec:4:in `<top (required)>'
+# /Users/michaelglass/Documents/work/rwx/rspec-abq/.gem/7c0f4604e2fa29a18e9d24821c285f7c/bin/rspec:25:in `load'
+# /Users/michaelglass/Documents/work/rwx/rspec-abq/.gem/7c0f4604e2fa29a18e9d24821c285f7c/bin/rspec:25:in `<top (required)>'
+# /nix/store/dmg6nslgajiyw8gqm59yc545yvg8axqx-ruby-3.1.2/lib/ruby/3.1.0/bundler/cli/exec.rb:58:in `load'
+# /nix/store/dmg6nslgajiyw8gqm59yc545yvg8axqx-ruby-3.1.2/lib/ruby/3.1.0/bundler/cli/exec.rb:58:in `kernel_load'
+# /nix/store/dmg6nslgajiyw8gqm59yc545yvg8axqx-ruby-3.1.2/lib/ruby/3.1.0/bundler/cli/exec.rb:23:in `run'
+# /nix/store/dmg6nslgajiyw8gqm59yc545yvg8axqx-ruby-3.1.2/lib/ruby/3.1.0/bundler/cli.rb:484:in `exec'
+# /nix/store/dmg6nslgajiyw8gqm59yc545yvg8axqx-ruby-3.1.2/lib/ruby/3.1.0/bundler/vendor/thor/lib/thor/command.rb:27:in `run'
+# /nix/store/dmg6nslgajiyw8gqm59yc545yvg8axqx-ruby-3.1.2/lib/ruby/3.1.0/bundler/vendor/thor/lib/thor/invocation.rb:127:in `invoke_command'
+# /nix/store/dmg6nslgajiyw8gqm59yc545yvg8axqx-ruby-3.1.2/lib/ruby/3.1.0/bundler/vendor/thor/lib/thor.rb:392:in `dispatch'
+# /nix/store/dmg6nslgajiyw8gqm59yc545yvg8axqx-ruby-3.1.2/lib/ruby/3.1.0/bundler/cli.rb:31:in `dispatch'
+# /nix/store/dmg6nslgajiyw8gqm59yc545yvg8axqx-ruby-3.1.2/lib/ruby/3.1.0/bundler/vendor/thor/lib/thor/base.rb:485:in `start'
+# /nix/store/dmg6nslgajiyw8gqm59yc545yvg8axqx-ruby-3.1.2/lib/ruby/3.1.0/bundler/cli.rb:25:in `start'
+# /nix/store/dmg6nslgajiyw8gqm59yc545yvg8axqx-ruby-3.1.2/lib/ruby/gems/3.1.0/gems/bundler-2.3.7/libexec/bundle:48:in `block in <top (required)>'
+# /nix/store/dmg6nslgajiyw8gqm59yc545yvg8axqx-ruby-3.1.2/lib/ruby/3.1.0/bundler/friendly_errors.rb:103:in `with_friendly_errors'
+# /nix/store/dmg6nslgajiyw8gqm59yc545yvg8axqx-ruby-3.1.2/lib/ruby/gems/3.1.0/gems/bundler-2.3.7/libexec/bundle:36:in `<top (required)>'
+# /Users/michaelglass/Documents/work/rwx/rspec-abq/bin/bundle:113:in `load'
+# /Users/michaelglass/Documents/work/rwx/rspec-abq/bin/bundle:113:in `<main>'
+# 
+#   Showing full backtrace because every line was filtered out.
+#   See docs for RSpec::Configuration#backtrace_exclusion_patterns and
+#   RSpec::Configuration#backtrace_inclusion_patterns for more information.
+
+Finished in 0.0 seconds (files took 0.0 seconds to load)
+0 examples, 0 failures, 1 error occurred outside of examples
+
