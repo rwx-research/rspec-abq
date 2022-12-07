@@ -71,7 +71,7 @@ RSpec.describe "abq test" do
 
     let(:run_id) { SecureRandom.uuid }
 
-    def assert_worker_output_consistent(command, example, success:)
+    def assert_worker_output_consistent(command, example, success:, status_code: 1)
       test_stdout, test_stderr, test_exit_status = abq_test(command, queue_addr: @queue_addr, run_id: run_id)
 
       expect(test_stderr).to be_empty
@@ -86,18 +86,23 @@ RSpec.describe "abq test" do
         expect(worker_exit_status).to be_success
       else
         expect(test_exit_status).not_to be_success
-        expect(test_exit_status.exitstatus).to eq 1
+        expect(test_exit_status.exitstatus).to eq status_code
         expect(worker_exit_status).not_to be_success
-        expect(worker_exit_status.exitstatus).to eq 1
+        expect(worker_exit_status.exitstatus).to eq status_code
       end
     end
     # rubocop:enable RSpec/InstanceVariable
 
-    it "has consistent output for success", :aggregate_failures do |example|
-      assert_worker_output_consistent("bundle exec rspec 'spec/fixture_specs/two_specs.rb'", example, success: true)
+    {"failing_specs" => false,
+     "successful_specs" => true,
+     "pending_specs" => true,
+     "raising_specs" => false}.each do |spec_name, spec_passes|
+      it "has consistent output for #{spec_name}", :aggregate_failures do |example|
+        assert_worker_output_consistent("bundle exec rspec 'spec/fixture_specs/#{spec_name}.rb'", example, success: spec_passes)
+      end
     end
 
-    it "has consistent output for failure", :aggregate_failures do |example|
+    it "has consistent output for specs together", :aggregate_failures do |example|
       assert_worker_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
     end
   end
