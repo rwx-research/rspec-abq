@@ -1,0 +1,3 @@
+Worker started with id not-the-real-test-run-id
+Hit end of test run without being on end marker. Target test case is #<RSpec::Abq::TestCase:0x000000010b0cd990 @id="./spec/fixture_specs/failing_specs.rb[1:1]", @tags=nil, @meta={}, @rerun_file_path="./spec/fixture_specs/failing_specs.rb", @scope=["1", "1"]>
+early eof

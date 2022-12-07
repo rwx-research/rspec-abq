@@ -34,7 +34,7 @@ RSpec.describe "abq test" do
   end
 
   def sanitize_backtraces(output)
-    output.gsub(%r{.+(bundler|rspec-abq|rubygems|gems)/}, '/\1/')
+    output.gsub(%r{.+(bin|bundler|rspec-abq|rubygems|gems)/}, '/\1/')
   end
 
   def sanitize_worker_error(output)

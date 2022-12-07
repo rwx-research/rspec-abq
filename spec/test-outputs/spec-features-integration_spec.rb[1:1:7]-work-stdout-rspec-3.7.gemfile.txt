@@ -1,0 +1,80 @@
+
+An error occurred while loading ./spec/fixture_specs/specs_with_syntax_errors.rb.
+Failure/Error: load file
+
+SyntaxError:
+/rspec-abq/spec/fixture_specs/specs_with_syntax_errors.rb:8: unterminated string meets end of file
+/gems/rspec-core-3.7.1/lib/rspec/core/configuration.rb:1954:in `load'
+/gems/rspec-core-3.7.1/lib/rspec/core/configuration.rb:1954:in `load_spec_file_handling_errors'
+/gems/rspec-core-3.7.1/lib/rspec/core/configuration.rb:1496:in `block in load_spec_files'
+/gems/rspec-core-3.7.1/lib/rspec/core/configuration.rb:1494:in `each'
+/gems/rspec-core-3.7.1/lib/rspec/core/configuration.rb:1494:in `load_spec_files'
+/gems/rspec-core-3.7.1/lib/rspec/core/runner.rb:100:in `setup'
+/gems/rspec-core-3.7.1/lib/rspec/core/runner.rb:86:in `run'
+/gems/rspec-core-3.7.1/lib/rspec/core/runner.rb:71:in `run'
+/gems/rspec-core-3.7.1/lib/rspec/core/runner.rb:45:in `invoke'
+/gems/rspec-core-3.7.1/exe/rspec:4:in `<top (required)>'
+/bin/rspec:25:in `load'
+/bin/rspec:25:in `<top (required)>'
+/bundler/cli/exec.rb:58:in `load'
+/bundler/cli/exec.rb:58:in `kernel_load'
+/bundler/cli/exec.rb:23:in `run'
+/bundler/cli.rb:484:in `exec'
+/bundler/vendor/thor/lib/thor/command.rb:27:in `run'
+/bundler/vendor/thor/lib/thor/invocation.rb:127:in `invoke_command'
+/bundler/vendor/thor/lib/thor.rb:392:in `dispatch'
+/bundler/cli.rb:31:in `dispatch'
+/bundler/vendor/thor/lib/thor/base.rb:485:in `start'
+/bundler/cli.rb:25:in `start'
+/gems/bundler-2.3.7/libexec/bundle:48:in `block in <top (required)>'
+/bundler/friendly_errors.rb:103:in `with_friendly_errors'
+/gems/bundler-2.3.7/libexec/bundle:36:in `<top (required)>'
+/bin/bundle:113:in `load'
+/bin/bundle:113:in `<main>'
+# 
+#   Showing full backtrace because every line was filtered out.
+#   See docs for RSpec::Configuration#backtrace_exclusion_patterns and
+#   RSpec::Configuration#backtrace_inclusion_patterns for more information.
+
+An error occurred while loading ./spec/fixture_specs/specs_with_syntax_errors.rb.
+Failure/Error: load file
+
+SyntaxError:
+/rspec-abq/spec/fixture_specs/specs_with_syntax_errors.rb:8: unterminated string meets end of file
+/gems/rspec-core-3.7.1/lib/rspec/core/configuration.rb:1954:in `load'
+/gems/rspec-core-3.7.1/lib/rspec/core/configuration.rb:1954:in `load_spec_file_handling_errors'
+/gems/rspec-core-3.7.1/lib/rspec/core/configuration.rb:1496:in `block in load_spec_files'
+/gems/rspec-core-3.7.1/lib/rspec/core/configuration.rb:1494:in `each'
+/gems/rspec-core-3.7.1/lib/rspec/core/configuration.rb:1494:in `load_spec_files'
+/gems/rspec-core-3.7.1/lib/rspec/core/runner.rb:100:in `setup'
+/gems/rspec-core-3.7.1/lib/rspec/core/runner.rb:86:in `run'
+/gems/rspec-core-3.7.1/lib/rspec/core/runner.rb:71:in `run'
+/gems/rspec-core-3.7.1/lib/rspec/core/runner.rb:45:in `invoke'
+/gems/rspec-core-3.7.1/exe/rspec:4:in `<top (required)>'
+/bin/rspec:25:in `load'
+/bin/rspec:25:in `<top (required)>'
+/bundler/cli/exec.rb:58:in `load'
+/bundler/cli/exec.rb:58:in `kernel_load'
+/bundler/cli/exec.rb:23:in `run'
+/bundler/cli.rb:484:in `exec'
+/bundler/vendor/thor/lib/thor/command.rb:27:in `run'
+/bundler/vendor/thor/lib/thor/invocation.rb:127:in `invoke_command'
+/bundler/vendor/thor/lib/thor.rb:392:in `dispatch'
+/bundler/cli.rb:31:in `dispatch'
+/bundler/vendor/thor/lib/thor/base.rb:485:in `start'
+/bundler/cli.rb:25:in `start'
+/gems/bundler-2.3.7/libexec/bundle:48:in `block in <top (required)>'
+/bundler/friendly_errors.rb:103:in `with_friendly_errors'
+/gems/bundler-2.3.7/libexec/bundle:36:in `<top (required)>'
+/bin/bundle:113:in `load'
+/bin/bundle:113:in `<main>'
+# 
+#   Showing full backtrace because every line was filtered out.
+#   See docs for RSpec::Configuration#backtrace_exclusion_patterns and
+#   RSpec::Configuration#backtrace_inclusion_patterns for more information.
+
+a failing group
+
+Finished in 0.0 seconds (files took 0.0 seconds to load)
+0 examples, 0 failures, 1 error occurred outside of examples
+

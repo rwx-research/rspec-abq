@@ -1,0 +1,11 @@
+Error: The command
+
+    bundle exec rspec spec/fixture_specs/specs_with_syntax_errors.rb
+
+failed to be run by all ABQ workers associating to this test run.
+
+Here's a message we found concerning the failure:
+
+Worker quit before sending protocol version
+
+HELP: Test commands run by ABQ must have support for the ABQ protocol.
