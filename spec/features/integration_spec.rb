@@ -27,14 +27,24 @@ RSpec.describe "abq test" do
   end
 
   def sanitize_worker_output(output)
-    output
-      .gsub(/Finished in \d+\.\d+ seconds \(files took \d+\.\d+ seconds to load\)/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
+    sanitize_backtraces(
+      output
+        .gsub(/Finished in \d+\.\d+ seconds \(files took \d+\.\d+ seconds to load\)/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
+    ).tap { |x| }
+  end
+
+  def sanitize_backtraces(output)
+    output.gsub(%r{.+(rspec-abq)/}, '/\1/')
+      .gsub(/^.+(?:bin|bundler|rubygems|gems).+$\n?/, "") # get rid of backtraces out of rspec-abq because line numbers are inconsistent
   end
 
   def sanitize_worker_error(output)
-    output
-      .gsub(/Worker started with id .+/, "Worker started with id not-the-real-test-run-id") # timing is unstable
-      .gsub(/^.*lib\/rspec\/core.*: warning.*$/, "") # strip file path warnings
+    sanitize_backtraces(
+      output
+        .gsub(/Worker started with id .+/, "Worker started with id not-the-real-test-run-id") # timing is unstable
+        .gsub(/^.*lib\/rspec\/core.*: warning.*$/, "") # strip file path warnings
+        .gsub(%r{^.+(bundler|rubygems|gems)$\n?/}, '/\1/')
+    )
   end
 
   context "with queue and worker" do
@@ -71,15 +81,19 @@ RSpec.describe "abq test" do
 
     let(:run_id) { SecureRandom.uuid }
 
-    def assert_worker_output_consistent(command, example, success:)
+    def assert_worker_output_consistent(command, example, success:, worker_status_code: 1, test_stderr_empty: true)
       test_stdout, test_stderr, test_exit_status = abq_test(command, queue_addr: @queue_addr, run_id: run_id)
 
-      expect(test_stderr).to be_empty
       writable_example_id = example.id[2..].tr("/", "-")
       assert_test_output_consistent(sanitize_test_output(test_stdout), test_identifier: [writable_example_id, "test-stdout"].join("-"))
       assert_test_output_consistent(sanitize_worker_output(@work_stdout_fd.read), test_identifier: [writable_example_id, "work-stdout"].join("-"))
       assert_test_output_consistent(sanitize_worker_error(@work_stderr_fd.read), test_identifier: [writable_example_id, "work-stderr"].join("-"))
 
+      if test_stderr_empty
+        expect(test_stderr).to be_empty
+      else
+        assert_test_output_consistent(sanitize_test_output(test_stderr), test_identifier: [writable_example_id, "test-stderr"].join("-"))
+      end
       worker_exit_status = @work_thr.value
       if success
         expect(test_exit_status).to be_success
@@ -88,17 +102,35 @@ RSpec.describe "abq test" do
         expect(test_exit_status).not_to be_success
         expect(test_exit_status.exitstatus).to eq 1
         expect(worker_exit_status).not_to be_success
-        expect(worker_exit_status.exitstatus).to eq 1
+        expect(worker_exit_status.exitstatus).to eq worker_status_code
       end
     end
     # rubocop:enable RSpec/InstanceVariable
 
-    it "has consistent output for success", :aggregate_failures do |example|
-      assert_worker_output_consistent("bundle exec rspec 'spec/fixture_specs/two_specs.rb'", example, success: true)
+    {"failing_specs" => false,
+     "successful_specs" => true,
+     "pending_specs" => true,
+     "raising_specs" => false}.each do |spec_name, spec_passes|
+      it "has consistent output for #{spec_name}", :aggregate_failures do |example|
+        assert_worker_output_consistent("bundle exec rspec 'spec/fixture_specs/#{spec_name}.rb'", example, success: spec_passes)
+      end
     end
 
-    it "has consistent output for failure", :aggregate_failures do |example|
+    it "has consistent output for specs together", :aggregate_failures do |example|
       assert_worker_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
+    end
+
+    version = Gem::Version.new(RSpec::Core::Version::STRING)
+    # we don't properly fail on syntax errors for versions 3.6, 3.7, and 3.8
+    pending_test = version >= Gem::Version.new("3.6.0") && version < Gem::Version.new("3.9.0")
+    it "has consistent output for specs with syntax errors", :aggregate_failures do |example|
+      pending if pending_test
+      assert_worker_output_consistent("bundle exec rspec 'spec/fixture_specs/specs_with_syntax_errors.rb'", example, success: false, worker_status_code: 101, test_stderr_empty: false)
+    end
+
+    # this one doesn't even pass if pending for 3.6-3.8 so we skip it with metadata
+    it "has consistent output for specs together including a syntax error", *[:aggregate_failures, (:skip if pending_test)].compact do |example|
+      assert_worker_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", example, success: false, worker_status_code: 101, test_stderr_empty: false)
     end
   end
 end

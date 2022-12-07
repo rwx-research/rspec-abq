@@ -1,6 +1,5 @@
 
-group 2
-  pending group 2-1
+a failing group
 
 Finished in 0.0 seconds (files took 0.0 seconds to load)
 0 examples, 0 failures

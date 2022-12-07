@@ -6,7 +6,7 @@ RSpec.describe "load order spec", unless: RSpec::Abq.disable_tests_when_run_by_a
     abq_socket = "#{host}:#{server.addr[1]}"
     EnvHelper.with_env("ABQ_SOCKET" => abq_socket, "ABQ_GENERATE_MANIFEST" => abq_socket) do
       # -O loads a specific .rspec file, in this case, ignoring .rspec which requires spec/helper
-      `bundle exec rspec -O /dev/null ./spec/fixture_specs/one_specs.rb`
+      `bundle exec rspec -O /dev/null ./spec/fixture_specs/successful_specs.rb`
     end
 
     expect($?).to be_success

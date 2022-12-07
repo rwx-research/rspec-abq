@@ -1,0 +1,57 @@
+Starting test run with ID not-the-real-test-run-id
+FSPSE.
+
+--- a failing group has a failing test: FAILED ---
+
+  1) a failing group has a failing test
+     Failure/Error: expect(false).to eq(true)
+
+       expected: true
+            got: false
+
+       (compared using ==)
+
+       Diff:
+       @@ -1 +1 @@
+       -true
+       +false
+     # ./spec/fixture_specs/failing_specs.rb:6:in `block (2 levels) in <top (required)>'
+     # ./lib/rspec/abq/extensions.rb:44:in `block (2 levels) in run_examples_with_abq'
+     # ./lib/rspec/abq.rb:221:in `send_test_result_and_advance'
+     # ./lib/rspec/abq/extensions.rb:44:in `block in run_examples_with_abq'
+     # ./lib/rspec/abq/extensions.rb:32:in `each'
+     # ./lib/rspec/abq/extensions.rb:32:in `run_examples_with_abq'
+     # ./lib/rspec/abq/extensions.rb:71:in `run_with_abq'
+     # ./lib/rspec/abq/extensions.rb:124:in `block (3 levels) in run_specs'
+     # ./lib/rspec/abq/extensions.rb:124:in `map'
+     # ./lib/rspec/abq/extensions.rb:124:in `block (2 levels) in run_specs'
+     # ./lib/rspec/abq/extensions.rb:119:in `block in run_specs'
+     # ./lib/rspec/abq/extensions.rb:118:in `run_specs'
+
+(completed in 0 ms)
+
+--- a raising group has a raising test: ERRORED ---
+
+  1) a raising group has a raising test
+     Failure/Error: raise 'the roof'
+
+     RuntimeError:
+       the roof
+     # ./spec/fixture_specs/raising_specs.rb:6:in `block (2 levels) in <top (required)>'
+     # ./lib/rspec/abq/extensions.rb:44:in `block (2 levels) in run_examples_with_abq'
+     # ./lib/rspec/abq.rb:221:in `send_test_result_and_advance'
+     # ./lib/rspec/abq/extensions.rb:44:in `block in run_examples_with_abq'
+     # ./lib/rspec/abq/extensions.rb:32:in `each'
+     # ./lib/rspec/abq/extensions.rb:32:in `run_examples_with_abq'
+     # ./lib/rspec/abq/extensions.rb:71:in `run_with_abq'
+     # ./lib/rspec/abq/extensions.rb:124:in `block (3 levels) in run_specs'
+     # ./lib/rspec/abq/extensions.rb:124:in `map'
+     # ./lib/rspec/abq/extensions.rb:124:in `block (2 levels) in run_specs'
+     # ./lib/rspec/abq/extensions.rb:119:in `block in run_specs'
+     # ./lib/rspec/abq/extensions.rb:118:in `run_specs'
+
+(completed in )
+
+
+Finished in 0 seconds
+6 tests, 2 failures
