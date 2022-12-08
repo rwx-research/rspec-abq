@@ -14,9 +14,9 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 
-  config.around do |example|
-    example.run
-  rescue SystemExit => e
-    fail "you ran a test that called exit(#{e.status})"
-  end
+  # config.around do |example|
+  #   example.run
+  # rescue SystemExit => e
+  #   fail "you ran a test that called exit(#{e.status})"
+  # end
 end
