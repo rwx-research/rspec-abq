@@ -10,12 +10,7 @@ RSpec.describe "abq test" do
   # if test output doesn't exist on disk, write it to a file
   # if it does exist, use the file as the expected output
   def assert_test_output_consistent(matchable_output, test_identifier:)
-    file_path = "spec/test-outputs/#{test_identifier}-#{File.basename(ENV["BUNDLE_GEMFILE"])}.txt"
-    if !File.exist?(file_path) || ENV["UPDATE_SNAPSHOTS"]
-      File.write(file_path, matchable_output)
-    else
-      expect(matchable_output).to eq(File.read(file_path))
-    end
+    expect(matchable_output).to match_snapshot("#{test_identifier}-#{File.basename(ENV["BUNDLE_GEMFILE"])}")
   end
 
   # remove unstable parts of the output so we can validate that the rest of the test output is stable between runs

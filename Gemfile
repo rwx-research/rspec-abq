@@ -10,7 +10,6 @@ gem "rspec", "~> 3.12"
 
 group :development do
   gem "rake", "~> 13.0"
-  gem "pry"
   gem "ruby-lsp"
   gem "rubocop", require: false
   # and a bunch of rubocop plugins
