@@ -13,6 +13,9 @@ RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_
       "type" => "abq_native_runner_specification",
       "name" => "rspec-abq",
       "version" => RSpec::Abq::VERSION,
+      "test_framework" => "rspec",
+      "language" => RUBY_ENGINE,
+      "language_version" => "#{RUBY_VERSION}p#{RUBY_PATCHLEVEL}",
       "host" => RUBY_DESCRIPTION
     }
   }

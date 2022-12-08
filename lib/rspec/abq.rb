@@ -42,6 +42,9 @@ module RSpec
       type: "abq_native_runner_specification",
       name: "rspec-abq",
       version: RSpec::Abq::VERSION,
+      test_framework: "rspec",
+      language: RUBY_ENGINE,
+      language_version: "#{RUBY_VERSION}p#{RUBY_PATCHLEVEL}",
       host: RUBY_DESCRIPTION
     }
 
