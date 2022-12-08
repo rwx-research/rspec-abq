@@ -6,13 +6,24 @@ Dir['spec/**/__snapshots__/*'].each do |file|
   FileUtils.rm file
 end
 
-Dir['gemfiles/*.gemfile'].map do |gemfile|
+threads = Dir['gemfiles/*.gemfile'].map do |gemfile|
   Thread.new do
     ENV['BUNDLE_GEMFILE'] = gemfile
     ENV['UPDATE_SNAPSHOTS'] = 'true'
     puts(gemfile + ":" + `bundle exec rspec spec/features/integration_spec.rb`)
   end
-end.map(&:join)
+end
+
+threads << Thread.new do
+  ENV['UPDATE_SNAPSHOTS'] = 'true'
+  puts(`bundle exec rspec spec/features/manifest_spec.rb`)
+end
+
+threads.map(&:join)
+
+
+ENV['UPDATE_SNAPSHOTS'] = 'true'
+`bundle exec rspec spec/features/manifest_spec.rb`
 
 # symlink the results for the latest gemfile to the results for the default gemfile
 
