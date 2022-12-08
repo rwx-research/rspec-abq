@@ -7,3 +7,4 @@ gemspec(path: "..")
 
 # and the specific patch version of rspec
 gem "rspec", "~> 3.8", "< 3.9"
+gem "rspec-snapshot", github: "rwx-research/rspec-snapshot"
