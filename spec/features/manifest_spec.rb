@@ -12,7 +12,8 @@ RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_
     "runner_specification" => {
       "type" => "abq_native_runner_specification",
       "name" => "rspec-abq",
-      "version" => RSpec::Abq::VERSION
+      "version" => RSpec::Abq::VERSION,
+      "host" => RUBY_DESCRIPTION
     }
   }
   let(:server) { TCPServer.new host, 0 }

@@ -41,7 +41,8 @@ module RSpec
     NATIVE_RUNNER_SPECIFICATION = {
       type: "abq_native_runner_specification",
       name: "rspec-abq",
-      version: RSpec::Abq::VERSION
+      version: RSpec::Abq::VERSION,
+      host: RUBY_DESCRIPTION
     }
 
     # The [rpsec-abq spawned message](https://www.notion.so/rwx/ABQ-Worker-Native-Test-Runner-IPC-Interface-0959f5a9144741d798ac122566a3d887#8587ee4fd01e41ec880dcbe212562172).
