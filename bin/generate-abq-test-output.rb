@@ -6,17 +6,15 @@ Dir['spec/**/__snapshots__/*'].each do |file|
   FileUtils.rm file
 end
 
+ENV['UPDATE_SNAPSHOTS'] = 'true'
 threads = Dir['gemfiles/*.gemfile'].map do |gemfile|
   Thread.new do
-    ENV['BUNDLE_GEMFILE'] = gemfile
-    ENV['UPDATE_SNAPSHOTS'] = 'true'
-    puts(gemfile + ":" + `bundle exec rspec spec/features/integration_spec.rb`)
+    system({"BUNDLE_GEMFILE" => gemfile}, "bundle exec rspec spec/features/integration_spec.rb")
   end
 end
 
 threads << Thread.new do
-  ENV['UPDATE_SNAPSHOTS'] = 'true'
-  puts(`bundle exec rspec spec/features/manifest_spec.rb`)
+  system("bundle exec rspec spec/features/manifest_spec.rb")
 end
 
 threads.map(&:join)
