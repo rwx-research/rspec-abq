@@ -43,6 +43,7 @@ module RSpec
       name: "rspec-abq",
       version: RSpec::Abq::VERSION,
       test_framework: "rspec",
+      test_framework_version: RSpec::Core::Version::STRING,
       language: RUBY_ENGINE,
       language_version: "#{RUBY_VERSION}p#{RUBY_PATCHLEVEL}",
       host: RUBY_DESCRIPTION
