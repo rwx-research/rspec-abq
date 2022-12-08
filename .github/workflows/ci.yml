@@ -58,7 +58,7 @@ jobs:
       - run: |
           bundle exec rspec \
             --format json --out tmp/rspec.json \
-            --format documentation
+            --format documentation && bin/check_num_tests.rb
         timeout-minutes: 1
       - name: Upload test results to Captain
         uses: rwx-research/upload-captain-artifact@v1
