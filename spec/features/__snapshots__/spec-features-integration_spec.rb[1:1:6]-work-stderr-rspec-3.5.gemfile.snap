@@ -1,0 +1,5 @@
+Worker started with id not-the-real-test-run-id
+
+
+/rspec-abq/spec/fixture_specs/specs_with_syntax_errors.rb:0: unterminated string meets end of file (SyntaxError)
+Worker quit before sending protocol version
