@@ -64,7 +64,7 @@ jobs:
             -- \
             bundle exec rspec \
               --format json --out tmp/rspec.json \
-              --format documentation
+              --format documentation && bin/check_num_tests.rb
         if: ${{ matrix.ruby == 3.1 && matrix.gemfile == 3.12 }}
         env:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
@@ -73,7 +73,7 @@ jobs:
         run: |
           bundle exec rspec \
             --format json --out tmp/rspec.json \
-            --format documentation
+            --format documentation && bin/check_num_tests.rb
         if: ${{ matrix.ruby != 3.1 || matrix.gemfile != 3.12 }}
         timeout-minutes: 1
 
