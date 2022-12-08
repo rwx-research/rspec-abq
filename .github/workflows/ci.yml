@@ -55,27 +55,27 @@ jobs:
         uses: rwx-research/setup-abq@v1
         with:
           access-token: ${{ secrets.RWX_ACCESS_TOKEN }}
-      - run: |
+      - uses: rwx-research/setup-captain@v1
+      - name: run rspec & upload to captain
+        run: |
+          captain run \
+            --suite-id captain-examples-rspec \
+            --test-results tmp/rspec.json \
+            -- \
+            bundle exec rspec \
+              --format json --out tmp/rspec.json \
+              --format documentation
+        if: ${{ matrix.ruby == 3.1 && matrix.gemfile == 3.12 }}
+        env:
+          RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
+        timeout-minutes: 1
+      - name: run rspec without uploading to captain
+        run: |
           bundle exec rspec \
             --format json --out tmp/rspec.json \
             --format documentation
+        if: ${{ matrix.ruby != 3.1 || matrix.gemfile != 3.12 }}
         timeout-minutes: 1
-      - name: Upload test results to Captain
-        uses: rwx-research/upload-captain-artifact@v1
-        if: ${{ matrix.ruby == 3.1 && matrix.gemfile == 3.12 && always() }}
-        continue-on-error: true
-        with:
-          artifacts: |
-            [
-              {
-                "name": "RSpec",
-                "path": "tmp/rspec.json",
-                "kind": "test_results",
-                "parser": "rspec_json"
-              }
-            ]
-          job-matrix: ${{ toJSON(matrix) }}
-          captain-token: ${{ secrets.RWX_ACCESS_TOKEN }}
 
   # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
   # this is used to summarize the matrix results into a single job (abq-work) that can be used as a required check
