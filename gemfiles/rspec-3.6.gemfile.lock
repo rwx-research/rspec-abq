@@ -1,3 +1,11 @@
+GIT
+  remote: https://github.com/rwx-research/rspec-snapshot.git
+  revision: 77b3098b46190a291b32b52686d07c96cced18d5
+  specs:
+    rspec-snapshot (2.0.1)
+      awesome_print (> 1.0.0)
+      rspec (> 3.0.0)
+
 PATH
   remote: ..
   specs:
@@ -26,9 +34,6 @@ GEM
     rspec-mocks (3.6.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.6.0)
-    rspec-snapshot (2.0.1)
-      awesome_print (> 1.0.0)
-      rspec (> 3.0.0)
     rspec-support (3.6.0)
 
 PLATFORMS
@@ -40,7 +45,7 @@ DEPENDENCIES
   pry (~> 0.14.1)
   rspec (~> 3.6, < 3.7)
   rspec-abq!
-  rspec-snapshot (~> 2.0.1)
+  rspec-snapshot!
 
 BUNDLED WITH
    2.3.7

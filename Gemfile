@@ -19,4 +19,5 @@ group :development do
   gem "standard", require: false
   gem "yard", require: false
   gem "gem-release", require: false
+  gem "rspec-snapshot", github: "rwx-research/rspec-snapshot"
 end
