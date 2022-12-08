@@ -10,32 +10,30 @@ RSpec.describe "abq test" do
   # if test output doesn't exist on disk, write it to a file
   # if it does exist, use the file as the expected output
   def assert_test_output_consistent(matchable_output, test_identifier:)
-    file_path = "spec/test-outputs/#{test_identifier}-#{File.basename(ENV["BUNDLE_GEMFILE"])}.txt"
-    if !File.exist?(file_path) || ENV["UPDATE_SNAPSHOTS"]
-      File.write(file_path, matchable_output)
-    else
-      expect(matchable_output).to eq(File.read(file_path))
-    end
+    expect(matchable_output).to match_snapshot("#{test_identifier}-#{File.basename(ENV["BUNDLE_GEMFILE"])}")
   end
 
   # remove unstable parts of the output so we can validate that the rest of the test output is stable between runs
   def sanitize_test_output(output)
-    output
-      .gsub(/completed in \d+ ms/, "completed in 0 ms") # timing is unstable
-      .gsub(/^Finished in .* seconds .*$/, "Finished in 0 seconds") # timing is unstable
-      .gsub(/^Starting test run with ID.+/, "Starting test run with ID not-the-real-test-run-id") # and so is the test run id
+    sanitize_backtraces(
+      output
+        .gsub(/completed in \d+ ms/, "completed in 0 ms") # timing is unstable
+        .gsub(/^Finished in \d+\.\d+ seconds \(\d+\.\d+ seconds spent in test code\)$/, "Finished in 0.00 seconds (0.00 seconds spent in test code)") # timing is unstable
+        .gsub(/^Starting test run with ID.+/, "Starting test run with ID not-the-real-test-run-id") # and so is the test run id
+    )
   end
 
   def sanitize_worker_output(output)
     sanitize_backtraces(
       output
         .gsub(/Finished in \d+\.\d+ seconds \(files took \d+\.\d+ seconds to load\)/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
-    ).tap { |x| }
+    )
   end
 
   def sanitize_backtraces(output)
     output.gsub(%r{.+(rspec-abq)/}, '/\1/')
       .gsub(/^.+(?:bin|bundler|rubygems|gems).+$\n?/, "") # get rid of backtraces out of rspec-abq because line numbers are inconsistent
+      .gsub(/:\d+:/, ":0:") # get rid of line numbers internally as well to avoid unecessary test churn
   end
 
   def sanitize_worker_error(output)

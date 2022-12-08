@@ -1,5 +1,6 @@
 require "bundler/setup"
 require "rspec/abq"
+require "rspec/snapshot"
 
 require_relative "support/env_helper"
 RSpec.configure do |config|
