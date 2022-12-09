@@ -26,17 +26,29 @@ RSpec.describe RSpec::Abq do
       end
     end
 
-    it "if the env var is set, it writes the manifest and quits", :aggregate_failures do
-      expect(RSpec::Abq::Manifest).to receive(:write_manifest)
-      expect(RSpec.world).to receive(:wants_to_quit=).with(true)
+    if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.10.0")
+      it "on newer rspec, if the env var is set, it writes the manifest and quits", :aggregate_failures do
+        expect(RSpec::Abq::Manifest).to receive(:write_manifest)
 
-      if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.10.0")
+        expect(RSpec.world).to receive(:wants_to_quit=).with(true)
         expect(RSpec.configuration).to receive(:error_exit_code=).with(0)
-      end
-      expect(RSpec.world).to receive(:non_example_failure=).with(true)
+        expect(RSpec.world).to receive(:non_example_failure=).with(true)
 
-      EnvHelper.with_env(RSpec::Abq::ABQ_GENERATE_MANIFEST => "true") do
-        expect(RSpec::Abq.setup_after_specs_loaded!).to be true
+        EnvHelper.with_env(RSpec::Abq::ABQ_GENERATE_MANIFEST => "true") do
+          expect(RSpec::Abq.setup_after_specs_loaded!).to be true
+        end
+      end
+    else
+      it "on older rspec, if the env var is set, it writes the manifest and quits", :aggregate_failures do
+        expect(RSpec::Abq::Manifest).to receive(:write_manifest)
+
+        EnvHelper.with_env(RSpec::Abq::ABQ_GENERATE_MANIFEST => "true") do
+          expect {
+            expect(RSpec::Abq.setup_after_specs_loaded!).to be true
+          }.to raise_error(SystemExit) do |error|
+            expect(error.status).to eq(0)
+          end
+        end
       end
     end
 
