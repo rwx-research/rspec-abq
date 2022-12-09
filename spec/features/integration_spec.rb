@@ -67,13 +67,18 @@ RSpec.describe "abq test" do
     end
 
     around do |example|
-      # start worker
-      Open3.popen3("abq", "work", "--queue-addr", @queue_addr, "--run-id", run_id) do |_work_stdin_fd, work_stdout_fd, work_stderr_fd, work_thr|
-        @work_stdout_fd = work_stdout_fd
-        @work_stderr_fd = work_stderr_fd
-        @work_thr = work_thr
-        # run the example
-        example.run
+      # RWX_ACCESS_TOKEN is set by `captain-cli`.
+      # The tests uses a local queue.
+      # Here we unset RWX_ACCESS_TOKEN to prevent abq from trying to connect to a remote queue.
+      EnvHelper.with_env("RWX_ACCESS_TOKEN" => nil) do
+        # start worker
+        Open3.popen3("abq", "work", "--queue-addr", @queue_addr, "--run-id", run_id) do |_work_stdin_fd, work_stdout_fd, work_stderr_fd, work_thr|
+          @work_stdout_fd = work_stdout_fd
+          @work_stderr_fd = work_stderr_fd
+          @work_thr = work_thr
+          # run the example
+          example.run
+        end
       end
     end
 
