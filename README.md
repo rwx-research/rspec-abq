@@ -14,12 +14,6 @@ group :test do
 end
 ```
 
-and this line to your application's `spec/spec_helper.rb`:
-
-```ruby
-require 'rspec/abq'
-```
-
 And then execute:
 
 ```bash
@@ -32,6 +26,12 @@ Use the included binary with abq:
 
 ```bash
 abq test -- bundle exec rspec
+```
+
+If abq displays "Worker quit before sending protocol version", try adding line to your application's `spec/spec_helper.rb`:
+
+```ruby
+require 'rspec/abq'
 ```
 
 ## Compatibility
