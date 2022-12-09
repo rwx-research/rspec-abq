@@ -4,7 +4,6 @@ GEMFILES = Dir['gemfiles/*.gemfile'] + ["Gemfile"]
 
 GEMFILES.map do |gemfile|
   Thread.new do
-    ENV['BUNDLE_GEMFILE'] = gemfile
-    puts `bundle install`
+    system({"BUNDLE_GEMFILE" => gemfile}, "bundle update")
   end
 end.map(&:join)

@@ -17,7 +17,7 @@ RSpec.describe "abq test" do
   def sanitize_test_output(output)
     sanitize_backtraces(
       output
-        .gsub(/completed in \d+ ms/, "completed in 0 ms") # timing is unstable
+        .gsub(/\(completed in .+/, "(completed in 0 ms)") # this line is unstable, not just because of timing. Sometimes when a test fails with an exception, the time is ommitted but "completed in" is still inlcluded
         .gsub(/^Finished in \d+\.\d+ seconds \(\d+\.\d+ seconds spent in test code\)$/, "Finished in 0.00 seconds (0.00 seconds spent in test code)") # timing is unstable
         .gsub(/^Starting test run with ID.+/, "Starting test run with ID not-the-real-test-run-id") # and so is the test run id
     )
@@ -30,18 +30,18 @@ RSpec.describe "abq test" do
     )
   end
 
+  require "pry"
   def sanitize_backtraces(output)
-    output.gsub(%r{.+(rspec-abq)/}, '/\1/')
-      .gsub(/^.+(?:bin|bundler|rubygems|gems).+$\n?/, "") # get rid of backtraces out of rspec-abq because line numbers are inconsistent
+    output
+      .gsub(%r{^.+/rspec-abq}, "/rspec-abq") # get rid of prefixes to working directory
+      .gsub(/^.+(?:bin|bundler|rubygems|gems).+$\n/, "") # get rid of backtraces outside of rspec-abq
       .gsub(/:\d+:/, ":0:") # get rid of line numbers internally as well to avoid unecessary test churn
   end
 
   def sanitize_worker_error(output)
     sanitize_backtraces(
       output
-        .gsub(/Worker started with id .+/, "Worker started with id not-the-real-test-run-id") # timing is unstable
-        .gsub(/^.*lib\/rspec\/core.*: warning.*$/, "") # strip file path warnings
-        .gsub(%r{^.+(bundler|rubygems|gems)$\n?/}, '/\1/')
+        .gsub(/Worker started with id .+/, "Worker started with id not-the-real-test-run-id") # id is unstable
     )
   end
 
@@ -67,13 +67,18 @@ RSpec.describe "abq test" do
     end
 
     around do |example|
-      # start worker
-      Open3.popen3("abq", "work", "--queue-addr", @queue_addr, "--run-id", run_id) do |_work_stdin_fd, work_stdout_fd, work_stderr_fd, work_thr|
-        @work_stdout_fd = work_stdout_fd
-        @work_stderr_fd = work_stderr_fd
-        @work_thr = work_thr
-        # run the example
-        example.run
+      # RWX_ACCESS_TOKEN is set by `captain-cli`.
+      # The tests uses a local queue.
+      # Here we unset RWX_ACCESS_TOKEN to prevent abq from trying to connect to a remote queue.
+      EnvHelper.with_env("RWX_ACCESS_TOKEN" => nil) do
+        # start worker
+        Open3.popen3("abq", "work", "--queue-addr", @queue_addr, "--run-id", run_id) do |_work_stdin_fd, work_stdout_fd, work_stderr_fd, work_thr|
+          @work_stdout_fd = work_stdout_fd
+          @work_stderr_fd = work_stderr_fd
+          @work_thr = work_thr
+          # run the example
+          example.run
+        end
       end
     end
 

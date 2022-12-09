@@ -9,6 +9,7 @@ E
      RuntimeError:
        the roof
      # ./spec/fixture_specs/raising_specs.rb:0:in `block (2 levels) in <top (required)>'
+     # ./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'
      # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_examples_with_abq'
      # ./lib/rspec/abq.rb:0:in `send_test_result_and_advance'
      # ./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'
@@ -21,7 +22,7 @@ E
      # ./lib/rspec/abq/extensions.rb:0:in `block in run_specs'
      # ./lib/rspec/abq/extensions.rb:0:in `run_specs'
 
-(completed in )
+(completed in 0 ms)
 
 
 Finished in 0.00 seconds (0.00 seconds spent in test code)
