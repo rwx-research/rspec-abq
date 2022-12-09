@@ -28,7 +28,7 @@ Use the included binary with abq:
 abq test -- bundle exec rspec
 ```
 
-If abq displays "Worker quit before sending protocol version", try adding line to your application's `spec/spec_helper.rb`:
+If abq displays "Worker quit before sending protocol version", try adding this line to your application's `spec/spec_helper.rb`:
 
 ```ruby
 require 'rspec/abq'
