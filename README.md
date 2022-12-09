@@ -14,9 +14,15 @@ group :test do
 end
 ```
 
+and this line to your application's `spec/spec_helper.rb`:
+
+```ruby
+require 'rspec/abq'
+```
+
 And then execute:
 
-```
+```bash
 bundle
 ```
 
@@ -24,7 +30,7 @@ bundle
 
 Use the included binary with abq:
 
-```
+```bash
 abq test -- bundle exec rspec
 ```
 
