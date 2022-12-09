@@ -43,11 +43,11 @@ RSpec.describe RSpec::Abq do
         expect(RSpec::Abq::Manifest).to receive(:write_manifest)
 
         EnvHelper.with_env(RSpec::Abq::ABQ_GENERATE_MANIFEST => "true") do
-          # expect {
-          expect(RSpec::Abq.setup_after_specs_loaded!).to be true
-          # }.to raise_error(SystemExit) do |error|
-          #   expect(error.status).to eq(0)
-          # end
+          expect {
+            expect(RSpec::Abq.setup_after_specs_loaded!).to be true
+          }.to raise_error(SystemExit) do |error|
+            expect(error.status).to eq(0)
+          end
         end
       end
     end
