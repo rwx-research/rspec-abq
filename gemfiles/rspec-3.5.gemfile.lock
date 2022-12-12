@@ -9,7 +9,7 @@ GIT
 PATH
   remote: ..
   specs:
-    rspec-abq (1.0.2)
+    rspec-abq (1.0.3)
       rspec-core (>= 3.5.0, < 3.13.0)
 
 GEM
