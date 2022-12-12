@@ -123,6 +123,10 @@ RSpec.describe "abq test" do
       assert_worker_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
     end
 
+    it "has consistent output for random ordering", :aggregate_failures do |example|
+      assert_worker_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --seed 35888", example, success: false)
+    end
+
     version = Gem::Version.new(RSpec::Core::Version::STRING)
     # we don't properly fail on syntax errors for versions 3.6, 3.7, and 3.8
     pending_test = version >= Gem::Version.new("3.6.0") && version < Gem::Version.new("3.9.0")
