@@ -25,10 +25,6 @@ module RSpec
         }
       end
 
-      def self.random?(ordering_registry)
-        ordering_registry.fetch(:global) == ordering_registry.fetch(:random)
-      end
-
       # takes the meta (prodced in .to_meta) and applies the settings to the current process
       def self.setup!(init_meta, configuration)
         configuration.seed = init_meta["seed"]
