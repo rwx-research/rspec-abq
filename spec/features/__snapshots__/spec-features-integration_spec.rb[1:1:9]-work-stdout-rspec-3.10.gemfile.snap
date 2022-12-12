@@ -8,7 +8,6 @@ SyntaxError:
 #   Showing full backtrace because every line was filtered out.
 #   See docs for RSpec::Configuration#backtrace_exclusion_patterns and
 #   RSpec::Configuration#backtrace_inclusion_patterns for more information.
-No examples found.
 
 Finished in 0.0 seconds (files took 0.0 seconds to load)
 0 examples, 0 failures, 1 error occurred outside of examples
@@ -23,7 +22,6 @@ SyntaxError:
 #   Showing full backtrace because every line was filtered out.
 #   See docs for RSpec::Configuration#backtrace_exclusion_patterns and
 #   RSpec::Configuration#backtrace_inclusion_patterns for more information.
-No examples found.
 
 Finished in 0.0 seconds (files took 0.0 seconds to load)
 0 examples, 0 failures, 1 error occurred outside of examples
