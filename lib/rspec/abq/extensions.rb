@@ -115,6 +115,9 @@ module RSpec
           return 0 if should_quit
 
           # rspec-abq pulls the ordering from the init-message. Here we ensure the example groups are in the same ordering.
+          # RSpec passes to `run_specs` exactly the world ordered example groups:
+          #   https://github.com/rspec/rspec-core/blob/522b7727d02d9648c090b56fa68bbdc18a21c04d/lib/rspec/core/runner.rb#L85-L92
+          # So this definition is safe.
           example_groups = @world.ordered_example_groups
 
           examples_count = @world.example_count(example_groups)
