@@ -134,8 +134,9 @@ RSpec.describe "abq test" do
       assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --seed 35888", example, success: false)
     end
 
+    # this one _does_ test rspec-abq's handling of random ordering (and because of that isn't a snapshot test :p)
     it "passes on random ordering" do
-      expect(system("timeout 4 abq test -- bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand")).to be true
+      expect(system("timeout 4 abq test -- bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand  >/dev/null 2>&1")).to be true
     end
 
     version = Gem::Version.new(RSpec::Core::Version::STRING)
