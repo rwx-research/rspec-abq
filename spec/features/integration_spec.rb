@@ -129,8 +129,9 @@ RSpec.describe "abq test" do
       assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
     end
 
-    it "has consistent output for random ordering", :aggregate_failures do |example|
-      assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --order random", example, success: false)
+    # note: this doesn't test rspec-abq's hadnling of random ordering because each worker receives the same seed on the command line
+    it "has consistent output for specs together with a hardcoded seed", :aggregate_failures do |example|
+      assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --seed 35888", example, success: false)
     end
 
     it "passes on random ordering" do
