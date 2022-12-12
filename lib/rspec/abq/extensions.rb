@@ -106,7 +106,8 @@ module RSpec
       module Runner
         # Runs the provided example groups.
         #
-        # @param example_groups [Array<RSpec::Core::ExampleGroup>] groups to run
+        # @param _example_groups [Array<RSpec::Core::ExampleGroup>] groups to run.
+        #   Ignored in favor of @world.ordered_example_groups
         # @return [Fixnum] exit status code. 0 if all specs passed,
         #   or the configured failure exit code (1 by default) if specs
         #   failed.
