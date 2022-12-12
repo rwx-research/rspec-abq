@@ -51,6 +51,13 @@ RSpec.describe "abq test" do
       .gsub(/:\d+:/, ":0:") # get rid of line numbers internally as well to avoid unecessary test churn
   end
 
+  context "without queue and worker" do
+    # this one _does_ test rspec-abq's handling of random ordering (and because of that isn't a snapshot test :p)
+    it "passes on random ordering" do
+      expect(system("timeout 4 abq test -- bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand  >/dev/null 2>&1")).to be true
+    end
+  end
+
   context "with queue and worker" do
     # rubocop:disable RSpec/InstanceVariable
     before(:all) do # rubocop:disable RSpec/BeforeAfterAll
@@ -132,11 +139,6 @@ RSpec.describe "abq test" do
     # note: this doesn't test rspec-abq's hadnling of random ordering because each worker receives the same seed on the command line
     it "has consistent output for specs together with a hardcoded seed", :aggregate_failures do |example|
       assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --seed 35888", example, success: false)
-    end
-
-    # this one _does_ test rspec-abq's handling of random ordering (and because of that isn't a snapshot test :p)
-    it "passes on random ordering" do
-      expect(system("timeout 4 abq test -- bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand  >/dev/null 2>&1")).to be true
     end
 
     version = Gem::Version.new(RSpec::Core::Version::STRING)
