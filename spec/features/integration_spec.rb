@@ -152,7 +152,8 @@ RSpec.describe "abq test" do
       assert_test_output_consistent(sanitize_test_output(sanitized_test_output), test_identifier: [writable_example_id, "test-stdout"].join("-"))
 
       sanitized_worker_output = @work_stdout_fd.read.gsub(/Randomized with seed \d+/, "Randomized with seed this-is-not-random") # rubocop:disable RSpec/InstanceVariable
-      assert_test_output_consistent(sanitize_worker_output(sanitized_worker_output), test_identifier: [writable_example_id, "work-stdout"].join("-"))
+      sorted_worker_output = sanitized_worker_output.lines.sort.reject { |line| line.strip == "" }.join
+      assert_test_output_consistent(sanitize_worker_output(sorted_worker_output), test_identifier: [writable_example_id, "work-stdout"].join("-"))
       assert_test_output_consistent(sanitize_worker_error(@work_stderr_fd.read), test_identifier: [writable_example_id, "work-stderr"].join("-")) # rubocop:disable RSpec/InstanceVariable
       expect(test_stderr).to be_empty
     end
