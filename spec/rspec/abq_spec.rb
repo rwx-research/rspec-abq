@@ -110,6 +110,6 @@ RSpec.describe RSpec::Abq do
       end
     end
 
-    # note: more manifest generation tests are in spec/features/integration_spec.rb
+    # note: more manifest generation tests are in spec/features/manifest_spec.rb
   end
 end
