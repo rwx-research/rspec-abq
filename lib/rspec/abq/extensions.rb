@@ -110,9 +110,12 @@ module RSpec
         # @return [Fixnum] exit status code. 0 if all specs passed,
         #   or the configured failure exit code (1 by default) if specs
         #   failed.
-        def run_specs(example_groups)
+        def run_specs(_example_groups)
           should_quit = RSpec::Abq.setup_after_specs_loaded!
           return 0 if should_quit
+
+          # rspec-abq pulls the ordering from the init-message. Here we ensure the example groups are in the same ordering.
+          example_groups = @world.ordered_example_groups
 
           examples_count = @world.example_count(example_groups)
           examples_passed = @configuration.reporter.report(examples_count) do |reporter|
