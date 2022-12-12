@@ -106,13 +106,20 @@ module RSpec
       module Runner
         # Runs the provided example groups.
         #
-        # @param example_groups [Array<RSpec::Core::ExampleGroup>] groups to run
+        # @param _example_groups [Array<RSpec::Core::ExampleGroup>] groups to run.
+        #   Ignored in favor of @world.ordered_example_groups
         # @return [Fixnum] exit status code. 0 if all specs passed,
         #   or the configured failure exit code (1 by default) if specs
         #   failed.
-        def run_specs(example_groups)
+        def run_specs(_example_groups)
           should_quit = RSpec::Abq.setup_after_specs_loaded!
           return 0 if should_quit
+
+          # rspec-abq pulls the ordering from the init-message. Here we ensure the example groups are in the same ordering.
+          # RSpec passes to `run_specs` exactly the world ordered example groups:
+          #   https://github.com/rspec/rspec-core/blob/522b7727d02d9648c090b56fa68bbdc18a21c04d/lib/rspec/core/runner.rb#L85-L92
+          # So this definition is safe.
+          example_groups = @world.ordered_example_groups
 
           examples_count = @world.example_count(example_groups)
           examples_passed = @configuration.reporter.report(examples_count) do |reporter|
