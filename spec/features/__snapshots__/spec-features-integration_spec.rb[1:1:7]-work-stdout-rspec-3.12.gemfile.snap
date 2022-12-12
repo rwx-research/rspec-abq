@@ -1,30 +1,13 @@
 
-An error occurred while loading ./spec/fixture_specs/specs_with_syntax_errors.rb.
-Failure/Error: __send__(method, file)
+Randomized with seed this-is-not-random
 
-SyntaxError:
-/rspec-abq/spec/fixture_specs/specs_with_syntax_errors.rb:0: unterminated string meets end of file
-# 
-#   Showing full backtrace because every line was filtered out.
-#   See docs for RSpec::Configuration#backtrace_exclusion_patterns and
-#   RSpec::Configuration#backtrace_inclusion_patterns for more information.
-No examples found.
+a pending group
+  has a pending group
+
+a successful group
 
 Finished in 0.0 seconds (files took 0.0 seconds to load)
-0 examples, 0 failures, 1 error occurred outside of examples
+0 examples, 0 failures
 
-
-An error occurred while loading ./spec/fixture_specs/specs_with_syntax_errors.rb.
-Failure/Error: __send__(method, file)
-
-SyntaxError:
-/rspec-abq/spec/fixture_specs/specs_with_syntax_errors.rb:0: unterminated string meets end of file
-# 
-#   Showing full backtrace because every line was filtered out.
-#   See docs for RSpec::Configuration#backtrace_exclusion_patterns and
-#   RSpec::Configuration#backtrace_inclusion_patterns for more information.
-No examples found.
-
-Finished in 0.0 seconds (files took 0.0 seconds to load)
-0 examples, 0 failures, 1 error occurred outside of examples
+Randomized with seed this-is-not-random
 

@@ -90,10 +90,14 @@ RSpec.describe "abq test" do
 
     let(:run_id) { SecureRandom.uuid }
 
+    def writable_example_id(example)
+      example.id[2..].tr("/", "-")
+    end
+
     def assert_command_output_consistent(command, example, success:, worker_status_code: 1, test_stderr_empty: true)
       test_stdout, test_stderr, test_exit_status = abq_test(command, queue_addr: @queue_addr, run_id: run_id)
 
-      writable_example_id = example.id[2..].tr("/", "-")
+      writable_example_id = writable_example_id(example)
       assert_test_output_consistent(sanitize_test_output(test_stdout), test_identifier: [writable_example_id, "test-stdout"].join("-"))
       assert_test_output_consistent(sanitize_worker_output(@work_stdout_fd.read), test_identifier: [writable_example_id, "work-stdout"].join("-"))
       assert_test_output_consistent(sanitize_worker_error(@work_stderr_fd.read), test_identifier: [writable_example_id, "work-stderr"].join("-"))
@@ -135,9 +139,22 @@ RSpec.describe "abq test" do
     end
 
     # this one _does_ test rspec-abq's handling of random ordering (and because of that isn't a snapshot test :p)
-    it "passes on random ordering" do
-      _test_stdout, _test_stderr, test_exit_status = abq_test("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand", queue_addr: @queue_addr, run_id: run_id)
+    it "passes on random ordering", :aggregate_failures do |example| # rubocop:disable RSpec/ExampleLength
+      # copy/pate of `#assert_command_output_consistent` because we use custom sanitization
+      test_stdout, test_stderr, test_exit_status = abq_test("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand", queue_addr: @queue_addr, run_id: run_id)
       expect(test_exit_status).to be_success
+
+      dots_regex = /^[.PS]+$/ # note the dot is in a character class so it is implicitly escaped / not a wildcard
+      dots = test_stdout[dots_regex]
+      sanitized_test_output = test_stdout.gsub(dots_regex, dots.chars.sort.join) # we rewrite the dots to be consistent because otherwise they're random
+
+      writable_example_id = writable_example_id(example)
+      assert_test_output_consistent(sanitize_test_output(sanitized_test_output), test_identifier: [writable_example_id, "test-stdout"].join("-"))
+
+      sanitized_worker_output = @work_stdout_fd.read.gsub(/Randomized with seed \d+/, "Randomized with seed this-is-not-random") # rubocop:disable RSpec/InstanceVariable
+      assert_test_output_consistent(sanitize_worker_output(sanitized_worker_output), test_identifier: [writable_example_id, "work-stdout"].join("-"))
+      assert_test_output_consistent(sanitize_worker_error(@work_stderr_fd.read), test_identifier: [writable_example_id, "work-stderr"].join("-")) # rubocop:disable RSpec/InstanceVariable
+      expect(test_stderr).to be_empty
     end
 
     version = Gem::Version.new(RSpec::Core::Version::STRING)
