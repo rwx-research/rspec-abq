@@ -26,10 +26,14 @@ RSpec.describe RSpec::Abq do
       end
     end
 
-    it "on newer rspec, if the env var is set, it writes the manifest and quits", :aggregate_failures do
-      expect(RSpec::Abq::Manifest).to receive(:write_manifest)
+    context 'with the ABQ_GENERATE_MANIFEST env var set to "true"' do
+      around { |example| EnvHelper.with_env(RSpec::Abq::ABQ_GENERATE_MANIFEST => "true") { example.run } }
 
-      EnvHelper.with_env(RSpec::Abq::ABQ_GENERATE_MANIFEST => "true") do
+      it "if the manifest env var is set, it writes the manifest and quits", :aggregate_failures do
+        expect(RSpec::Abq::Manifest).to receive(:write_manifest)
+        # manifest writing happens before the init message is sent from the worker to the native runner
+        expect(RSpec::Abq).not_to receive(:protocol_read)
+
         expect(RSpec::Abq.setup_after_specs_loaded!).to be true
       end
     end
