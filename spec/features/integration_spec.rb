@@ -30,19 +30,25 @@ RSpec.describe "abq test" do
     )
   end
 
-  require "pry"
+  def sanitize_worker_error(output)
+    sanitize_worker_timing(
+      sanitize_backtraces(
+        output
+          .gsub(/Worker started with id .+/, "Worker started with id not-the-real-test-run-id") # id is unstable
+      )
+    )
+  end
+
+  def sanitize_worker_timing(output)
+    # we might get lines of worker log out of order because there are two workers. This should protect us from timing flakiness
+    output.lines.sort.join
+  end
+
   def sanitize_backtraces(output)
     output
       .gsub(%r{^.+/rspec-abq}, "/rspec-abq") # get rid of prefixes to working directory
       .gsub(/^.+(?:bin|bundler|rubygems|gems).+$\n/, "") # get rid of backtraces outside of rspec-abq
       .gsub(/:\d+:/, ":0:") # get rid of line numbers internally as well to avoid unecessary test churn
-  end
-
-  def sanitize_worker_error(output)
-    sanitize_backtraces(
-      output
-        .gsub(/Worker started with id .+/, "Worker started with id not-the-real-test-run-id") # id is unstable
-    )
   end
 
   context "with queue and worker" do
@@ -84,7 +90,7 @@ RSpec.describe "abq test" do
 
     let(:run_id) { SecureRandom.uuid }
 
-    def assert_worker_output_consistent(command, example, success:, worker_status_code: 1, test_stderr_empty: true)
+    def assert_command_output_consistent(command, example, success:, worker_status_code: 1, test_stderr_empty: true)
       test_stdout, test_stderr, test_exit_status = abq_test(command, queue_addr: @queue_addr, run_id: run_id)
 
       writable_example_id = example.id[2..].tr("/", "-")
@@ -115,16 +121,16 @@ RSpec.describe "abq test" do
      "pending_specs" => true,
      "raising_specs" => false}.each do |spec_name, spec_passes|
       it "has consistent output for #{spec_name}", :aggregate_failures do |example|
-        assert_worker_output_consistent("bundle exec rspec 'spec/fixture_specs/#{spec_name}.rb'", example, success: spec_passes)
+        assert_command_output_consistent("bundle exec rspec 'spec/fixture_specs/#{spec_name}.rb'", example, success: spec_passes)
       end
     end
 
     it "has consistent output for specs together", :aggregate_failures do |example|
-      assert_worker_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
+      assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
     end
 
     it "has consistent output for random ordering", :aggregate_failures do |example|
-      assert_worker_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --seed 35888", example, success: false)
+      assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --seed 35888", example, success: false)
     end
 
     version = Gem::Version.new(RSpec::Core::Version::STRING)
@@ -132,12 +138,12 @@ RSpec.describe "abq test" do
     pending_test = version >= Gem::Version.new("3.6.0") && version < Gem::Version.new("3.9.0")
     it "has consistent output for specs with syntax errors", :aggregate_failures do |example|
       pending if pending_test
-      assert_worker_output_consistent("bundle exec rspec 'spec/fixture_specs/specs_with_syntax_errors.rb'", example, success: false, worker_status_code: 101, test_stderr_empty: false)
+      assert_command_output_consistent("bundle exec rspec 'spec/fixture_specs/specs_with_syntax_errors.rb'", example, success: false, worker_status_code: 101, test_stderr_empty: false)
     end
 
     # this one doesn't even pass if pending for 3.6-3.8 so we skip it with metadata
     it "has consistent output for specs together including a syntax error", *[:aggregate_failures, (:skip if pending_test)].compact do |example|
-      assert_worker_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", example, success: false, worker_status_code: 101, test_stderr_empty: false)
+      assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", example, success: false, worker_status_code: 101, test_stderr_empty: false)
     end
   end
 end
