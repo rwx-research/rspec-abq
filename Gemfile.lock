@@ -9,7 +9,7 @@ GIT
 PATH
   remote: .
   specs:
-    rspec-abq (1.0.2)
+    rspec-abq (1.0.3)
       rspec-core (>= 3.5.0, < 3.13.0)
 
 GEM
@@ -43,7 +43,7 @@ GEM
     rspec-expectations (3.12.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.12.0)
-    rspec-mocks (3.12.0)
+    rspec-mocks (3.12.1)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.12.0)
     rspec-support (3.12.0)
@@ -71,7 +71,7 @@ GEM
       sorbet-runtime
       syntax_tree (>= 4.0.2, < 5.0.0)
     ruby-progressbar (1.11.0)
-    sorbet-runtime (0.5.10577)
+    sorbet-runtime (0.5.10588)
     standard (1.19.1)
       language_server-protocol (~> 3.17.0.2)
       rubocop (= 1.39.0)

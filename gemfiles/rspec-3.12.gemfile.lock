@@ -9,7 +9,7 @@ GIT
 PATH
   remote: ..
   specs:
-    rspec-abq (1.0.2)
+    rspec-abq (1.0.3)
       rspec-core (>= 3.5.0, < 3.13.0)
 
 GEM
@@ -31,7 +31,7 @@ GEM
     rspec-expectations (3.12.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.12.0)
-    rspec-mocks (3.12.0)
+    rspec-mocks (3.12.1)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.12.0)
     rspec-support (3.12.0)
