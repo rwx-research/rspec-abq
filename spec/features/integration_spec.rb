@@ -141,7 +141,7 @@ RSpec.describe "abq test" do
     # this one _does_ test rspec-abq's handling of random ordering (and because of that isn't a snapshot test :p)
     it "passes on random ordering", :aggregate_failures do |example| # rubocop:disable RSpec/ExampleLength
       # copy/pate of `#assert_command_output_consistent` because we use custom sanitization
-      test_stdout, test_stderr, test_exit_status = abq_test("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand", queue_addr: @queue_addr, run_id: run_id)
+      test_stdout, test_stderr, test_exit_status = abq_test("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand", queue_addr: @queue_addr, run_id: run_id) # rubocop:disable RSpec/InstanceVariable
       expect(test_exit_status).to be_success
 
       dots_regex = /^[.PS]+$/ # note the dot is in a character class so it is implicitly escaped / not a wildcard
