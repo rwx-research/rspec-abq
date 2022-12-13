@@ -91,14 +91,21 @@ module RSpec
     # perhaps RSpec or a plugin has changed behavior to break assumptions we've made with rspec-abq
     AbqLoadedTwiceError = Class.new(StandardError)
 
+    # returned by `.setup_after_specs_loaded` to indicate if rspec should quit or reshuffle tests
     COMMANDS_AFTER_SETUP = [
+
+      # returned after manifest generation
       QUIT_AFTER_MANIFEST_GENERATION = :quit_after_manifest_generation,
-      RESHUFFLE_ORDERING = :reshuffle_ordering,
-      QUIT_FAST = :quit_fast
+
+      # returned when rspec is spawned but worker doesn't have any tests for it to run
+      QUIT_FAST = :quit_fast,
+
+      # returned if the manifset has a different Ordering than rspec's configuration, indicating we must reshuffle
+      RESHUFFLE_ORDERING = :reshuffle_ordering
     ]
 
     # @!visibility private
-    # @return [Boolean]
+    # @return [Symbol] One of COMMANDS_AFTER_SETUP
     def self.setup_after_specs_loaded!
       fail AbqLoadedTwiceError, "tried to setup abq-rspec twice" if ENV[ABQ_RSPEC_PID]
       ENV[ABQ_RSPEC_PID] ||= Process.pid.to_s

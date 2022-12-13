@@ -26,7 +26,8 @@ module RSpec
       end
 
       # takes the meta (prodced in .to_meta) and applies the settings to the current process
-      # returns true if it changed anything
+      # @!visibility private
+      # @return [Boolean] returns true if setup! changed anything
       def self.setup!(init_meta, configuration)
         changed = false
         if configuration.seed != init_meta["seed"]
