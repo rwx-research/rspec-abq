@@ -26,13 +26,24 @@ module RSpec
       end
 
       # takes the meta (prodced in .to_meta) and applies the settings to the current process
+      # returns true if it changed anything
       def self.setup!(init_meta, configuration)
-        configuration.seed = init_meta["seed"]
+        changed = false
+        if configuration.seed != init_meta["seed"]
+          configuration.seed = init_meta["seed"]
+          changed = true
+        end
+
         registry = configuration.ordering_registry
         ordering_from_manifest = registry.fetch(init_meta["ordering"].to_sym) do
           fail(UnsupportedOrderingError, "can't order based on unknown ordering: `#{init_meta["ordering"]}`")
         end
-        registry.register(:global, ordering_from_manifest)
+
+        if registry.fetch(:global) != ordering_from_manifest
+          registry.register(:global, ordering_from_manifest)
+          changed = true
+        end
+        changed
       end
     end
   end

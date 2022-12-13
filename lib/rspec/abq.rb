@@ -91,6 +91,12 @@ module RSpec
     # perhaps RSpec or a plugin has changed behavior to break assumptions we've made with rspec-abq
     AbqLoadedTwiceError = Class.new(StandardError)
 
+    COMMANDS_AFTER_SETUP = [
+      QUIT_AFTER_MANIFEST_GENERATION = :quit_after_manifest_generation,
+      RESHUFFLE_ORDERING = :reshuffle_ordering,
+      QUIT_FAST = :quit_fast
+    ]
+
     # @!visibility private
     # @return [Boolean]
     def self.setup_after_specs_loaded!
@@ -106,7 +112,7 @@ module RSpec
       # before abq can start workers, it asks for a manifest
       if !!ENV[ABQ_GENERATE_MANIFEST] # the abq worker will set this env var if it needs a manifest
         RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry)
-        return true
+        return QUIT_AFTER_MANIFEST_GENERATION
       end
 
       # after the manfiest has been sent to the worker, the rspec process will quit and the workers will each start a
@@ -126,11 +132,12 @@ module RSpec
       init_message = protocol_read
       protocol_write(INIT_SUCCESS_MESSAGE)
       # TODO: delete the check for empty init_meta when https://github.com/rwx-research/abq/pull/216 is merged
-      return true if init_message["fast_exit"]
+      return QUIT_FAST if init_message["fast_exit"]
 
-      Ordering.setup!(init_message["init_meta"], RSpec.configuration)
       fetch_next_example
-      nil
+      if Ordering.setup!(init_message["init_meta"], RSpec.configuration)
+        RESHUFFLE_ORDERING
+      end
     end
 
     # Creates the socket to communicate with the worker and sends the worker the protocol

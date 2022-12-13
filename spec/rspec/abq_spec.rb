@@ -34,7 +34,7 @@ RSpec.describe RSpec::Abq do
         # manifest writing happens before the init message is sent from the worker to the native runner
         expect(RSpec::Abq).not_to receive(:protocol_read)
 
-        expect(RSpec::Abq.setup_after_specs_loaded!).to be true
+        expect(RSpec::Abq.setup_after_specs_loaded!).to eq(RSpec::Abq::QUIT_AFTER_MANIFEST_GENERATION)
       end
     end
 
