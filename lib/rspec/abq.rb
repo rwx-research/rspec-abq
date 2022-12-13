@@ -91,8 +91,21 @@ module RSpec
     # perhaps RSpec or a plugin has changed behavior to break assumptions we've made with rspec-abq
     AbqLoadedTwiceError = Class.new(StandardError)
 
+    # returned by `.setup_after_specs_loaded` to indicate if rspec should quit or reshuffle tests
+    COMMANDS_AFTER_SETUP = [
+
+      # returned after manifest generation
+      QUIT_AFTER_MANIFEST_GENERATION = :quit_after_manifest_generation,
+
+      # returned when rspec is spawned but worker doesn't have any tests for it to run
+      QUIT_FAST = :quit_fast,
+
+      # returned if the manifset has a different Ordering than rspec's configuration, indicating we must reshuffle
+      RESHUFFLE_ORDERING = :reshuffle_ordering
+    ]
+
     # @!visibility private
-    # @return [Boolean]
+    # @return [Symbol] One of COMMANDS_AFTER_SETUP
     def self.setup_after_specs_loaded!
       fail AbqLoadedTwiceError, "tried to setup abq-rspec twice" if ENV[ABQ_RSPEC_PID]
       ENV[ABQ_RSPEC_PID] ||= Process.pid.to_s
@@ -106,7 +119,7 @@ module RSpec
       # before abq can start workers, it asks for a manifest
       if !!ENV[ABQ_GENERATE_MANIFEST] # the abq worker will set this env var if it needs a manifest
         RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry)
-        return true
+        return QUIT_AFTER_MANIFEST_GENERATION
       end
 
       # after the manfiest has been sent to the worker, the rspec process will quit and the workers will each start a
@@ -126,11 +139,12 @@ module RSpec
       init_message = protocol_read
       protocol_write(INIT_SUCCESS_MESSAGE)
       # TODO: delete the check for empty init_meta when https://github.com/rwx-research/abq/pull/216 is merged
-      return true if init_message["fast_exit"]
+      return QUIT_FAST if init_message["fast_exit"]
 
-      Ordering.setup!(init_message["init_meta"], RSpec.configuration)
       fetch_next_example
-      nil
+      if Ordering.setup!(init_message["init_meta"], RSpec.configuration)
+        RESHUFFLE_ORDERING
+      end
     end
 
     # Creates the socket to communicate with the worker and sends the worker the protocol

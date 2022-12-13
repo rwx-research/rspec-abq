@@ -7,7 +7,7 @@ end
 
 RSpec.describe RSpec::Abq do
   describe ".setup_after_specs_loaded!", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
-    let(:init_message) { {fast_exit: true} }
+    let(:init_message) { {init_meta: {seed: 124, ordering: "defined"}} }
 
     before do
       # stub out socket communication
@@ -15,8 +15,8 @@ RSpec.describe RSpec::Abq do
       allow(socket_double).to receive(:read).with(4)
       allow(socket_double).to receive(:read) { init_message.to_json }
       allow(socket_double).to receive(:write)
-
       allow(RSpec::Abq).to receive(:socket) { socket_double }
+      allow(RSpec::Abq).to receive(:fetch_next_example)
     end
 
     it "prevents being called twice" do
@@ -34,7 +34,7 @@ RSpec.describe RSpec::Abq do
         # manifest writing happens before the init message is sent from the worker to the native runner
         expect(RSpec::Abq).not_to receive(:protocol_read)
 
-        expect(RSpec::Abq.setup_after_specs_loaded!).to be true
+        expect(RSpec::Abq.setup_after_specs_loaded!).to eq(RSpec::Abq::QUIT_AFTER_MANIFEST_GENERATION)
       end
     end
 
@@ -44,17 +44,33 @@ RSpec.describe RSpec::Abq do
       it "does nothing", :aggregate_failures do
         expect(RSpec::Abq::Ordering).not_to receive(:setup)
         expect(RSpec::Abq).not_to receive(:fetch_next_example)
-        EnvHelper.with_reset { RSpec::Abq.setup_after_specs_loaded! }
+        EnvHelper.with_reset {
+          expect(RSpec::Abq.setup_after_specs_loaded!).to eq(RSpec::Abq::QUIT_FAST)
+        }
       end
     end
 
     context "when the init message is not empty" do
-      let(:init_message) { {init_meta: {invalid_but_nonempty: true}} }
-
       it "sets up ordering and starts testing", :aggregate_failures do
         expect(RSpec::Abq::Ordering).to receive(:setup!).with(stringify_keys(init_message[:init_meta]), anything)
         expect(RSpec::Abq).to receive(:fetch_next_example)
         EnvHelper.with_reset { RSpec::Abq.setup_after_specs_loaded! }
+      end
+    end
+
+    context "when ordering returns true, indicating rspec should reshuffle" do
+      it "sets up ordering and starts testing", :aggregate_failures do
+        allow(RSpec::Abq::Ordering).to receive(:setup!).and_return(true)
+        expect(RSpec::Abq).to receive(:fetch_next_example)
+        EnvHelper.with_reset { expect(RSpec::Abq.setup_after_specs_loaded!).to eq(RSpec::Abq::RESHUFFLE_ORDERING) }
+      end
+    end
+
+    context "when ordering returns false, indicating rspec must not reshuffle" do
+      it "sets up ordering and starts testing", :aggregate_failures do
+        allow(RSpec::Abq::Ordering).to receive(:setup!).and_return(false)
+        expect(RSpec::Abq).to receive(:fetch_next_example)
+        EnvHelper.with_reset { expect(RSpec::Abq.setup_after_specs_loaded!).to be_nil }
       end
     end
   end
