@@ -1,33 +1,22 @@
 
-
-
-
-
-
-# 
-# 
-# 
-#   RSpec::Configuration#backtrace_inclusion_patterns for more information.
-#   RSpec::Configuration#backtrace_inclusion_patterns for more information.
-#   RSpec::Configuration#backtrace_inclusion_patterns for more information.
-#   See docs for RSpec::Configuration#backtrace_exclusion_patterns and
-#   See docs for RSpec::Configuration#backtrace_exclusion_patterns and
-#   See docs for RSpec::Configuration#backtrace_exclusion_patterns and
-#   Showing full backtrace because every line was filtered out.
-#   Showing full backtrace because every line was filtered out.
-#   Showing full backtrace because every line was filtered out.
-/rspec-abq/spec/fixture_specs/specs_with_syntax_errors.rb:0: unterminated string meets end of file
-/rspec-abq/spec/fixture_specs/specs_with_syntax_errors.rb:0: unterminated string meets end of file
-/rspec-abq/spec/fixture_specs/specs_with_syntax_errors.rb:0: unterminated string meets end of file
-An error occurred while loading ./spec/fixture_specs/specs_with_syntax_errors.rb.
-An error occurred while loading ./spec/fixture_specs/specs_with_syntax_errors.rb.
 An error occurred while loading ./spec/fixture_specs/specs_with_syntax_errors.rb.
 Failure/Error: __send__(method, file)
+
+SyntaxError:
+/rspec-abq/spec/fixture_specs/specs_with_syntax_errors.rb:0: unterminated string meets end of file
+# 
+#   Showing full backtrace because every line was filtered out.
+#   See docs for RSpec::Configuration#backtrace_exclusion_patterns and
+#   RSpec::Configuration#backtrace_inclusion_patterns for more information.
+No examples found.
+
+An error occurred while loading ./spec/fixture_specs/specs_with_syntax_errors.rb.
 Failure/Error: __send__(method, file)
-Failure/Error: __send__(method, file)
-No examples found.
-No examples found.
-No examples found.
+
 SyntaxError:
-SyntaxError:
-SyntaxError:
+/rspec-abq/spec/fixture_specs/specs_with_syntax_errors.rb:0: unterminated string meets end of file
+# 
+#   Showing full backtrace because every line was filtered out.
+#   See docs for RSpec::Configuration#backtrace_exclusion_patterns and
+#   RSpec::Configuration#backtrace_inclusion_patterns for more information.
+No examples found.

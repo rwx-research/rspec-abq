@@ -1,13 +1,13 @@
 
-
-
-
-
-
-  has a pending group
-0 examples, 0 failures
-Finished in 0.0 seconds (files took 0.0 seconds to load)
 a failing group
+
 a pending group
+  has a pending group
+
 a raising group
+
 a successful group
+
+Finished in 0.0 seconds (files took 0.0 seconds to load)
+0 examples, 0 failures
+
