@@ -112,20 +112,8 @@ module RSpec
         #   or the configured failure exit code (1 by default) if specs
         #   failed.
         def run_specs(example_groups)
-          case RSpec::Abq.setup_after_specs_loaded!
-          when RSpec::Abq::QUIT_AFTER_MANIFEST_GENERATION, RSpec::Abq::QUIT_FAST
-            return 0
-          when RSpec::Abq::RESHUFFLE_ORDERING
-            # rspec-abq pulls the ordering from the init-message. Here we ensure the example groups are in the same ordering.
-            # RSpec passes to `run_specs` exactly the world ordered example groups:
-            #   https://github.com/rspec/rspec-core/blob/522b7727d02d9648c090b56fa68bbdc18a21c04d/lib/rspec/core/runner.rb#L85-L92
-            # So this definition is safe.
-            #
-            # Why don't we initialize rspec-abq higher up in the call stack such that the parameter `example_groups` is correctly
-            # ordered? Higher up in the call stack, rspec-abq isn't necessarily initialized yet. See: https://github.com/rwx-research/rspec-abq/pull/14
-            example_groups = @world.ordered_example_groups
-          end
-
+          RSpec::Abq.setup_after_specs_loaded!
+          return 0 if Abq.quit_early?
           examples_count = @world.example_count(example_groups)
           examples_passed = @configuration.reporter.report(examples_count) do |reporter|
             @configuration.with_suite_hooks do
