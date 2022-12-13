@@ -196,6 +196,11 @@ RSpec.describe "abq test" do
       end
     end
 
+    it "quits early if configured with fail-fast" do
+      results = abq_test("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --fail-fast", queue_addr: ABQQueue.address, run_id: run_id) # rubocop:disable RSpec/InstanceVariable
+      expect(results[:test][:exit_status]).not_to be_success
+    end
+
     context "with syntax errors" do
       version = Gem::Version.new(RSpec::Core::Version::STRING)
       # we don't properly fail on syntax errors for versions 3.6, 3.7, and 3.8
