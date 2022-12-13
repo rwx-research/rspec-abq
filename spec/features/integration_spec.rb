@@ -31,17 +31,10 @@ RSpec.describe "abq test" do
   end
 
   def sanitize_worker_error(output)
-    sanitize_worker_timing(
-      sanitize_backtraces(
-        output
-          .gsub(/Worker started with id .+/, "Worker started with id not-the-real-test-run-id") # id is unstable
-      )
+    sanitize_backtraces(
+      output
+        .gsub(/Worker started with id .+/, "Worker started with id not-the-real-test-run-id") # id is unstable
     )
-  end
-
-  def sanitize_worker_timing(output)
-    # we might get lines of worker log out of order because there are two workers. This should protect us from timing flakiness
-    output.lines.sort.join
   end
 
   def sanitize_backtraces(output)
@@ -78,7 +71,7 @@ RSpec.describe "abq test" do
       # Here we unset RWX_ACCESS_TOKEN to prevent abq from trying to connect to a remote queue.
       EnvHelper.with_env("RWX_ACCESS_TOKEN" => nil) do
         # start worker
-        Open3.popen3("abq", "work", "--num", "2", "--queue-addr", @queue_addr, "--run-id", run_id) do |_work_stdin_fd, work_stdout_fd, work_stderr_fd, work_thr|
+        Open3.popen3("abq", "work", "--queue-addr", @queue_addr, "--run-id", run_id) do |_work_stdin_fd, work_stdout_fd, work_stderr_fd, work_thr|
           @work_stdout_fd = work_stdout_fd
           @work_stderr_fd = work_stderr_fd
           @work_thr = work_thr
