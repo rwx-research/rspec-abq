@@ -1,4 +1,6 @@
-# called `_specs.rb` to avoid it being called automatically
+require_relative "../../spec_helper"
+
+## called `_specs.rb` to avoid it being called automatically
 # used by feature specs
 RSpec.describe 'group 2' do
   it 'filtered out example 1', :if => false do end
