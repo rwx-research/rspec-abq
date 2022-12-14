@@ -42,6 +42,10 @@ RSpec.describe "abq test" do
         # note: native_runner_exit_status is nil if the manifest wasn't generated
         work_stdout = work_stdout_fd.read
 
+        # bin/echo_exit_status.rb prints the exit status of the native runner
+
+        # this code pulls it out of output
+
         exit_status_regex = /^exit status: (\d+)$\n/
         manifest_generation_exit_status, native_runner_exit_status = work_stdout.scan(exit_status_regex).map(&:first).map(&:to_i)
         worker_stdout_without_native_exit_status = work_stdout.gsub(exit_status_regex, "")
@@ -114,25 +118,22 @@ RSpec.describe "abq test" do
       example.id[2..].tr("/", "-")
     end
 
-    def assert_command_output_consistent(command, example, success:, worker_status: 1, test_stderr_empty: true, expect_manifest_generation: true)
+    def assert_command_output_consistent(command, example, success:, hard_failure: false)
       results = abq_test(command, queue_addr: ABQQueue.address, run_id: run_id)
 
       aggregate_failures do
-        if expect_manifest_generation
-          expect(results[:native_runner_exit_status][:manifest]).to eq(0)
-        else
-          expect(results[:native_runner_exit_status][:manifest]).to eq(1)
-        end
+        # when there's a hard failure, the manifest generation run's exit status is 1
+        expect(results[:native_runner_exit_status][:manifest]).to eq(hard_failure ? 1 : 0)
 
         writable_example_id = writable_example_id(example)
         assert_test_output_consistent(sanitize_test_output(results[:test][:stdout]), test_identifier: [writable_example_id, "test-stdout"].join("-"))
         assert_test_output_consistent(sanitize_worker_output(results[:work][:stdout]), test_identifier: [writable_example_id, "work-stdout"].join("-"))
         assert_test_output_consistent(sanitize_worker_error(results[:work][:stderr]), test_identifier: [writable_example_id, "work-stderr"].join("-"))
 
-        if test_stderr_empty
-          expect(results[:test][:stderr]).to be_empty
-        else
+        if hard_failure
           assert_test_output_consistent(sanitize_test_output(results[:test][:stderr]), test_identifier: [writable_example_id, "test-stderr"].join("-"))
+        else
+          expect(results[:test][:stderr]).to be_empty
         end
 
         if success
@@ -141,13 +142,14 @@ RSpec.describe "abq test" do
           expect(results[:work][:exit_status]).to be_success
         else
 
-          if expect_manifest_generation
-            expect(results[:native_runner_exit_status][:runner]).to eq(1)
-          end
+          # when there's a hard failure, rspec isn't relaunched after manifest generation
+          # so its exit status is simply missing from the output
+          expect(results[:native_runner_exit_status][:runner]).to eq(hard_failure ? nil : 1)
           expect(results[:test][:exit_status]).not_to be_success
           expect(results[:test][:exit_status].exitstatus).to eq(1)
           expect(results[:work][:exit_status]).not_to be_success
-          expect(results[:work][:exit_status].exitstatus).to eq worker_status
+          # when there's a hard failure, abq has a special exit status to indicate that something went wrong
+          expect(results[:work][:exit_status].exitstatus).to eq(hard_failure ? 101 : 1)
         end
       end
     end
@@ -199,12 +201,12 @@ RSpec.describe "abq test" do
     pending_test = version >= Gem::Version.new("3.6.0") && version < Gem::Version.new("3.9.0")
     it "has consistent output for specs with syntax errors" do |example|
       pending if pending_test
-      assert_command_output_consistent("bundle exec rspec 'spec/fixture_specs/specs_with_syntax_errors.rb'", example, success: false, worker_status: 101, test_stderr_empty: false, expect_manifest_generation: false)
+      assert_command_output_consistent("bundle exec rspec 'spec/fixture_specs/specs_with_syntax_errors.rb'", example, success: false, hard_failure: true)
     end
 
     # this one doesn't even pass if pending for 3.6-3.8 so we skip it with metadata
     it "has consistent output for specs together including a syntax error", *[(:skip if pending_test)].compact do |example|
-      assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", example, success: false, worker_status: 101, test_stderr_empty: false, expect_manifest_generation: false)
+      assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", example, success: false, hard_failure: true)
     end
   end
 end
