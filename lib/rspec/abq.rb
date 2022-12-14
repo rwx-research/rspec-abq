@@ -157,17 +157,6 @@ module RSpec
     # @!visibility private
     RESERVED_METADATA_KEYS = Set.new(RSpec::Core::Metadata::RESERVED_KEYS + [:if, :unless])
 
-    # Takes group or example metadata and returns a two-element array:
-    # a tag is any piece of metadata that has a value of true
-    # @return [Array<Array<Symbol>, Hash<Symbol, Object>>] tags and metadata
-    # @!visibility private
-    def self.extract_metadata_and_tags(metadata)
-      # we use `.dup.reject! because `.reject` raises a warning (because it doesn't dup procs)`
-      user_metadata = metadata.dup.reject! { |k, _v| RESERVED_METADATA_KEYS.include?(k) }
-      tags_array, metadata_array = user_metadata.partition { |_k, v| v == true }
-      [tags_array.map(&:first), metadata_array.to_h]
-    end
-
     class << self
       # the target_test_case is the test case the abq worker wants results for
       # @!visibility private
