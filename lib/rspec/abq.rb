@@ -67,8 +67,12 @@ module RSpec
     # Whether this rspec process is running in ABQ mode.
     # @return [Boolean]
     def self.enabled?(env = ENV)
-      env.key?(ABQ_SOCKET) && # this is the basic check for rspec being called from an abq worker
-        (!env.key?(ABQ_RSPEC_PID) || env[ABQ_RSPEC_PID] == Process.pid.to_s) # and this check ensures that any _nested_ processes do not communicate with the worker.
+      if env.key?(ABQ_SOCKET) # this is the basic check for rspec being called from an abq worker
+        env[ABQ_RSPEC_PID] ||= Process.pid.to_s
+        env[ABQ_RSPEC_PID] == Process.pid.to_s
+      else
+        false
+      end
     end
 
     # Disables tests so we can compare runtime of rspec core vs parallelized version. Additionally, disables tests
@@ -79,12 +83,27 @@ module RSpec
         ENV.key?("ABQ_DISABLE_TESTS")
     end
 
-    # This is the main entry point for abq-rspec, and it's called when the gem is loaded
+    # This is the main entry point for abq-rspec, and it's called when the gem is loaded.
     # @!visibility private
     # @return [void]
-    def self.setup!
+    def self.setup_extensions_if_enabled!
       return unless enabled?
       Extensions.setup!
+    end
+
+    # After the manifest is generated
+    def self.configure_rspec!
+      return if @rspec_configured
+      @rspec_configured = true
+      # ABQ doesn't support writing example status to disk yet.
+      # in its simple implementation, status persistance write the status of all tests which ends up hanging with under
+      # abq because we haven't run most of the tests in this worker. (maybe it's running the tests?). In any case:
+      # it's disabled.
+      # we set this even if the manifest is being generated
+      RSpec.configuration.example_status_persistence_file_path = nil
+
+      # if we're generating a manifest, we don't want to do any other setup
+      return if !!ENV[ABQ_GENERATE_MANIFEST]
 
       # after the manfiest has been sent to the worker, the rspec process will quit and the workers will each start a
       # new rspec process
@@ -97,21 +116,18 @@ module RSpec
         RSpec.configuration.color = true
       end
 
-      # if we're generating a manifest, we don't want to do any other setup
-      return if !!ENV[ABQ_GENERATE_MANIFEST]
-
       # the first message is the init_meta block of the manifest. This is used to share runtime configuration
       # information amongst worker processes. In RSpec, it is used to ensure that random ordering between workers
       # shares the same seed, so can be deterministic.
       init_message = protocol_read
       protocol_write(INIT_SUCCESS_MESSAGE)
+
       # TODO: delete the check for empty init_meta when https://github.com/rwx-research/abq/pull/216 is merged
       if init_message["fast_exit"]
-        @quit_early = true
+        @fast_exit = true
         return
       end
 
-      fetch_next_example
       Ordering.setup!(init_message["init_meta"], RSpec.configuration)
       nil
     end
@@ -122,29 +138,8 @@ module RSpec
 
     # @!visibility private
     # @return [Boolean]
-    def self.quit_early?
-      @quit_early ||= false
-    end
-
-    # @!visibility private
-    # @return [void]
-    def self.setup_after_specs_loaded!
-      fail AbqLoadedTwiceError, "tried to setup abq-rspec twice" if ENV[ABQ_RSPEC_PID]
-      ENV[ABQ_RSPEC_PID] ||= Process.pid.to_s
-
-      # ABQ doesn't support writing example status to disk yet.
-      # in its simple implementation, status persistance write the status of all tests which ends up hanging with under
-      # abq because we haven't run most of the tests in this worker. (maybe it's running the tests?). In any case:
-      # it's disabled.
-      #
-      # additionally, for whatever reason, setting this to nil on load gets overwritten, so we write it late.
-      RSpec.configuration.example_status_persistence_file_path = nil
-
-      return unless !!ENV[ABQ_GENERATE_MANIFEST]
-      # before abq can start workers, it asks for a manifest
-      RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry)
-      @quit_early = true
-      nil
+    def self.fast_exit?
+      @fast_exit ||= false
     end
 
     # Creates the socket to communicate with the worker and sends the worker the protocol
@@ -238,4 +233,4 @@ module RSpec
   end
 end
 
-RSpec::Abq.setup!
+RSpec::Abq.setup_extensions_if_enabled!
