@@ -266,5 +266,4 @@ module RSpec
   end
 end
 
-require "pry"
 RSpec::Abq.setup!
