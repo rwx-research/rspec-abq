@@ -13,26 +13,29 @@ RSpec.describe RSpec::Abq do
       # stub out socket communication
       allow(RSpec::Abq).to receive(:protocol_read).and_return(stringify_keys(init_message))
       allow(RSpec::Abq).to receive(:protocol_write)
-      allow(RSpec::Abq).to receive(:fetch_next_example)
+
       RSpec::Abq.instance_variable_set(:@fast_exit, false)
       RSpec::Abq.instance_variable_set(:@rspec_configured, false)
-      allow(RSpec::Abq::Extensions).to receive(:setup!)
-      allow(RSpec::Abq).to receive(:enabled?).and_return(true)
     end
 
     context 'with the ABQ_GENERATE_MANIFEST env var set to "true"' do
       around { |example| EnvHelper.with_env(RSpec::Abq::ABQ_GENERATE_MANIFEST => "true") { example.run } }
 
-      it "if the manifest env var is set, it bails before initialization", :aggregate_failures do
+      it "if the manifest env var is set, it bails before initialization" do
         expect(RSpec::Abq).not_to receive(:protocol_read)
         RSpec::Abq.configure_rspec!
       end
     end
 
+    it "if the manifest env var isn't set, it initializes" do
+      expect(RSpec::Abq).to receive(:protocol_read)
+      RSpec::Abq.configure_rspec!
+    end
+
     context "when the init message asks to fast exit" do
       let(:init_message) { {fast_exit: true} }
 
-      it "does nothing", :aggregate_failures do
+      it "abq knows to fast exit", :aggregate_failures do
         expect(RSpec::Abq::Ordering).not_to receive(:setup)
         RSpec::Abq.configure_rspec!
 
@@ -45,6 +48,7 @@ RSpec.describe RSpec::Abq do
         expect(RSpec::Abq::Ordering).to receive(:setup!).with(stringify_keys(init_message[:init_meta]), anything)
 
         RSpec::Abq.configure_rspec!
+        expect(RSpec::Abq).not_to be_fast_exit
       end
     end
   end
@@ -103,7 +107,5 @@ RSpec.describe RSpec::Abq do
         RSpec::Abq::Manifest.write_manifest([], 1, registry)
       end
     end
-
-    # note: more manifest generation tests are in spec/features/manifest_spec.rb
   end
 end
