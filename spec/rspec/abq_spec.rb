@@ -11,11 +11,8 @@ RSpec.describe RSpec::Abq do
 
     before do
       # stub out socket communication
-      socket_double = instance_double(TCPSocket)
-      allow(socket_double).to receive(:read).with(4)
-      allow(socket_double).to receive(:read) { init_message.to_json }
-      allow(socket_double).to receive(:write)
-      allow(RSpec::Abq).to receive(:socket) { socket_double }
+      allow(RSpec::Abq).to receive(:protocol_read).and_return(stringify_keys(init_message))
+      allow(RSpec::Abq).to receive(:protocol_write)
       allow(RSpec::Abq).to receive(:fetch_next_example)
       RSpec::Abq.instance_variable_set(:@fast_exit, false)
       RSpec::Abq.instance_variable_set(:@rspec_configured, false)
