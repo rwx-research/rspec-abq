@@ -67,9 +67,10 @@ module RSpec
     # Whether this rspec process is running in ABQ mode.
     # @return [Boolean]
     def self.enabled?(env = ENV)
-      if env.key?(ABQ_SOCKET) # this is the basic check for rspec being called from an abq worker
-        env[ABQ_RSPEC_PID] ||= Process.pid.to_s
-        env[ABQ_RSPEC_PID] == Process.pid.to_s
+      if env.key?(ABQ_SOCKET) # is rspec being called from abq?
+        env[ABQ_RSPEC_PID] ||= Process.pid.to_s # set the pid of the native runner
+        env[ABQ_RSPEC_PID] == Process.pid.to_s # and ensure the pid is this process
+        # we check the pid to guard against nested rspec calls thinking they're being called from abq
       else
         false
       end
@@ -98,10 +99,11 @@ module RSpec
     def self.configure_rspec!
       return if @rspec_configured
       @rspec_configured = true
+
       # ABQ doesn't support writing example status to disk yet.
-      # in its simple implementation, status persistance write the status of all tests which ends up hanging with under
-      # abq because we haven't run most of the tests in this worker. (maybe it's running the tests?). In any case:
-      # it's disabled.
+      # in its simple implementation, status persistance write the status of all tests which ends up hanging under
+      # abq because we haven't run most of the tests in @example_group. (maybe the hanging is rspec trying to execute the tests?).
+      # In any case: it's disabled.
       # we set this even if the manifest is being generated
       RSpec.configuration.example_status_persistence_file_path = nil
 
@@ -112,7 +114,6 @@ module RSpec
       # new rspec process
 
       # enabling colors allows us to pass through nicer error messages
-
       if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.6.0")
         RSpec.configuration.color_mode = :on
       else
@@ -121,11 +122,10 @@ module RSpec
 
       # the first message is the init_meta block of the manifest. This is used to share runtime configuration
       # information amongst worker processes. In RSpec, it is used to ensure that random ordering between workers
-      # shares the same seed, so can be deterministic.
+      # shares the same seed.
       init_message = protocol_read
       protocol_write(INIT_SUCCESS_MESSAGE)
 
-      # TODO: delete the check for empty init_meta when https://github.com/rwx-research/abq/pull/216 is merged
       if init_message["fast_exit"]
         @fast_exit = true
         return
@@ -134,10 +134,6 @@ module RSpec
       Ordering.setup!(init_message["init_meta"], RSpec.configuration)
       nil
     end
-
-    # raised if we try to load rspec-abq twice
-    # perhaps RSpec or a plugin has changed behavior to break assumptions we've made with rspec-abq
-    AbqLoadedTwiceError = Class.new(StandardError)
 
     # @!visibility private
     # @return [Boolean]
