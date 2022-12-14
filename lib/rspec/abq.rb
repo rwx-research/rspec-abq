@@ -91,7 +91,10 @@ module RSpec
       Extensions.setup!
     end
 
-    # After the manifest is generated
+    # This is called from World#ordered_example_group
+    # and is used to configure rspec based on
+    # 1. rspec-abq expected defaults
+    # 2. ordering information sent from the worker (e.g. if the test supervisor has random seed 3, we want this runner to also have the same random seed)
     def self.configure_rspec!
       return if @rspec_configured
       @rspec_configured = true

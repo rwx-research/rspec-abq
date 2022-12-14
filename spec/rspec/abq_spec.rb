@@ -6,7 +6,7 @@ def stringify_keys(hash)
 end
 
 RSpec.describe RSpec::Abq do
-  describe ".setup!", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
+  describe ".configure_rspec!", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
     let(:init_message) { {init_meta: {seed: 124, ordering: "defined"}} }
 
     before do
@@ -17,7 +17,8 @@ RSpec.describe RSpec::Abq do
       allow(socket_double).to receive(:write)
       allow(RSpec::Abq).to receive(:socket) { socket_double }
       allow(RSpec::Abq).to receive(:fetch_next_example)
-      RSpec::Abq.instance_variable_set(:@quit_early, false)
+      RSpec::Abq.instance_variable_set(:@fast_exit, false)
+      RSpec::Abq.instance_variable_set(:@rspec_configured, false)
       allow(RSpec::Abq::Extensions).to receive(:setup!)
       allow(RSpec::Abq).to receive(:enabled?).and_return(true)
     end
@@ -26,9 +27,8 @@ RSpec.describe RSpec::Abq do
       around { |example| EnvHelper.with_env(RSpec::Abq::ABQ_GENERATE_MANIFEST => "true") { example.run } }
 
       it "if the manifest env var is set, it bails before initialization", :aggregate_failures do
-        expect(RSpec::Abq::Extensions).to receive(:setup!)
         expect(RSpec::Abq).not_to receive(:protocol_read)
-        RSpec::Abq.setup!
+        RSpec::Abq.configure_rspec!
       end
     end
 
@@ -37,60 +37,17 @@ RSpec.describe RSpec::Abq do
 
       it "does nothing", :aggregate_failures do
         expect(RSpec::Abq::Ordering).not_to receive(:setup)
-        expect(RSpec::Abq).not_to receive(:fetch_next_example)
-        RSpec::Abq.setup!
+        RSpec::Abq.configure_rspec!
 
-        expect(RSpec::Abq).to be_quit_early
+        expect(RSpec::Abq).to be_fast_exit
       end
     end
 
     context "when the init message is not empty" do
-      it "sets up ordering and starts testing", :aggregate_failures do
+      it "sets up ordering", :aggregate_failures do
         expect(RSpec::Abq::Ordering).to receive(:setup!).with(stringify_keys(init_message[:init_meta]), anything)
-        expect(RSpec::Abq).to receive(:fetch_next_example)
 
-        RSpec::Abq.setup!
-      end
-    end
-
-    context "when ordering returns true, indicating rspec should reshuffle" do
-      it "sets up ordering and starts testing", :aggregate_failures do
-        allow(RSpec::Abq::Ordering).to receive(:setup!).and_return(true)
-        expect(RSpec::Abq).to receive(:fetch_next_example)
-
-        RSpec::Abq.setup!
-      end
-    end
-
-    context "when ordering returns false, indicating rspec must not reshuffle" do
-      it "sets up ordering and starts testing", :aggregate_failures do
-        allow(RSpec::Abq::Ordering).to receive(:setup!).and_return(false)
-        expect(RSpec::Abq).to receive(:fetch_next_example)
-
-        RSpec::Abq.setup!
-      end
-    end
-  end
-
-  describe ".setup_after_specs_loaded!", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
-    it "prevents being called twice" do
-      EnvHelper.with_reset do
-        RSpec::Abq.setup_after_specs_loaded!
-        expect { RSpec::Abq.setup_after_specs_loaded! }.to raise_error(RSpec::Abq::AbqLoadedTwiceError)
-      end
-    end
-
-    context 'with the ABQ_GENERATE_MANIFEST env var set to "true"' do
-      around { |example| EnvHelper.with_env(RSpec::Abq::ABQ_GENERATE_MANIFEST => "true") { example.run } }
-
-      it "if the manifest env var is set, it writes the manifest and quits", :aggregate_failures do
-        expect(RSpec.world).to receive(:ordered_example_groups)
-        expect(RSpec::Abq::Manifest).to receive(:write_manifest)
-        # manifest writing happens before the init message is sent from the worker to the native runner
-        expect(RSpec::Abq).not_to receive(:protocol_read)
-
-        RSpec::Abq.setup_after_specs_loaded!
-        expect(RSpec::Abq).to be_quit_early
+        RSpec::Abq.configure_rspec!
       end
     end
   end
