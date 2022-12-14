@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative "../spec_helper"
 # called `_specs.rb` to avoid it being called automatically
 # used by feature specs
 RSpec.describe 'a pending group' do

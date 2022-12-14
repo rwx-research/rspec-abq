@@ -1,6 +1,5 @@
 Error: The command
 
-    bundle exec rspec --pattern spec/fixture_specs/**/*.rb
 
 failed to be run by all ABQ workers associating to this test run.
 
