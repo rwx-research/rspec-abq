@@ -43,9 +43,7 @@ RSpec.describe "abq test" do
         work_stdout = work_stdout_fd.read
 
         # bin/echo_exit_status.rb prints the exit status of the native runner
-
-        # this code pulls it out of output
-
+        # this removes it out of the output
         exit_status_regex = /^exit status: (\d+)$\n/
         manifest_generation_exit_status, native_runner_exit_status = work_stdout.scan(exit_status_regex).map(&:first).map(&:to_i)
         worker_stdout_without_native_exit_status = work_stdout.gsub(exit_status_regex, "")
@@ -79,6 +77,7 @@ RSpec.describe "abq test" do
         .gsub(/^Starting test run with ID.+/, "Starting test run with ID not-the-real-test-run-id") # and so is the test run id
     )
   end
+  alias_method :sanitize_test_error, :sanitize_test_output
 
   def sanitize_worker_output(output)
     sanitize_backtraces(
@@ -103,6 +102,7 @@ RSpec.describe "abq test" do
 
   context "with queue and worker" do
     after(:all) do # rubocop:disable RSpec/BeforeAfterAll
+      # queue is started by the first test that needs it
       ABQQueue.stop!
     end
 
@@ -116,17 +116,28 @@ RSpec.describe "abq test" do
       [writable_example_id(example), which_io, File.basename(ENV["BUNDLE_GEMFILE"])].join("-")
     end
 
-    def assert_command_output_consistent(command, example, success:, hard_failure: false)
+    def assert_command_output_consistent(command, example, success:, hard_failure: false, &sanitizers)
       results = abq_test(command, queue_addr: ABQQueue.address, run_id: run_id)
+
+      sanitized = if sanitizers
+        sanitizers.call(results.dup)
+      else
+        results
+      end
+
+      sanitized[:test][:stdout] = sanitize_test_output(sanitized[:test][:stdout])
+      sanitized[:test][:stderr] = sanitize_test_error(sanitized[:test][:stderr])
+      sanitized[:work][:stdout] = sanitize_worker_output(sanitized[:work][:stdout])
+      sanitized[:work][:stderr] = sanitize_worker_error(sanitized[:work][:stderr])
 
       aggregate_failures do
         # when there's a hard failure, the manifest generation run's exit status is 1
         expect(results[:native_runner_exit_status][:manifest]).to eq(hard_failure ? 1 : 0)
 
-        expect(sanitize_test_output(results[:test][:stdout])).to match_snapshot(snapshot_name(example, "test-stdout"))
-        expect(sanitize_test_output(results[:test][:stderr])).to match_snapshot(snapshot_name(example, "test-stderr"))
-        expect(sanitize_worker_output(results[:work][:stdout])).to match_snapshot(snapshot_name(example, "work-stdout"))
-        expect(sanitize_worker_error(results[:work][:stderr])).to match_snapshot(snapshot_name(example, "work-stderr"))
+        expect(sanitized[:test][:stdout]).to match_snapshot(snapshot_name(example, "test-stdout"))
+        expect(sanitized[:test][:stderr]).to match_snapshot(snapshot_name(example, "test-stderr"))
+        expect(sanitized[:work][:stdout]).to match_snapshot(snapshot_name(example, "work-stdout"))
+        expect(sanitized[:work][:stderr]).to match_snapshot(snapshot_name(example, "work-stderr"))
 
         if success
           expect(results[:native_runner_exit_status][:runner]).to eq(0)
@@ -167,23 +178,16 @@ RSpec.describe "abq test" do
 
     # this one _does_ test rspec-abq's handling of random ordering (and because of that isn't a snapshot test :p)
     it "passes on random ordering", :aggregate_failures do |example| # rubocop:disable RSpec/ExampleLength
-      # copy/pate of `#assert_command_output_consistent` because we use custom sanitization
-      results = abq_test("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand", queue_addr: ABQQueue.address, run_id: run_id) # rubocop:disable RSpec/InstanceVariable
-      expect(results[:test][:exit_status]).to be_success
-
-      dots_regex = /^[.PS]+$/ # note the dot is in a character class so it is implicitly escaped / not a wildcard
-      dots = results[:test][:stdout][dots_regex]
-      sanitized_test_output = results[:test][:stdout].gsub(dots_regex, dots.chars.sort.join) # we rewrite the dots to be consistent because otherwise they're random
-
-      expect(sanitize_test_output(sanitized_test_output)).to match_snapshot(snapshot_name(example, "test-stdout"))
-
-      sanitized_worker_output = results[:work][:stdout] # rubocop:disable RSpec/InstanceVariable
-        .gsub(/Randomized with seed \d+/, "Randomized with seed this-is-not-random")
-        .lines.sort.reject { |line| line.strip == "" }.join # sort lines because tests will not consistently be in order
-
-      expect(sanitize_worker_output(sanitized_worker_output)).to match_snapshot(snapshot_name(example, "work-stdout"))
-      expect(sanitize_worker_error(results[:work][:stderr])).to match_snapshot(snapshot_name(example, "work-stderr"))
-      expect(results[:test][:stderr]).to be_empty
+      assert_command_output_consistent("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand", example, success: true) do |results|
+        dots_regex = /^[.PS]+$/ # note the dot is in a character class so it is implicitly escaped / not a wildcard
+        dots = results[:test][:stdout][dots_regex]
+        results[:test][:stdout].gsub!(dots_regex, dots.chars.sort.join) # we rewrite the dots to be consistent because otherwise they're random
+        results[:work][:stdout] =
+          results[:work][:stdout] # rubocop:disable RSpec/InstanceVariable
+            .gsub(/Randomized with seed \d+/, "Randomized with seed this-is-not-random")
+            .lines.sort.reject { |line| line.strip == "" }.join # sort lines because tests will not consistently be in order
+        results
+      end
     end
 
     version = Gem::Version.new(RSpec::Core::Version::STRING)
