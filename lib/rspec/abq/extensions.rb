@@ -7,6 +7,7 @@ module RSpec
       def self.setup!
         RSpec::Core::ExampleGroup.extend(ExampleGroup)
         RSpec::Core::Runner.prepend(Runner)
+        RSpec::Core::World.prepend(World)
       end
 
       # ExampleGroups are nodes in a tree with
@@ -112,8 +113,18 @@ module RSpec
         #   or the configured failure exit code (1 by default) if specs
         #   failed.
         def run_specs(example_groups)
-          RSpec::Abq.setup_after_specs_loaded!
-          return 0 if Abq.quit_early?
+          if !!ENV[ABQ_GENERATE_MANIFEST]
+            # before abq can start workers, it asks for a manifest
+            RSpec::Abq::Manifest.write_manifest(example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry)
+            # gracefully quit after manifest generation. The worker will launch another instance of rspec with an init_message
+            return 0
+          end
+
+          return 0 if Abq.fast_exit?
+
+          # if not quitting early, ensure we have an initial test
+          Abq.fetch_next_example
+
           examples_count = @world.example_count(example_groups)
           examples_passed = @configuration.reporter.report(examples_count) do |reporter|
             @configuration.with_suite_hooks do
@@ -143,6 +154,19 @@ module RSpec
           if RSpec.configuration.example_status_persistence_file_path
             warn "persisting example status disabled by abq"
           end
+        end
+      end
+
+      # RSpec uses this for global data that's not configuration
+      module World
+        # we call configure_rspec in #ordered_example_groups because it is
+        # 1. called AFTER all specs are loaded.
+        # We need to call it after all specs are loaded because we want to potentially overwrite config set in the specs
+        # 2. called BEFORE any specs are run.
+        # We want to call it before any specs are run because the config we set may affect spec ordering.
+        def ordered_example_groups
+          RSpec::Abq.configure_rspec!
+          super
         end
       end
     end

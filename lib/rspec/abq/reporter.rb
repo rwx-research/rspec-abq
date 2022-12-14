@@ -15,7 +15,7 @@ module RSpec
         @id = example.id
         @example = example
         @display_name = example.metadata[:full_description]
-        @tags, @meta = Abq.extract_metadata_and_tags(example.metadata)
+        @tags, @meta = Manifest.extract_metadata_and_tags(example.metadata)
       end
 
       # @param example [RSpec::Core::Example]

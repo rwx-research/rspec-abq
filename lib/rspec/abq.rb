@@ -67,8 +67,13 @@ module RSpec
     # Whether this rspec process is running in ABQ mode.
     # @return [Boolean]
     def self.enabled?(env = ENV)
-      env.key?(ABQ_SOCKET) && # this is the basic check for rspec being called from an abq worker
-        (!env.key?(ABQ_RSPEC_PID) || env[ABQ_RSPEC_PID] == Process.pid.to_s) # and this check ensures that any _nested_ processes do not communicate with the worker.
+      if env.key?(ABQ_SOCKET) # is rspec being called from abq?
+        env[ABQ_RSPEC_PID] ||= Process.pid.to_s # set the pid of the native runner
+        env[ABQ_RSPEC_PID] == Process.pid.to_s # and ensure the pid is this process
+        # we check the pid to guard against nested rspec calls thinking they're being called from abq
+      else
+        false
+      end
     end
 
     # Disables tests so we can compare runtime of rspec core vs parallelized version. Additionally, disables tests
@@ -79,72 +84,61 @@ module RSpec
         ENV.key?("ABQ_DISABLE_TESTS")
     end
 
-    # This is the main entry point for abq-rspec, and it's called when the gem is loaded
+    # This is the main entry point for abq-rspec, and it's called when the gem is loaded.
     # @!visibility private
     # @return [void]
-    def self.setup!
+    def self.setup_extensions_if_enabled!
       return unless enabled?
       Extensions.setup!
+    end
+
+    # This is called from World#ordered_example_group
+    # and is used to configure rspec based on
+    # 1. rspec-abq expected defaults
+    # 2. ordering information sent from the worker (e.g. if the test supervisor has random seed 3, we want this runner to also have the same random seed)
+    def self.configure_rspec!
+      return if @rspec_configured
+      @rspec_configured = true
+
+      # ABQ doesn't support writing example status to disk yet.
+      # in its simple implementation, status persistance write the status of all tests which ends up hanging under
+      # abq because we haven't run most of the tests in @example_group. (maybe the hanging is rspec trying to execute the tests?).
+      # In any case: it's disabled.
+      # we set this even if the manifest is being generated
+      RSpec.configuration.example_status_persistence_file_path = nil
+
+      # if we're generating a manifest, we don't want to do any other setup
+      return if !!ENV[ABQ_GENERATE_MANIFEST]
 
       # after the manfiest has been sent to the worker, the rspec process will quit and the workers will each start a
       # new rspec process
 
       # enabling colors allows us to pass through nicer error messages
-
       if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.6.0")
         RSpec.configuration.color_mode = :on
       else
         RSpec.configuration.color = true
       end
 
-      # if we're generating a manifest, we don't want to do any other setup
-      return if !!ENV[ABQ_GENERATE_MANIFEST]
-
       # the first message is the init_meta block of the manifest. This is used to share runtime configuration
       # information amongst worker processes. In RSpec, it is used to ensure that random ordering between workers
-      # shares the same seed, so can be deterministic.
+      # shares the same seed.
       init_message = protocol_read
       protocol_write(INIT_SUCCESS_MESSAGE)
-      # TODO: delete the check for empty init_meta when https://github.com/rwx-research/abq/pull/216 is merged
+
       if init_message["fast_exit"]
-        @quit_early = true
+        @fast_exit = true
         return
       end
 
-      fetch_next_example
       Ordering.setup!(init_message["init_meta"], RSpec.configuration)
       nil
     end
 
-    # raised if we try to load rspec-abq twice
-    # perhaps RSpec or a plugin has changed behavior to break assumptions we've made with rspec-abq
-    AbqLoadedTwiceError = Class.new(StandardError)
-
     # @!visibility private
     # @return [Boolean]
-    def self.quit_early?
-      @quit_early ||= false
-    end
-
-    # @!visibility private
-    # @return [void]
-    def self.setup_after_specs_loaded!
-      fail AbqLoadedTwiceError, "tried to setup abq-rspec twice" if ENV[ABQ_RSPEC_PID]
-      ENV[ABQ_RSPEC_PID] ||= Process.pid.to_s
-
-      # ABQ doesn't support writing example status to disk yet.
-      # in its simple implementation, status persistance write the status of all tests which ends up hanging with under
-      # abq because we haven't run most of the tests in this worker. (maybe it's running the tests?). In any case:
-      # it's disabled.
-      #
-      # additionally, for whatever reason, setting this to nil on load gets overwritten, so we write it late.
-      RSpec.configuration.example_status_persistence_file_path = nil
-
-      return unless !!ENV[ABQ_GENERATE_MANIFEST]
-      # before abq can start workers, it asks for a manifest
-      RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry)
-      @quit_early = true
-      nil
+    def self.fast_exit?
+      @fast_exit ||= false
     end
 
     # Creates the socket to communicate with the worker and sends the worker the protocol
@@ -162,17 +156,6 @@ module RSpec
     # When we want to report custom tags that rspec-users write, we need to remove these from the example metadata
     # @!visibility private
     RESERVED_METADATA_KEYS = Set.new(RSpec::Core::Metadata::RESERVED_KEYS + [:if, :unless])
-
-    # Takes group or example metadata and returns a two-element array:
-    # a tag is any piece of metadata that has a value of true
-    # @return [Array<Array<Symbol>, Hash<Symbol, Object>>] tags and metadata
-    # @!visibility private
-    def self.extract_metadata_and_tags(metadata)
-      # we use `.dup.reject! because `.reject` raises a warning (because it doesn't dup procs)`
-      user_metadata = metadata.dup.reject! { |k, _v| RESERVED_METADATA_KEYS.include?(k) }
-      tags_array, metadata_array = user_metadata.partition { |_k, v| v == true }
-      [tags_array.map(&:first), metadata_array.to_h]
-    end
 
     class << self
       # the target_test_case is the test case the abq worker wants results for
@@ -238,4 +221,4 @@ module RSpec
   end
 end
 
-RSpec::Abq.setup!
+RSpec::Abq.setup_extensions_if_enabled!
