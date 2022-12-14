@@ -125,19 +125,14 @@ RSpec.describe "abq test" do
         results
       end
 
-      sanitized[:test][:stdout] = sanitize_test_output(sanitized[:test][:stdout])
-      sanitized[:test][:stderr] = sanitize_test_error(sanitized[:test][:stderr])
-      sanitized[:work][:stdout] = sanitize_worker_output(sanitized[:work][:stdout])
-      sanitized[:work][:stderr] = sanitize_worker_error(sanitized[:work][:stderr])
-
       aggregate_failures do
         # when there's a hard failure, the manifest generation run's exit status is 1
         expect(results[:native_runner_exit_status][:manifest]).to eq(hard_failure ? 1 : 0)
 
-        expect(sanitized[:test][:stdout]).to match_snapshot(snapshot_name(example, "test-stdout"))
-        expect(sanitized[:test][:stderr]).to match_snapshot(snapshot_name(example, "test-stderr"))
-        expect(sanitized[:work][:stdout]).to match_snapshot(snapshot_name(example, "work-stdout"))
-        expect(sanitized[:work][:stderr]).to match_snapshot(snapshot_name(example, "work-stderr"))
+        expect(sanitize_test_output(sanitized[:test][:stdout])).to match_snapshot(snapshot_name(example, "test-stdout"))
+        expect(sanitize_test_error(sanitized[:test][:stderr])).to match_snapshot(snapshot_name(example, "test-stderr"))
+        expect(sanitize_worker_output(sanitized[:work][:stdout])).to match_snapshot(snapshot_name(example, "work-stdout"))
+        expect(sanitize_worker_error(sanitized[:work][:stderr])).to match_snapshot(snapshot_name(example, "work-stderr"))
 
         if success
           expect(results[:native_runner_exit_status][:runner]).to eq(0)
