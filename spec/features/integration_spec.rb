@@ -70,12 +70,6 @@ RSpec.describe "abq test" do
     end
   end
 
-  # if test output doesn't exist on disk, write it to a file
-  # if it does exist, use the file as the expected output
-  def assert_test_output_consistent(matchable_output, test_identifier:)
-    expect(matchable_output).to match_snapshot("#{test_identifier}-#{File.basename(ENV["BUNDLE_GEMFILE"])}")
-  end
-
   # remove unstable parts of the output so we can validate that the rest of the test output is stable between runs
   def sanitize_test_output(output)
     sanitize_backtraces(
@@ -118,6 +112,10 @@ RSpec.describe "abq test" do
       example.id[2..].tr("/", "-")
     end
 
+    def snapshot_name(example, which_io)
+      [writable_example_id(example), which_io, File.basename(ENV["BUNDLE_GEMFILE"])].join("-")
+    end
+
     def assert_command_output_consistent(command, example, success:, hard_failure: false)
       results = abq_test(command, queue_addr: ABQQueue.address, run_id: run_id)
 
@@ -125,28 +123,22 @@ RSpec.describe "abq test" do
         # when there's a hard failure, the manifest generation run's exit status is 1
         expect(results[:native_runner_exit_status][:manifest]).to eq(hard_failure ? 1 : 0)
 
-        writable_example_id = writable_example_id(example)
-        assert_test_output_consistent(sanitize_test_output(results[:test][:stdout]), test_identifier: [writable_example_id, "test-stdout"].join("-"))
-        assert_test_output_consistent(sanitize_worker_output(results[:work][:stdout]), test_identifier: [writable_example_id, "work-stdout"].join("-"))
-        assert_test_output_consistent(sanitize_worker_error(results[:work][:stderr]), test_identifier: [writable_example_id, "work-stderr"].join("-"))
-
-        if hard_failure
-          assert_test_output_consistent(sanitize_test_output(results[:test][:stderr]), test_identifier: [writable_example_id, "test-stderr"].join("-"))
-        else
-          expect(results[:test][:stderr]).to be_empty
-        end
+        expect(sanitize_test_output(results[:test][:stdout])).to match_snapshot(snapshot_name(example, "test-stdout"))
+        expect(sanitize_test_output(results[:test][:stderr])).to match_snapshot(snapshot_name(example, "test-stderr"))
+        expect(sanitize_worker_output(results[:work][:stdout])).to match_snapshot(snapshot_name(example, "work-stdout"))
+        expect(sanitize_worker_error(results[:work][:stderr])).to match_snapshot(snapshot_name(example, "work-stderr"))
 
         if success
           expect(results[:native_runner_exit_status][:runner]).to eq(0)
           expect(results[:test][:exit_status]).to be_success
           expect(results[:work][:exit_status]).to be_success
         else
-
           # when there's a hard failure, rspec isn't relaunched after manifest generation
           # so its exit status is simply missing from the output
           expect(results[:native_runner_exit_status][:runner]).to eq(hard_failure ? nil : 1)
           expect(results[:test][:exit_status]).not_to be_success
           expect(results[:test][:exit_status].exitstatus).to eq(1)
+
           expect(results[:work][:exit_status]).not_to be_success
           # when there's a hard failure, abq has a special exit status to indicate that something went wrong
           expect(results[:work][:exit_status].exitstatus).to eq(hard_failure ? 101 : 1)
@@ -183,16 +175,14 @@ RSpec.describe "abq test" do
       dots = results[:test][:stdout][dots_regex]
       sanitized_test_output = results[:test][:stdout].gsub(dots_regex, dots.chars.sort.join) # we rewrite the dots to be consistent because otherwise they're random
 
-      writable_example_id = writable_example_id(example)
-      assert_test_output_consistent(sanitize_test_output(sanitized_test_output), test_identifier: [writable_example_id, "test-stdout"].join("-"))
+      expect(sanitize_test_output(sanitized_test_output)).to match_snapshot(snapshot_name(example, "test-stdout"))
 
       sanitized_worker_output = results[:work][:stdout] # rubocop:disable RSpec/InstanceVariable
         .gsub(/Randomized with seed \d+/, "Randomized with seed this-is-not-random")
+        .lines.sort.reject { |line| line.strip == "" }.join # sort lines because tests will not consistently be in order
 
-      # sort lines because tests will not consistently be in order
-      sorted_worker_output = sanitized_worker_output.lines.sort.reject { |line| line.strip == "" }.join
-      assert_test_output_consistent(sanitize_worker_output(sorted_worker_output), test_identifier: [writable_example_id, "work-stdout"].join("-"))
-      assert_test_output_consistent(sanitize_worker_error(results[:work][:stderr]), test_identifier: [writable_example_id, "work-stderr"].join("-")) # rubocop:disable RSpec/InstanceVariable
+      expect(sanitize_worker_output(sanitized_worker_output)).to match_snapshot(snapshot_name(example, "work-stdout"))
+      expect(sanitize_worker_error(results[:work][:stderr])).to match_snapshot(snapshot_name(example, "work-stderr"))
       expect(results[:test][:stderr]).to be_empty
     end
 
