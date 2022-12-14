@@ -1,0 +1,7 @@
+Worker started with id not-the-real-test-run-id
+ERROR:	RSpec seed changed during initialization.
+	This may cause a race condition in rspec-abq.
+	We'd love to hear why you're setting the seed during initialization.
+/rspec-abq/issues/new
+	and we'll do our best to support your use case.
+Worker quit before sending protocol version

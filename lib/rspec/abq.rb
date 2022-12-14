@@ -98,7 +98,10 @@ module RSpec
       end
 
       # if we're generating a manifest, we don't want to do any other setup
-      return if !!ENV[ABQ_GENERATE_MANIFEST]
+      if !!ENV[ABQ_GENERATE_MANIFEST]
+        @initial_rspec_seed = RSpec.configuration.seed
+        return
+      end
 
       # the first message is the init_meta block of the manifest. This is used to share runtime configuration
       # information amongst worker processes. In RSpec, it is used to ensure that random ordering between workers
@@ -107,7 +110,7 @@ module RSpec
       protocol_write(INIT_SUCCESS_MESSAGE)
       # TODO: delete the check for empty init_meta when https://github.com/rwx-research/abq/pull/216 is merged
       if init_message["fast_exit"]
-        @quit_early = true
+        @quit_early = :expected
         return
       end
 
@@ -116,15 +119,25 @@ module RSpec
       nil
     end
 
+    # @!visibility private
+    # @return [Boolean]
+    def self.quit_early?
+      !!(@quit_early ||= nil)
+    end
+
+    # @!visibility private
+    # @return [Boolean]
+    def self.early_exit_status
+      (@quit_early == :expected) ? 0 : 1
+    end
+
     # raised if we try to load rspec-abq twice
     # perhaps RSpec or a plugin has changed behavior to break assumptions we've made with rspec-abq
     AbqLoadedTwiceError = Class.new(StandardError)
 
-    # @!visibility private
-    # @return [Boolean]
-    def self.quit_early?
-      @quit_early ||= false
-    end
+    # raised if somehow RSpec's seed has been manually changed outside of rspec
+    # if this happens, it may cause a race condition where
+    SeedChangedDuringSpecLoad = Class.new(StandardError)
 
     # @!visibility private
     # @return [void]
@@ -141,9 +154,24 @@ module RSpec
       RSpec.configuration.example_status_persistence_file_path = nil
 
       return unless !!ENV[ABQ_GENERATE_MANIFEST]
+
+      # guard against seed changing during initialization
+
+      using_random_ordering = RSpec.configuration.ordering_registry.fetch(:global) == RSpec.configuration.ordering_registry.fetch(:random)
+      seed_changed_since_initialization = RSpec.configuration.seed != @initial_rspec_seed
+      if seed_changed_since_initialization && using_random_ordering
+        warn ["ERROR:\tRSpec seed changed during initialization.",
+          "This may cause a race condition in rspec-abq.",
+          "We'd love to hear why you're setting the seed during initialization.",
+          "Please open an issue at https://github.com/rwx-research/rspec-abq/issues/new",
+          "and we'll do our best to support your use case."].join("\n\t")
+        @quit_early = :error
+        return
+      end
+
       # before abq can start workers, it asks for a manifest
       RSpec::Abq::Manifest.write_manifest(RSpec.world.ordered_example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry)
-      @quit_early = true
+      @quit_early = :expected
       nil
     end
 
@@ -238,4 +266,5 @@ module RSpec
   end
 end
 
+require "pry"
 RSpec::Abq.setup!

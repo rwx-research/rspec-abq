@@ -133,7 +133,7 @@ RSpec.describe "abq test" do
       assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
     end
 
-    # note: this doesn't test rspec-abq's hadnling of random ordering because each worker receives the same seed on the command line
+    # note: this doesn't test rspec-abq's handling of random ordering because each worker receives the same seed on the command line
     it "has consistent output for specs together with a hardcoded seed" do |example|
       assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --seed 35888", example, success: false)
     end
@@ -159,17 +159,23 @@ RSpec.describe "abq test" do
       end
     end
 
-    version = Gem::Version.new(RSpec::Core::Version::STRING)
-    # we don't properly fail on syntax errors for versions 3.6, 3.7, and 3.8
-    pending_test = version >= Gem::Version.new("3.6.0") && version < Gem::Version.new("3.9.0")
-    it "has consistent output for specs with syntax errors" do |example|
-      pending if pending_test
-      assert_command_output_consistent("bundle exec rspec 'spec/fixture_specs/specs_with_syntax_errors.rb'", example, success: false, worker_status_code: 101, test_stderr_empty: false)
-    end
+    context "when abq should is expected to fail hard" do
+      it "raises an exception if user tries to randomly set the seed" do |example|
+        assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_that_sets_up_random_seed.rb", example, success: false, worker_status_code: 101, test_stderr_empty: false)
+      end
 
-    # this one doesn't even pass if pending for 3.6-3.8 so we skip it with metadata
-    it "has consistent output for specs together including a syntax error", *[(:skip if pending_test)].compact do |example|
-      assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", example, success: false, worker_status_code: 101, test_stderr_empty: false)
+      version = Gem::Version.new(RSpec::Core::Version::STRING)
+      # we don't properly fail on syntax errors for versions 3.6, 3.7, and 3.8
+      pending_test = version >= Gem::Version.new("3.6.0") && version < Gem::Version.new("3.9.0")
+      it "has consistent output for specs with syntax errors" do |example|
+        pending if pending_test
+        assert_command_output_consistent("bundle exec rspec 'spec/fixture_specs/specs_with_syntax_errors.rb'", example, success: false, worker_status_code: 101, test_stderr_empty: false)
+      end
+
+      # this one doesn't even pass if pending for 3.6-3.8 so we skip it with metadata
+      it "has consistent output for specs together including a syntax error", *[(:skip if pending_test)].compact do |example|
+        assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", example, success: false, worker_status_code: 101, test_stderr_empty: false)
+      end
     end
   end
 end

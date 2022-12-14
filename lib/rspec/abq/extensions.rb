@@ -113,7 +113,7 @@ module RSpec
         #   failed.
         def run_specs(example_groups)
           RSpec::Abq.setup_after_specs_loaded!
-          return 0 if Abq.quit_early?
+          return Abq.early_exit_status if Abq.quit_early?
           examples_count = @world.example_count(example_groups)
           examples_passed = @configuration.reporter.report(examples_count) do |reporter|
             @configuration.with_suite_hooks do
