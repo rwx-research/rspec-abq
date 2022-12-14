@@ -3,15 +3,20 @@ require "securerandom"
 require "spec_helper"
 
 RSpec.describe "abq test" do
-  let(:exit_code_regex) { /^exit code: (\d+)$\n/ }
-
   def abq_test(rspec_command, queue_addr:, run_id:)
     # RWX_ACCESS_TOKEN is set by `captain-cli`.
     # The tests uses a local queue.
     # Here we unset RWX_ACCESS_TOKEN to prevent abq from trying to connect to a remote queue.
     EnvHelper.with_env("RWX_ACCESS_TOKEN" => nil) do
       Open3.popen3("abq", "work", "--queue-addr", queue_addr, "--run-id", run_id) do |_work_stdin_fd, work_stdout_fd, work_stderr_fd, work_thr|
-        test_stdout, test_stderr, test_exit_status = Open3.capture3("abq test --queue-addr #{queue_addr} --run-id #{run_id} -- bin/echo_exit_code.rb #{rspec_command}")
+        test_stdout, test_stderr, test_exit_status = Open3.capture3("abq test --queue-addr #{queue_addr} --run-id #{run_id} -- bin/echo_exit_status.rb #{rspec_command}")
+        # note: native_runner_exit_status is nil if the manifest wasn't generated
+        work_stdout = work_stdout_fd.read
+
+        exit_status_regex = /^exit status: (\d+)$\n/
+        manifest_generation_exit_status, native_runner_exit_status = work_stdout.scan(exit_status_regex).map(&:first).map(&:to_i)
+        worker_stdout_without_native_exit_status = work_stdout.gsub(exit_status_regex, "")
+
         {
           test: {
             stdout: test_stdout,
@@ -19,9 +24,13 @@ RSpec.describe "abq test" do
             exit_status: test_exit_status
           },
           work: {
-            stdout: work_stdout_fd.read,
+            stdout: worker_stdout_without_native_exit_status,
             stderr: work_stderr_fd.read,
             exit_status: work_thr.value
+          },
+          native_runner_exit_status: {
+            manifest: manifest_generation_exit_status,
+            runner: native_runner_exit_status
           }
         }
       end
@@ -92,24 +101,19 @@ RSpec.describe "abq test" do
       example.id[2..].tr("/", "-")
     end
 
-    def assert_command_output_consistent(command, example, success:, worker_status_code: 1, test_stderr_empty: true, expect_manifest_generation: true)
+    def assert_command_output_consistent(command, example, success:, worker_status: 1, test_stderr_empty: true, expect_manifest_generation: true)
       results = abq_test(command, queue_addr: @queue_addr, run_id: run_id)
-
-      # note: native_runner_exit_code is nil if the manifest wasn't generated
-      manifest_generation_exit_code, native_runner_exit_code = results[:work][:stdout].scan(exit_code_regex).map(&:first).map(&:to_i)
 
       aggregate_failures do
         if expect_manifest_generation
-          expect(manifest_generation_exit_code).to eq(0)
+          expect(results[:native_runner_exit_status][:manifest]).to eq(0)
         else
-          expect(manifest_generation_exit_code).to eq(1)
+          expect(results[:native_runner_exit_status][:manifest]).to eq(1)
         end
-
-        worker_stdout_without_native_exit_codes = results[:work][:stdout].gsub(exit_code_regex, "")
 
         writable_example_id = writable_example_id(example)
         assert_test_output_consistent(sanitize_test_output(results[:test][:stdout]), test_identifier: [writable_example_id, "test-stdout"].join("-"))
-        assert_test_output_consistent(sanitize_worker_output(worker_stdout_without_native_exit_codes), test_identifier: [writable_example_id, "work-stdout"].join("-"))
+        assert_test_output_consistent(sanitize_worker_output(results[:work][:stdout]), test_identifier: [writable_example_id, "work-stdout"].join("-"))
         assert_test_output_consistent(sanitize_worker_error(results[:work][:stderr]), test_identifier: [writable_example_id, "work-stderr"].join("-"))
 
         if test_stderr_empty
@@ -119,18 +123,18 @@ RSpec.describe "abq test" do
         end
 
         if success
-          expect(native_runner_exit_code).to eq(0)
+          expect(results[:native_runner_exit_status][:runner]).to eq(0)
           expect(results[:test][:exit_status]).to be_success
           expect(results[:work][:exit_status]).to be_success
         else
-          if expect_manifest_generation
-            expect(native_runner_exit_code).to eq(1)
-          end
 
+          if expect_manifest_generation
+            expect(results[:native_runner_exit_status][:runner]).to eq(1)
+          end
           expect(results[:test][:exit_status]).not_to be_success
           expect(results[:test][:exit_status].exitstatus).to eq(1)
           expect(results[:work][:exit_status]).not_to be_success
-          expect(results[:work][:exit_status].exitstatus).to eq worker_status_code
+          expect(results[:work][:exit_status].exitstatus).to eq worker_status
         end
       end
     end
@@ -169,7 +173,8 @@ RSpec.describe "abq test" do
 
       sanitized_worker_output = results[:work][:stdout] # rubocop:disable RSpec/InstanceVariable
         .gsub(/Randomized with seed \d+/, "Randomized with seed this-is-not-random")
-        .gsub(exit_code_regex, "")
+
+      # sort lines because tests will not consistently be in order
       sorted_worker_output = sanitized_worker_output.lines.sort.reject { |line| line.strip == "" }.join
       assert_test_output_consistent(sanitize_worker_output(sorted_worker_output), test_identifier: [writable_example_id, "work-stdout"].join("-"))
       assert_test_output_consistent(sanitize_worker_error(results[:work][:stderr]), test_identifier: [writable_example_id, "work-stderr"].join("-")) # rubocop:disable RSpec/InstanceVariable
@@ -181,12 +186,12 @@ RSpec.describe "abq test" do
     pending_test = version >= Gem::Version.new("3.6.0") && version < Gem::Version.new("3.9.0")
     it "has consistent output for specs with syntax errors" do |example|
       pending if pending_test
-      assert_command_output_consistent("bundle exec rspec 'spec/fixture_specs/specs_with_syntax_errors.rb'", example, success: false, worker_status_code: 101, test_stderr_empty: false, expect_manifest_generation: false)
+      assert_command_output_consistent("bundle exec rspec 'spec/fixture_specs/specs_with_syntax_errors.rb'", example, success: false, worker_status: 101, test_stderr_empty: false, expect_manifest_generation: false)
     end
 
     # this one doesn't even pass if pending for 3.6-3.8 so we skip it with metadata
     it "has consistent output for specs together including a syntax error", *[(:skip if pending_test)].compact do |example|
-      assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", example, success: false, worker_status_code: 101, test_stderr_empty: false, expect_manifest_generation: false)
+      assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", example, success: false, worker_status: 101, test_stderr_empty: false, expect_manifest_generation: false)
     end
   end
 end

@@ -110,7 +110,7 @@ module RSpec
         # @param example_groups [Array<RSpec::Core::ExampleGroup>] groups to run.
         #   Ignored in favor of @world.ordered_example_groups
         # @return [Fixnum] exit status code. 0 if all specs passed or if rspec-abq wants to quit early,
-        #   or the configured failure exit code (1 by default) if specs
+        #   or the configured failure exit status (1 by default) if specs
         #   failed.
         def run_specs(example_groups)
           if !!ENV[ABQ_GENERATE_MANIFEST]
