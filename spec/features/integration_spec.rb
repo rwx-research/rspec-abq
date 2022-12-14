@@ -175,9 +175,8 @@ RSpec.describe "abq test" do
       assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --seed 35888", example, success: false)
     end
 
-    # this one _does_ test rspec-abq's handling of random ordering (and because of that isn't a snapshot test :p)
-    it "passes on random ordering", :aggregate_failures do |example|
-      assert_command_output_consistent("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand", example, success: true) do |results|
+    context "with random ordering" do
+      def sanitize_random_ordering(results)
         dots_regex = /^[.PS]+$/ # note the dot is in a character class so it is implicitly escaped / not a wildcard
         dots = results[:test][:stdout][dots_regex]
         results[:test][:stdout].gsub!(dots_regex, dots.chars.sort.join) # we rewrite the dots to be consistent because otherwise they're random
@@ -187,19 +186,34 @@ RSpec.describe "abq test" do
             .lines.sort.reject { |line| line.strip == "" }.join # sort lines because tests will not consistently be in order
         results
       end
+
+      # this one _does_ test rspec-abq's handling of random ordering (and because of that isn't a snapshot test :p)
+      it "has consistent output for random ordering passed as CLI argument", :aggregate_failures do |example|
+        assert_command_output_consistent("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand", example, success: true, &method(:sanitize_random_ordering))
+      end
+
+      it "has consistent output for random ordering set in rspec config" do |example|
+        assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_that_sets_up_random_ordering.rb", example, success: true, &method(:sanitize_random_ordering))
+      end
+
+      it "has consistent output for random SEED set in rspec config" do |example|
+        assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_that_sets_up_random_seed.rb", example, success: true, &method(:sanitize_random_ordering))
+      end
     end
 
-    version = Gem::Version.new(RSpec::Core::Version::STRING)
-    # we don't properly fail on syntax errors for versions 3.6, 3.7, and 3.8
-    pending_test = version >= Gem::Version.new("3.6.0") && version < Gem::Version.new("3.9.0")
-    it "has consistent output for specs with syntax errors" do |example|
-      pending if pending_test
-      assert_command_output_consistent("bundle exec rspec 'spec/fixture_specs/specs_with_syntax_errors.rb'", example, success: false, hard_failure: true)
-    end
+    context "with syntax errors" do
+      version = Gem::Version.new(RSpec::Core::Version::STRING)
+      # we don't properly fail on syntax errors for versions 3.6, 3.7, and 3.8
+      pending_test = version >= Gem::Version.new("3.6.0") && version < Gem::Version.new("3.9.0")
+      it "has consistent output for specs with syntax errors" do |example|
+        pending if pending_test
+        assert_command_output_consistent("bundle exec rspec 'spec/fixture_specs/specs_with_syntax_errors.rb'", example, success: false, hard_failure: true)
+      end
 
-    # this one doesn't even pass if pending for 3.6-3.8 so we skip it with metadata
-    it "has consistent output for specs together including a syntax error", *[(:skip if pending_test)].compact do |example|
-      assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", example, success: false, hard_failure: true)
+      # this one doesn't even pass if pending for 3.6-3.8 so we skip it with metadata
+      it "has consistent output for specs together including a syntax error", *[(:skip if pending_test)].compact do |example|
+        assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", example, success: false, hard_failure: true)
+      end
     end
   end
 end
