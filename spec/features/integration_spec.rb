@@ -156,7 +156,6 @@ RSpec.describe "abq test" do
         end
       end
     end
-    # rubocop:enable RSpec/InstanceVariable
 
     {"failing_specs" => false,
      "successful_specs" => true,
@@ -177,13 +176,13 @@ RSpec.describe "abq test" do
     end
 
     # this one _does_ test rspec-abq's handling of random ordering (and because of that isn't a snapshot test :p)
-    it "passes on random ordering", :aggregate_failures do |example| # rubocop:disable RSpec/ExampleLength
+    it "passes on random ordering", :aggregate_failures do |example|
       assert_command_output_consistent("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand", example, success: true) do |results|
         dots_regex = /^[.PS]+$/ # note the dot is in a character class so it is implicitly escaped / not a wildcard
         dots = results[:test][:stdout][dots_regex]
         results[:test][:stdout].gsub!(dots_regex, dots.chars.sort.join) # we rewrite the dots to be consistent because otherwise they're random
         results[:work][:stdout] =
-          results[:work][:stdout] # rubocop:disable RSpec/InstanceVariable
+          results[:work][:stdout]
             .gsub(/Randomized with seed \d+/, "Randomized with seed this-is-not-random")
             .lines.sort.reject { |line| line.strip == "" }.join # sort lines because tests will not consistently be in order
         results
