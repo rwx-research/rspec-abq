@@ -2,6 +2,35 @@ require "open3"
 require "securerandom"
 require "spec_helper"
 
+module ABQQueue
+  # starts the queue if it's not started and returns the address
+  def self.start!
+    @address ||= begin
+      stdin_fd, stdout_fd, waiter = Open3.popen2("abq", "start")
+      @q = {stdin_fd: stdin_fd, stdout_fd: stdout_fd, waiter: waiter}
+      # read queue address
+      data = ""
+      queue_regex = /(0.0.0.0:\d+)\n/
+      data << stdout_fd.gets until data =~ queue_regex
+      data.match(queue_regex)[1]
+    end
+  end
+
+  def self.address
+    start!
+  end
+
+  # stops the queue
+  def self.stop!
+    Process.kill("INT", @q[:waiter].pid)
+    @q[:stdout_fd].close
+    @q[:stdin_fd].close
+    @q[:waiter].value # blocks until the queue is actually stopped
+    @q = nil
+    @address = nil
+  end
+end
+
 RSpec.describe "abq test" do
   def abq_test(rspec_command, queue_addr:, run_id:)
     # RWX_ACCESS_TOKEN is set by `captain-cli`.
@@ -75,24 +104,8 @@ RSpec.describe "abq test" do
   end
 
   context "with queue and worker" do
-    # rubocop:disable RSpec/InstanceVariable
-    before(:all) do # rubocop:disable RSpec/BeforeAfterAll
-      # start the queue
-      @queue_stdin_fd, @queue_stdout_fd, @queue_thr = Open3.popen2("abq", "start")
-
-      # read queue address
-      data = ""
-      queue_regex = /(0.0.0.0:\d+)\n/
-      data << @queue_stdout_fd.gets until data =~ queue_regex
-      @queue_addr = data.match(queue_regex)[1]
-    end
-
     after(:all) do # rubocop:disable RSpec/BeforeAfterAll
-      # stop the queue
-      Process.kill("INT", @queue_thr.pid)
-      @queue_stdout_fd.close
-      @queue_stdin_fd.close
-      @queue_thr.value # blocks until the queue is actually stopped
+      ABQQueue.stop!
     end
 
     let(:run_id) { SecureRandom.uuid }
@@ -102,7 +115,7 @@ RSpec.describe "abq test" do
     end
 
     def assert_command_output_consistent(command, example, success:, worker_status: 1, test_stderr_empty: true, expect_manifest_generation: true)
-      results = abq_test(command, queue_addr: @queue_addr, run_id: run_id)
+      results = abq_test(command, queue_addr: ABQQueue.address, run_id: run_id)
 
       aggregate_failures do
         if expect_manifest_generation
@@ -161,7 +174,7 @@ RSpec.describe "abq test" do
     # this one _does_ test rspec-abq's handling of random ordering (and because of that isn't a snapshot test :p)
     it "passes on random ordering", :aggregate_failures do |example| # rubocop:disable RSpec/ExampleLength
       # copy/pate of `#assert_command_output_consistent` because we use custom sanitization
-      results = abq_test("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand", queue_addr: @queue_addr, run_id: run_id) # rubocop:disable RSpec/InstanceVariable
+      results = abq_test("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand", queue_addr: ABQQueue.address, run_id: run_id) # rubocop:disable RSpec/InstanceVariable
       expect(results[:test][:exit_status]).to be_success
 
       dots_regex = /^[.PS]+$/ # note the dot is in a character class so it is implicitly escaped / not a wildcard
