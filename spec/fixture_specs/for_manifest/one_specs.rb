@@ -1,4 +1,4 @@
-require_relative "../../spec_helper"
+require "spec_helper"
 
 # called `_specs.rb` to avoid it being called automatically
 # used by feature specs
