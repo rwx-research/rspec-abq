@@ -92,8 +92,10 @@ module RSpec
       Extensions.setup!
     end
 
+    # raised when check_configuration fails
     UnsupportedConfigurationError = Class.new(StandardError)
 
+    # raises if RSpec is configured in a way that's incompatible with rspec-abq
     def self.check_configuration!
       if RSpec.configuration.fail_fast
         warn("ERROR:\trspec-abq doesn't presently support running with fail-fast enabled.\n" \
