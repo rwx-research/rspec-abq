@@ -96,8 +96,8 @@ module RSpec
     UnsupportedConfigurationError = Class.new(StandardError)
 
     # raises if RSpec is configured in a way that's incompatible with rspec-abq
-    def self.check_configuration!
-      if RSpec.configuration.fail_fast
+    def self.check_configuration!(config)
+      if config.fail_fast
         warn("ERROR:\trspec-abq doesn't presently support running with fail-fast enabled.\n" \
                    "\tplease disable fail-fast and try again.")
         fail UnsupportedConfigurationError, "unsupported fail-fast detected."
@@ -112,7 +112,7 @@ module RSpec
       return if @rspec_configured
       @rspec_configured = true
 
-      check_configuration!
+      check_configuration!(RSpec.configuration)
       # ABQ doesn't support writing example status to disk yet.
       # in its simple implementation, status persistance write the status of all tests which ends up hanging under
       # abq because we haven't run most of the tests in @example_group. (maybe the hanging is rspec trying to execute the tests?).
