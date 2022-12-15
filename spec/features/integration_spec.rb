@@ -108,12 +108,8 @@ RSpec.describe "abq test" do
 
     let(:run_id) { SecureRandom.uuid }
 
-    def writable_example_id(example)
-      example.id[2..].tr("/", "-")
-    end
-
     def snapshot_name(example, which_io)
-      [writable_example_id(example), which_io, File.basename(ENV["BUNDLE_GEMFILE"])].join("-")
+      [example.description.tr(" ", "-"), which_io, File.basename(ENV["BUNDLE_GEMFILE"])].join("-")
     end
 
     def assert_command_output_consistent(command, example, success:, hard_failure: false, &sanitizers)
