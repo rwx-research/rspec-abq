@@ -2,12 +2,12 @@ require "set"
 require "rspec/core"
 require "socket"
 require "json"
-require_relative "abq/extensions"
-require_relative "abq/manifest"
-require_relative "abq/ordering"
-require_relative "abq/reporter"
-require_relative "abq/test_case"
-require_relative "abq/version"
+require "rspec/abq/extensions"
+require "rspec/abq/manifest"
+require "rspec/abq/ordering"
+require "rspec/abq/reporter"
+require "rspec/abq/test_case"
+require "rspec/abq/version"
 
 # We nest our patch into RSpec's module -- why not?
 module RSpec
