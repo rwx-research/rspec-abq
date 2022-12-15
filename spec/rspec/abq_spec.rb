@@ -98,7 +98,22 @@ RSpec.describe RSpec::Abq do
     end
   end
 
+  describe ".check_configuration!(config)" do
+    it "does nothing if fail_fast is nil" do
+      expect {
+        RSpec::Abq.check_configuration!(instance_double(RSpec::Core::Configuration, fail_fast: nil))
+      }.not_to raise_error
+    end
+
+    it "raises if fail_fast is set" do
+      expect {
+        RSpec::Abq.check_configuration!(instance_double(RSpec::Core::Configuration, fail_fast: true))
+      }.to raise_error(RSpec::Abq::UnsupportedConfigurationError)
+    end
+  end
+
   describe RSpec::Abq::Manifest do
+    # more manifest tests in features/manifest_spec.rb
     describe ".write_manifest(example_groups)" do
       it "writes manifest over socket" do
         allow(RSpec::Abq).to receive(:protocol_write)

@@ -91,7 +91,6 @@ module RSpec
               Abq.send_test_result_and_advance { |abq_reporter| example.fail_with_exception(abq_reporter, ex) }
             end
 
-            RSpec.world.wants_to_quit = true if reporter.fail_fast_limit_met?
             false
           ensure
             if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.11.0")

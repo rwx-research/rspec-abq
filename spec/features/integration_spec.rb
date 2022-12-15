@@ -108,12 +108,8 @@ RSpec.describe "abq test" do
 
     let(:run_id) { SecureRandom.uuid }
 
-    def writable_example_id(example)
-      example.id[2..].tr("/", "-")
-    end
-
     def snapshot_name(example, which_io)
-      [writable_example_id(example), which_io, File.basename(ENV["BUNDLE_GEMFILE"])].join("-")
+      [example.description.tr(" ", "-"), which_io, File.basename(ENV["BUNDLE_GEMFILE"])].join("-")
     end
 
     def assert_command_output_consistent(command, example, success:, hard_failure: false, &sanitizers)
@@ -194,6 +190,10 @@ RSpec.describe "abq test" do
       it "has consistent output for random SEED set in rspec config" do |example|
         assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_that_sets_up_random_seed.rb", example, success: true, &method(:sanitize_random_ordering))
       end
+    end
+
+    it "quits early if configured with fail-fast" do |example|
+      assert_command_output_consistent("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --fail-fast", example, success: false, hard_failure: true)
     end
 
     context "with syntax errors" do
