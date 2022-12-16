@@ -27,28 +27,28 @@ RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_
     # Convert a hierarchial manifest into a list of test cases to run.
     # https://www.notion.so/rwx/Native-Runner-Protocol-0-2-d992ef3b4fde4289b02244c1b89a8cc7#40d10f417e2f47ddadfe8935ae56e9cc
     flat_tests = []
-    for member in abq_manifest["members"]
-      if member["type"] == "test" then
+    abq_manifest["members"].each do |member|
+      if member["type"] == "test"
         test_case_message = {
           test_case: {
             id: member["id"],
-            meta: member["meta"],
+            meta: member["meta"]
           }
         }
         flat_tests << test_case_message
       else
         expect(member["type"]).to eq("group")
-        flat_tests.concat (flatten_manifest member)
+        flat_tests.concat((flatten_manifest member))
       end
     end
     flat_tests
   end
 
   def clean_test_result(test_result)
-      test_result["test_result"]["runtime"] = "<cleaned for test>"
-      test_result["test_result"]["started_at"] = "<cleaned for test>"
-      test_result["test_result"]["finished_at"] = "<cleaned for test>"
-      test_result
+    test_result["test_result"]["runtime"] = "<cleaned for test>"
+    test_result["test_result"]["started_at"] = "<cleaned for test>"
+    test_result["test_result"]["finished_at"] = "<cleaned for test>"
+    test_result
   end
 
   def assert_test_results_consistent(spec_name, command)
@@ -56,7 +56,7 @@ RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_
 
     # Grab the manifest
     server = TCPServer.new host, 0
-    abq_socket =  "#{host}:#{server.addr[1]}"
+    abq_socket = "#{host}:#{server.addr[1]}"
     EnvHelper.with_env("ABQ_SOCKET" => abq_socket, "ABQ_GENERATE_MANIFEST" => abq_socket) do
       `#{command}`
     end
@@ -72,7 +72,7 @@ RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_
 
     # Feed the manifest tests through RSpec
     server = TCPServer.new host, 0
-    abq_socket =  "#{host}:#{server.addr[1]}"
+    abq_socket = "#{host}:#{server.addr[1]}"
     pid = EnvHelper.with_env("ABQ_SOCKET" => abq_socket) do
       Process.spawn(command)
     end
@@ -80,7 +80,10 @@ RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_
     sock = server.accept
     expect(RSpec::Abq.protocol_read(sock)).to eq(expected_spawn_msg)
 
-    RSpec::Abq.protocol_write({ init_meta: manifest["init_meta"], fast_exit: false }, sock)
+    RSpec::Abq.protocol_write({
+      init_meta: manifest["init_meta"],
+      fast_exit: false
+    }, sock)
     expect(RSpec::Abq.protocol_read(sock)).to eq({})
 
     # Linearize the manifest, write each test and read its result.
@@ -98,10 +101,11 @@ RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_
     Process.wait pid
   end
 
-  ["failing_specs",
-   "successful_specs",
-   "pending_specs",
-   "raising_specs"
+  [
+    "failing_specs",
+    "successful_specs",
+    "pending_specs",
+    "raising_specs"
   ].each do |spec_name|
     it "has consistent results for #{spec_name}" do |example|
       assert_test_results_consistent(spec_name, "bundle exec rspec --order defined 'spec/fixture_specs/#{spec_name}.rb'")

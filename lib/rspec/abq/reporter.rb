@@ -34,32 +34,32 @@ module RSpec
         backtrace = presenter.formatted_backtrace
         @status =
           if example.execution_result.exception.is_a? RSpec::Expectations::ExpectationNotMetError
-            @status = {
-              :type => :failure,
-              exception:,
-              backtrace:,
+            {
+              type: :failure,
+              exception: exception,
+              backtrace: backtrace
             }
           else
-            @status = {
-              :type => :error,
-              exception:,
-              backtrace:,
+            {
+              type: :error,
+              exception: exception,
+              backtrace: backtrace
             }
           end
       end
 
       # @param _example [RSpec::Core::Example]
       def example_passed(_example)
-        @status = { :type => :success }
+        @status = {type: :success}
       end
 
       # @param example [RSpec::Core::Example]
       def example_pending(example)
         @status =
           if example.execution_result.example_skipped?
-            @status = { :type => :skipped }
+            {type: :skipped}
           else
-            @status = { :type => :pending }
+            {type: :pending}
           end
       end
 
@@ -82,7 +82,7 @@ module RSpec
       def location
         {
           file: @example.metadata[:file_path],
-          line: @example.metadata[:line_number],
+          line: @example.metadata[:line_number]
         }
       end
 
@@ -113,7 +113,7 @@ module RSpec
             location: location,
             started_at: @execution_result.started_at.utc.iso8601,
             finished_at: @execution_result.finished_at.utc.iso8601,
-            lineage: lineage,
+            lineage: lineage
           }
         }
       end

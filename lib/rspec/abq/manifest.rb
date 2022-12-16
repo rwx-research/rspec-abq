@@ -17,7 +17,7 @@ module RSpec
             init_meta: RSpec::Abq::Ordering.to_meta(random_seed, registry),
             members: ordered_groups.map { |group| to_manifest_group(group) }.compact
           },
-          other_errors: nil,
+          other_errors: nil
         }
       end
 
