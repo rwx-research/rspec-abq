@@ -34,8 +34,7 @@
        "finished_at" => "<cleaned for test>",
            "lineage" => [
         [0] "a raising group",
-        [1] "has a raising test",
-        [2] "has a raising test"
+        [1] "has a raising test"
       ]
     }
   }

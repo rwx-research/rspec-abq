@@ -88,9 +88,8 @@ module RSpec
 
       # Collect the scope of this example and all parent groups.
       def lineage
-        rev_lineage = [@example.metadata[:description]]
-        RSpec::Core::Metadata.ascend(@example.metadata).each do |meta|
-          rev_lineage << meta[:description]
+        rev_lineage = RSpec::Core::Metadata.ascend(@example.metadata).map do |meta|
+          meta[:description]
         end
         rev_lineage.reverse!
         rev_lineage

@@ -34,8 +34,7 @@
        "finished_at" => "<cleaned for test>",
            "lineage" => [
         [0] "a failing group",
-        [1] "has a failing test",
-        [2] "has a failing test"
+        [1] "has a failing test"
       ]
     }
   }
