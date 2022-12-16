@@ -1,3 +1,4 @@
+require "json"
 require "open3"
 require "spec_helper"
 
@@ -99,7 +100,7 @@ RSpec.describe "test results", unless: RSpec::Abq.disable_tests_when_run_by_abq?
       test_result = RSpec::Abq.protocol_read(sock)
       clean_test_result(test_result)
     end
-    expect(test_results).to match_snapshot("test_results_#{spec_name}-#{File.basename(ENV["BUNDLE_GEMFILE"])}")
+    expect(JSON.pretty_generate(test_results)).to match_snapshot("test_results_#{spec_name}-#{File.basename(ENV["BUNDLE_GEMFILE"])}")
 
     sock.close
     server.close
