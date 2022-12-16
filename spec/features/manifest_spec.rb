@@ -7,7 +7,7 @@ RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_
     "protocol_version" => {
       "type" => "abq_protocol_version",
       "major" => 0,
-      "minor" => 1
+      "minor" => 2
     },
     "runner_specification" => {
       "type" => "abq_native_runner_specification",

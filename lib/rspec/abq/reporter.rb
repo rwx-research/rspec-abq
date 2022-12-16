@@ -1,3 +1,5 @@
+require "time"
+
 module RSpec
   module Abq
     # Realistically we should instead extend [RSpec::Core::Reporter], but
@@ -25,26 +27,39 @@ module RSpec
 
       # @param example [RSpec::Core::Example]
       def example_failed(example)
+        execution_exception = example.execution_result.exception
+        presenter = RSpec::Core::Formatters::ExceptionPresenter.new execution_exception, example
+        exception = execution_exception.class.name.to_s
+        exception = "(anonymous error class)" if exception == ""
+        backtrace = presenter.formatted_backtrace
         @status =
           if example.execution_result.exception.is_a? RSpec::Expectations::ExpectationNotMetError
-            :failure
+            {
+              type: :failure,
+              exception: exception,
+              backtrace: backtrace
+            }
           else
-            :error
+            {
+              type: :error,
+              exception: exception,
+              backtrace: backtrace
+            }
           end
       end
 
       # @param _example [RSpec::Core::Example]
       def example_passed(_example)
-        @status = :success
+        @status = {type: :success}
       end
 
       # @param example [RSpec::Core::Example]
       def example_pending(example)
         @status =
           if example.execution_result.example_skipped?
-            :skipped
+            {type: :skipped}
           else
-            :pending
+            {type: :pending}
           end
       end
 
@@ -58,8 +73,26 @@ module RSpec
       end
 
       # @return Int
-      def runtime_ms
-        @execution_result.run_time * 1000
+      def runtime_nanos
+        ms = @execution_result.run_time * 1_000
+        (ms * 1_000_000).round
+      end
+
+      # @return { file: String, line: Int }
+      def location
+        {
+          file: @example.metadata[:file_path],
+          line: @example.metadata[:line_number]
+        }
+      end
+
+      # Collect the scope of this example and all parent groups.
+      def lineage
+        rev_lineage = RSpec::Core::Metadata.ascend(@example.metadata).map do |meta|
+          meta[:description]
+        end
+        rev_lineage.reverse!
+        rev_lineage
       end
 
       # does nothing, just here to fulfill reporter api
@@ -74,9 +107,13 @@ module RSpec
             id: id,
             display_name: display_name,
             output: output,
-            runtime: runtime_ms,
+            runtime: runtime_nanos,
             tags: tags,
-            meta: meta
+            meta: meta,
+            location: location,
+            started_at: @execution_result.started_at.utc.iso8601,
+            finished_at: @execution_result.finished_at.utc.iso8601,
+            lineage: lineage
           }
         }
       end

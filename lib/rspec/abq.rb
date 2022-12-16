@@ -33,7 +33,7 @@ module RSpec
     PROTOCOL_VERSION = {
       type: "abq_protocol_version",
       major: 0,
-      minor: 1
+      minor: 2
     }
 
     # The [rspec-abq specification](https://www.notion.so/rwx/ABQ-Worker-Native-Test-Runner-IPC-Interface-0959f5a9144741d798ac122566a3d887#8587ee4fd01e41ec880dcbe212562172).

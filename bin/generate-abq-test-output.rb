@@ -17,6 +17,12 @@ threads << Thread.new do
   system("bundle exec rspec spec/features/manifest_spec.rb")
 end
 
+threads.concat(Dir['gemfiles/*.gemfile'].map do |gemfile|
+  Thread.new do
+    system({"BUNDLE_GEMFILE" => gemfile}, "bundle exec rspec spec/features/test_result_spec.rb")
+  end
+end)
+
 threads.map(&:join)
 
 # rspec-abq calls exit(0). Loading the code path that calls exit(0) returns from rspec immediately with a exit status of 0

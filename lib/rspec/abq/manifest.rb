@@ -12,10 +12,12 @@ module RSpec
       # @param ordered_groups [Array<RSpec::Core::ExampleGroup>] ordered groups to assemble into a manifest
       def self.generate(ordered_groups, random_seed, registry)
         {
+          type: "manifest_success",
           manifest: {
             init_meta: RSpec::Abq::Ordering.to_meta(random_seed, registry),
             members: ordered_groups.map { |group| to_manifest_group(group) }.compact
-          }
+          },
+          other_errors: nil
         }
       end
 

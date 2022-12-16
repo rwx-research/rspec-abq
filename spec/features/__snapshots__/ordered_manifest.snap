@@ -1,5 +1,6 @@
 {
-  "manifest" => {
+          "type" => "manifest_success",
+      "manifest" => {
     "init_meta" => {
       "ordering" => "defined"
     },
@@ -100,5 +101,6 @@
         ]
       }
     ]
-  }
+  },
+  "other_errors" => nil
 }
