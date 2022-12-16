@@ -1,7 +1,7 @@
 require "open3"
 require "spec_helper"
 
-RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
+RSpec.describe "test results", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
   let(:expected_spawn_msg) {
     {
       "type" => "abq_native_runner_spawned",
