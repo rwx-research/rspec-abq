@@ -48,10 +48,12 @@ RSpec.describe "test results", unless: RSpec::Abq.disable_tests_when_run_by_abq?
     test_result["test_result"]["runtime"] = "<cleaned for test>"
     test_result["test_result"]["started_at"] = "<cleaned for test>"
     test_result["test_result"]["finished_at"] = "<cleaned for test>"
-    test_result["test_result"]["output"] =
-      test_result["test_result"]["output"]
-        .gsub(/\e\[(\d+)(;\d+)*m/, "") # strip ANSI codes
-        .gsub(/\n\s*/, "\n") # strip extra newline spaces, differs between rubies
+    if !test_result["test_result"]["output"].nil?
+      test_result["test_result"]["output"] =
+        test_result["test_result"]["output"]
+          .gsub(/\e\[(\d+)(;\d+)*m/, "") # strip ANSI codes
+          .gsub(/\n\s*/, "\n") # strip extra newline spaces, differs between rubies
+    end
     test_result
   end
 
