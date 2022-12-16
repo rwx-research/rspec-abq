@@ -48,6 +48,8 @@ RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_
     test_result["test_result"]["runtime"] = "<cleaned for test>"
     test_result["test_result"]["started_at"] = "<cleaned for test>"
     test_result["test_result"]["finished_at"] = "<cleaned for test>"
+    # strip ANSI codes
+    test_result["test_result"]["output"] = test_result["test_result"]["output"].gsub(/\e\[(\d+)(;\d+)*m/, '')
     test_result
   end
 
@@ -93,7 +95,7 @@ RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_
       test_result = RSpec::Abq.protocol_read(sock)
       clean_test_result(test_result)
     end
-    expect(test_results).to match_snapshot("test_results_#{spec_name}")
+    expect(test_results).to match_snapshot("test_results_#{spec_name}-#{File.basename(ENV["BUNDLE_GEMFILE"])}")
 
     sock.close
     server.close

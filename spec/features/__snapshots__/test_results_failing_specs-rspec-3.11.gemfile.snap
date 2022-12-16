@@ -1,0 +1,41 @@
+[
+  [0] {
+    "test_result" => {
+            "status" => {
+             "type" => "failure",
+        "exception" => "RSpec::Expectations::ExpectationNotMetError",
+        "backtrace" => [
+          [ 0] "./spec/fixture_specs/failing_specs.rb:6:in `block (2 levels) in <top (required)>'",
+          [ 1] "./spec/spec_helper.rb:19:in `block (2 levels) in <top (required)>'",
+          [ 2] "./lib/rspec/abq/extensions.rb:45:in `block (2 levels) in run_examples_with_abq'",
+          [ 3] "./lib/rspec/abq.rb:228:in `send_test_result_and_advance'",
+          [ 4] "./lib/rspec/abq/extensions.rb:45:in `block in run_examples_with_abq'",
+          [ 5] "./lib/rspec/abq/extensions.rb:33:in `each'",
+          [ 6] "./lib/rspec/abq/extensions.rb:33:in `run_examples_with_abq'",
+          [ 7] "./lib/rspec/abq/extensions.rb:72:in `run_with_abq'",
+          [ 8] "./lib/rspec/abq/extensions.rb:134:in `block (3 levels) in run_specs'",
+          [ 9] "./lib/rspec/abq/extensions.rb:134:in `map'",
+          [10] "./lib/rspec/abq/extensions.rb:134:in `block (2 levels) in run_specs'",
+          [11] "./lib/rspec/abq/extensions.rb:129:in `block in run_specs'",
+          [12] "./lib/rspec/abq/extensions.rb:128:in `run_specs'"
+        ]
+      },
+                "id" => "./spec/fixture_specs/failing_specs.rb[1:1]",
+      "display_name" => "a failing group has a failing test",
+            "output" => "\n  1) a failing group has a failing test\n     Failure/Error: expect(false).to eq(true)\n     \n       expected: true\n            got: false\n     \n       (compared using ==)\n     \n       Diff:\n       @@ -1 +1 @@\n       -true\n       +false\n       \n     # ./spec/fixture_specs/failing_specs.rb:6:in `block (2 levels) in <top (required)>'\n     # ./spec/spec_helper.rb:19:in `block (2 levels) in <top (required)>'\n     # ./lib/rspec/abq/extensions.rb:45:in `block (2 levels) in run_examples_with_abq'\n     # ./lib/rspec/abq.rb:228:in `send_test_result_and_advance'\n     # ./lib/rspec/abq/extensions.rb:45:in `block in run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:33:in `each'\n     # ./lib/rspec/abq/extensions.rb:33:in `run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:72:in `run_with_abq'\n     # ./lib/rspec/abq/extensions.rb:134:in `block (3 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:134:in `map'\n     # ./lib/rspec/abq/extensions.rb:134:in `block (2 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:129:in `block in run_specs'\n     # ./lib/rspec/abq/extensions.rb:128:in `run_specs'\n",
+           "runtime" => "<cleaned for test>",
+              "tags" => [],
+              "meta" => {},
+          "location" => {
+        "file" => "./spec/fixture_specs/failing_specs.rb",
+        "line" => 5
+      },
+        "started_at" => "<cleaned for test>",
+       "finished_at" => "<cleaned for test>",
+           "lineage" => [
+        [0] "a failing group",
+        [1] "has a failing test"
+      ]
+    }
+  }
+]
