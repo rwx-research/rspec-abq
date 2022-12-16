@@ -48,8 +48,10 @@ RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_
     test_result["test_result"]["runtime"] = "<cleaned for test>"
     test_result["test_result"]["started_at"] = "<cleaned for test>"
     test_result["test_result"]["finished_at"] = "<cleaned for test>"
-    # strip ANSI codes
-    test_result["test_result"]["output"] = test_result["test_result"]["output"].gsub(/\e\[(\d+)(;\d+)*m/, "")
+    test_result["test_result"]["output"] =
+      test_result["test_result"]["output"]
+        .gsub(/\e\[(\d+)(;\d+)*m/, "") # strip ANSI codes
+        .gsub(/\n\s*/, "\n") # strip extra newline spaces, differs between rubies
     test_result
   end
 
