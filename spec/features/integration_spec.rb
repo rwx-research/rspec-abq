@@ -10,7 +10,7 @@ module ABQQueue
       @q = {stdin_fd: stdin_fd, stdout_fd: stdout_fd, waiter: waiter}
       # read queue address
       data = ""
-      queue_regex = /(0.0.0.0:\d+)\n/
+      queue_regex = /(0.0.0.0:\d+)/
       data << stdout_fd.gets until data =~ queue_regex
       data.match(queue_regex)[1]
     end
