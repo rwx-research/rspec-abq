@@ -161,6 +161,12 @@ RSpec.describe "abq test" do
       assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
     end
 
+    it "has consistent output for specs together run with rspec-retry" do |example|
+      EnvHelper.with_env("RSPEC_RETRY_RETRY_COUNT" => "2") do
+        assert_command_output_consistent("bundle exec rspec --require fixture_specs/rspec_retry_helper --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
+      end
+    end
+
     # note: this doesn't test rspec-abq's hadnling of random ordering because each worker receives the same seed on the command line
     it "has consistent output for specs together with a hardcoded seed" do |example|
       assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --seed 35888", example, success: false)

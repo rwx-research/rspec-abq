@@ -7,6 +7,7 @@ gemspec
 
 # and the specific patch version of rspec
 gem "rspec", "~> 3.12"
+gem "rspec-retry", "0.6.2"
 
 group :development do
   gem "rake", "~> 13.0"
