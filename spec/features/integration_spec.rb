@@ -157,12 +157,12 @@ RSpec.describe "abq test" do
       end
     end
 
-    it "has consistent output for specs together", :aggregate_failures do |example|
+    it "has consistent output for specs together" do |example|
       assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
     end
 
     # note: this doesn't test rspec-abq's hadnling of random ordering because each worker receives the same seed on the command line
-    it "has consistent output for specs together with a hardcoded seed", :aggregate_failures do |example|
+    it "has consistent output for specs together with a hardcoded seed" do |example|
       assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --seed 35888", example, success: false)
     end
 
@@ -179,7 +179,7 @@ RSpec.describe "abq test" do
       end
 
       # this one _does_ test rspec-abq's handling of random ordering (and because of that isn't a snapshot test :p)
-      it "has consistent output for random ordering passed as CLI argument", :aggregate_failures do |example|
+      it "has consistent output for random ordering passed as CLI argument" do |example|
         assert_command_output_consistent("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand", example, success: true, &method(:sanitize_random_ordering))
       end
 
@@ -187,7 +187,7 @@ RSpec.describe "abq test" do
         assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_that_sets_up_random_ordering.rb", example, success: true, &method(:sanitize_random_ordering))
       end
 
-      it "has consistent output for random SEED set in rspec config" do |example|
+      it "has consistent output for random seed set in rspec config" do |example|
         assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_that_sets_up_random_seed.rb", example, success: true, &method(:sanitize_random_ordering))
       end
     end
