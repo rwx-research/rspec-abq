@@ -1,0 +1,17 @@
+
+a failing group
+  
+RSpec::Retry: 2nd try ./spec/fixture_specs/failing_specs.rb:5
+
+a pending group
+  has a pending group
+
+a raising group
+  
+RSpec::Retry: 2nd try ./spec/fixture_specs/raising_specs.rb:5
+
+a successful group
+
+Finished in 0.0 seconds (files took 0.0 seconds to load)
+0 examples, 0 failures
+

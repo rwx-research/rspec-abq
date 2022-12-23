@@ -146,6 +146,7 @@ RSpec.describe "abq test" do
           expect(results[:work][:exit_status].exitstatus).to eq(hard_failure ? 101 : 1)
         end
       end
+      sanitized
     end
 
     {"failing_specs" => false,
@@ -157,12 +158,22 @@ RSpec.describe "abq test" do
       end
     end
 
-    it "has consistent output for specs together", :aggregate_failures do |example|
+    it "has consistent output for specs together" do |example|
       assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
     end
 
+    it "has consistent output for specs together run with rspec-retry", :aggregate_failures do |example|
+      EnvHelper.with_env("RSPEC_RETRY_RETRY_COUNT" => "2") do
+        expect(
+          assert_command_output_consistent(
+            "bundle exec rspec --require fixture_specs/rspec_retry_helper --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false
+          )[:work][:stdout]
+        ).to include("RSpec::Retry: 2nd try") # confirm retry is running (outside of spot checking snapshots)
+      end
+    end
+
     # note: this doesn't test rspec-abq's hadnling of random ordering because each worker receives the same seed on the command line
-    it "has consistent output for specs together with a hardcoded seed", :aggregate_failures do |example|
+    it "has consistent output for specs together with a hardcoded seed" do |example|
       assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --seed 35888", example, success: false)
     end
 
@@ -179,7 +190,7 @@ RSpec.describe "abq test" do
       end
 
       # this one _does_ test rspec-abq's handling of random ordering (and because of that isn't a snapshot test :p)
-      it "has consistent output for random ordering passed as CLI argument", :aggregate_failures do |example|
+      it "has consistent output for random ordering passed as CLI argument" do |example|
         assert_command_output_consistent("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand", example, success: true, &method(:sanitize_random_ordering))
       end
 
@@ -187,7 +198,7 @@ RSpec.describe "abq test" do
         assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_that_sets_up_random_ordering.rb", example, success: true, &method(:sanitize_random_ordering))
       end
 
-      it "has consistent output for random SEED set in rspec config" do |example|
+      it "has consistent output for random seed set in rspec config" do |example|
         assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_that_sets_up_random_seed.rb", example, success: true, &method(:sanitize_random_ordering))
       end
     end
@@ -201,7 +212,7 @@ RSpec.describe "abq test" do
       # we don't properly fail on syntax errors for versions 3.6, 3.7, and 3.8
       pending_test = version >= Gem::Version.new("3.6.0") && version < Gem::Version.new("3.9.0")
       it "has consistent output for specs with syntax errors" do |example|
-        pending if pending_test
+        pending("incompatible with rspec 3.6-3.8") if pending_test
         assert_command_output_consistent("bundle exec rspec 'spec/fixture_specs/specs_with_syntax_errors.rb'", example, success: false, hard_failure: true)
       end
 

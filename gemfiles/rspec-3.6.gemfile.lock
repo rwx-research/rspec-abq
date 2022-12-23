@@ -34,6 +34,8 @@ GEM
     rspec-mocks (3.6.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.6.0)
+    rspec-retry (0.6.2)
+      rspec-core (> 3.3)
     rspec-support (3.6.0)
 
 PLATFORMS
@@ -45,6 +47,7 @@ DEPENDENCIES
   pry (~> 0.14.1)
   rspec (~> 3.6, < 3.7)
   rspec-abq!
+  rspec-retry (= 0.6.2)
   rspec-snapshot!
 
 BUNDLED WITH

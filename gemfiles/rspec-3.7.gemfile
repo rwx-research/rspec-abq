@@ -7,4 +7,5 @@ gemspec(path: "..")
 
 # and the specific patch version of rspec
 gem "rspec", "~> 3.7", "< 3.8"
+gem "rspec-retry", "0.6.2"
 gem "rspec-snapshot", github: "rwx-research/rspec-snapshot"

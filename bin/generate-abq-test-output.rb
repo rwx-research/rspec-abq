@@ -2,9 +2,8 @@
 
 require 'fileutils'
 
-Dir['spec/**/__snapshots__/*'].each do |file|
-  FileUtils.rm file
-end
+# we `git rm` (as opposed to just rm) so that case-only changes are picked up.
+`git rm -r spec/**/__snapshots__`
 
 ENV['UPDATE_SNAPSHOTS'] = 'true'
 threads = Dir['gemfiles/*.gemfile'].map do |gemfile|
@@ -41,3 +40,5 @@ Dir['spec/**/*-rspec-3.12.gemfile.snap'].each do |path|
     FileUtils.ln_s(source, target)
   end
 end
+
+`git add spec/**/__snapshots__`

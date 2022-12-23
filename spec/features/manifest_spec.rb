@@ -43,9 +43,7 @@ RSpec.describe "manifest generation", unless: RSpec::Abq.disable_tests_when_run_
     sock = server.accept
     expect(RSpec::Abq.protocol_read(sock)).to eq(expected_spawn_msg)
     manifest = RSpec::Abq.protocol_read(sock)
-    # we reset UPDATE_SNAPSHOTS to nil here to ensure that the negated expectation never writes the snapshot
-    # workaround for https://github.com/levinmr/rspec-snapshot/issues/33
-    EnvHelper.with_env("UPDATE_SNAPSHOTS" => nil) { expect(manifest).not_to match_snapshot("ordered_manifest") }
+    expect(manifest).not_to match_snapshot("ordered_manifest")
     expect(manifest["manifest"]["init_meta"]).to eq({"seed" => 2, "ordering" => "random"})
     expect(manifest).to match_snapshot("random_manifest")
   end
