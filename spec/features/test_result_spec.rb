@@ -49,6 +49,10 @@ RSpec.describe "test results", unless: RSpec::Abq.disable_tests_when_run_by_abq?
     test_result["test_result"]["runtime"] = "<cleaned for test>"
     test_result["test_result"]["started_at"] = "<cleaned for test>"
     test_result["test_result"]["finished_at"] = "<cleaned for test>"
+    test_result["test_result"]["status"]["backtrace"]&.map! do |line|
+      line.gsub!(/:\d+:/, ":<line-number-cleaned-for-tests>:")
+    end
+
     if !test_result["test_result"]["output"].nil?
       test_result["test_result"]["output"] =
         test_result["test_result"]["output"]

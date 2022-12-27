@@ -9,7 +9,63 @@ require "rspec/abq/reporter"
 require "rspec/abq/test_case"
 require "rspec/abq/version"
 
-# We nest our patch into RSpec's module -- why not?
+# How does ABQ & its protocol work?
+# ======================================
+# This is a reframing of some of https://www.notion.so/rwx/Native-Runner-Protocol-0-2-d992ef3b4fde4289b02244c1b89a8cc7
+# With pointers to where it is implemented in this codebase.
+#
+# One or more abq workers each launch a "native runner" (in this case, rspec).
+# one of the native runners is designated the one to produce a manifest (via an environmental variable).
+#
+# Each native runner is passed a socket address as an environmental variable to communicate with its worker.
+# The first message sent over the socket is the NATIVE_RUNNER_SPAWNED_MESSAGE, sent from the native runner to the worker.
+# (see: `Abq.socket`)
+#
+# The Manifest
+# ------------
+# The manifest is used by the abq supervisor to coordinate workers.
+# The manifest contains
+# - a list of all the tests to run. Each worker will receive a slice of these tests.
+# - native-runner specific information for configuring workers. In RSPec's case -- we send ordering information to ensure
+#   each instance of rspec orders its specs consistently
+#
+# The manifest is written in the monkey-patched RSpec::Core::Runner#run_specs method (see `RSpec::Abq::Extensions::Runner`)
+#
+# After the manifest has been generated and sent to the worker, that native runner quits and is relaunched fresh as as a
+# non-manifest-generating worker.
+#
+# "Normal" Native Runners
+# -----------------------
+# Non-manifest-generating native runners first perform an initialization handshake, fetching init message from the worker,
+# which either has config information or instructions for abq to quit early.
+# (see: `Abq.configure_rspec`)
+#
+# After that, native runners fetch test cases from the worker, and send back test results.
+# RSpec will iterate over all tests, but running only those that the worker tells it to run and skipping the rest.
+# It will quit when all tests have been iterated over.
+#
+# Loading rspec-abq
+# ========================
+# The gem itself is usually loaded when `require spec_helper.rb` is called (either explicitly via `require rspec/abq` or
+# implicitly via the Gemfile).
+# The spec_helper is usually loaded in one of two ways:
+# - via a `--require spec_helper` in the .rspec file, which means the gem is loaded BEFORE specs are loaded
+# - or via a `require spec_helper.rb` in the spec itself, which means the gem is loaded WHILE specs are actively being loaded.
+#
+# In either case: the manifest cannot be written until AFTER specs are loaded, so all that loading the gem does is
+# - check if rspec is being run via an abq worker
+# - and if so, monkey patch rspec to hook in rspec-abq functionality
+#
+# Once rspec is patched ...
+#
+# First run manifest generation against the native runner on a single worker:
+# - configure hard-coded rspec settings (Abq.configure_rspec) called from RSpec::Abq::Extensions::World#ordered_example_groups
+# - generate the manifest via RSpec::Abq::Extensions::Runner#run_specs
+# (the native runner quits)
+#
+# Then run the native runner again on one or more workers:
+# - configure static rspec settings, plus settings fetched from the init_message in the manifest.
+# - then fetch and test cases from the worker and send back test results until there are no tests left
 module RSpec
   # An abq adapter for RSpec!
   module Abq

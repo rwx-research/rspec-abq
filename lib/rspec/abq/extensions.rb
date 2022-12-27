@@ -158,11 +158,11 @@ module RSpec
 
       # RSpec uses this for global data that's not configuration
       module World
-        # we call configure_rspec in #ordered_example_groups because it is
-        # 1. called AFTER all specs are loaded.
-        # We need to call it after all specs are loaded because we want to potentially overwrite config set in the specs
-        # 2. called BEFORE any specs are run.
-        # We want to call it before any specs are run because the config we set may affect spec ordering.
+        # we call configure_rspec in #ordered_example_groups because it is called
+        # 1. AFTER all specs are loaded.
+        #     We need to call it after all specs are loaded because we want to potentially overwrite config set in the specs
+        # 2. BEFORE any specs are run.
+        #     We want to call it before any specs are run because the config we set may affect spec ordering.
         def ordered_example_groups
           RSpec::Abq.configure_rspec!
           super
