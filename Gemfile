@@ -7,7 +7,6 @@ gemspec
 
 # and the specific patch version of rspec
 gem "rspec", "~> 3.12"
-gem "rspec-retry", "0.6.2"
 
 group :development do
   gem "rake", "~> 13.0"
@@ -17,7 +16,7 @@ group :development do
   gem "rubocop-performance", require: false
   gem "rubocop-rake", require: false
   gem "rubocop-rspec", require: false
-  gem "standard", require: false
+  gem "standard", ">=1.20.0", require: false # without this 1.20.0, sometimes standard.rb will revert to 0.0.36
   gem "yard", require: false
   gem "gem-release", require: false
   gem "rspec-snapshot", github: "rwx-research/rspec-snapshot"

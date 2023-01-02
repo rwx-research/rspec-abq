@@ -164,11 +164,10 @@ RSpec.describe "abq test" do
 
     it "has consistent output for specs together run with rspec-retry", :aggregate_failures do |example|
       EnvHelper.with_env("RSPEC_RETRY_RETRY_COUNT" => "2") do
-        expect(
-          assert_command_output_consistent(
-            "bundle exec rspec --require fixture_specs/rspec_retry_helper --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false
-          )[:work][:stdout]
-        ).to include("RSpec::Retry: 2nd try") # confirm retry is running (outside of spot checking snapshots)
+        results = assert_command_output_consistent("bundle exec rspec --require fixture_specs/rspec_retry_helper --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
+
+        # in addition to snpashot tests, explicitly assert that retry is running
+        expect(results[:work][:stdout]).to include("RSpec::Retry: 2nd try")
       end
     end
 

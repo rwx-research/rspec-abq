@@ -47,7 +47,7 @@ DEPENDENCIES
   pry (~> 0.14.1)
   rspec (~> 3.8, < 3.9)
   rspec-abq!
-  rspec-retry (= 0.6.2)
+  rspec-retry (~> 0.6.2)
   rspec-snapshot!
 
 BUNDLED WITH
