@@ -11,12 +11,18 @@ RSpec.describe RSpec::Abq do
     let(:configuration_double) do
       instance_double(
         RSpec::Core::Configuration,
-        :fail_fast => false,
-        :dry_run? => false,
-        :example_status_persistence_file_path= => nil,
-        :color_mode= => nil,
-        :color= => nil,
-        :add_formatter => nil
+        {
+          :fail_fast => false,
+          :dry_run? => false,
+          :example_status_persistence_file_path= => nil,
+          :add_formatter => nil
+        }.merge(
+          if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.6.0")
+            {:color_mode= => nil}
+          else
+            {:color= => nil}
+          end
+        )
       )
     end
 
