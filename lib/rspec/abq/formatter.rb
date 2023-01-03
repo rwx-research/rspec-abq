@@ -1,5 +1,10 @@
 require "time"
 
+if Gem::Version.new(RSpec::Core::Version::STRING) < Gem::Version.new("3.6.0")
+  # addresses this issue https://github.com/rspec/rspec-core/issues/2471
+  require "rspec/core/formatters/console_codes"
+end
+
 module RSpec
   module Abq
     # Formatters are used to format RSpec test results. In our case, we're using it to

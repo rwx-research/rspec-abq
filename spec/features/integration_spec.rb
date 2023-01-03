@@ -82,7 +82,7 @@ RSpec.describe "abq test" do
   def sanitize_worker_output(output)
     sanitize_backtraces(
       output
-        .gsub(/Finished in \d+\.\d+ seconds \(files took \d+(?:\.\d+)? second(?:s)? to load\)/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
+        .gsub(/Finished in \d+(?:\.\d+)? second(?:s)? \(files took \d+(?:\.\d+)? second(?:s)? to load\)/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
     )
   end
 
@@ -237,6 +237,12 @@ RSpec.describe "abq test" do
       it "has consistent output for specs together including a syntax error", *[(:skip if pending_test)].compact do |example|
         assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", example, success: false, hard_failure: true)
       end
+    end
+
+    it "worker stdout is mostly empty when formatter is not set" do |example|
+      # -O /dev/null prevents rspec from loading `.rspec` (which sets the formatter)
+      result = assert_command_output_consistent("bundle exec rspec -O /dev/null --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
+      expect(result[:work][:stdout]).to eq("")
     end
   end
 end
