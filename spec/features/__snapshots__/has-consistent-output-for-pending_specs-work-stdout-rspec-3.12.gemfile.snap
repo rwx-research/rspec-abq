@@ -1,7 +1,45 @@
 
 a pending group
+  has a pending test with xit (PENDING: Temporarily skipped with xit)
+  has a pending test with pending (PENDING: No reason given)
   has a pending group
+    is pending despite not being marked as pending (PENDING: Temporarily skipped with xdescribe)
+
+Pending: (Failures listed here are expected and do not affect your suite's status)
+
+  1) a pending group has a pending test with xit
+     # Temporarily skipped with xit
+     # ./spec/fixture_specs/pending_specs.rb:5
+
+  2) a pending group has a pending test with pending
+     # No reason given
+     Failure/Error: expect(false).to eq(true)
+
+       expected: true
+            got: false
+
+       (compared using ==)
+
+       Diff:
+       @@ -1 +1 @@
+       -true
+       +false
+     # ./spec/fixture_specs/pending_specs.rb:0:in `block (2 levels) in <top (required)>'
+     # ./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'
+     # ./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'
+     # ./lib/rspec/abq/extensions.rb:0:in `each'
+     # ./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'
+     # ./lib/rspec/abq/extensions.rb:0:in `run_with_abq'
+     # ./lib/rspec/abq/extensions.rb:0:in `block (3 levels) in run_specs'
+     # ./lib/rspec/abq/extensions.rb:0:in `map'
+     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_specs'
+     # ./lib/rspec/abq/extensions.rb:0:in `block in run_specs'
+     # ./lib/rspec/abq/extensions.rb:0:in `run_specs'
+
+  3) a pending group has a pending group is pending despite not being marked as pending
+     # Temporarily skipped with xdescribe
+     # ./spec/fixture_specs/pending_specs.rb:15
 
 Finished in 0.0 seconds (files took 0.0 seconds to load)
-0 examples, 0 failures
+3 examples, 0 failures, 3 pending
 

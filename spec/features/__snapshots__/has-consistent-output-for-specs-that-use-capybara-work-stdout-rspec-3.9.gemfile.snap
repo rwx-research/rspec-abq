@@ -1,6 +1,29 @@
 
 a spec with capybara
+  can succeed
+  can fail (FAILED - 1)
+
+Failures:
+
+  1) a spec with capybara can fail
+     Failure/Error: expect(page).to have_content("A huge website")
+       expected to find text "A huge website" in "A tiny website"
+     # ./spec/fixture_specs/spec_with_capybara.rb:0:in `block (2 levels) in <top (required)>'
+     # ./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'
+     # ./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'
+     # ./lib/rspec/abq/extensions.rb:0:in `each'
+     # ./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'
+     # ./lib/rspec/abq/extensions.rb:0:in `run_with_abq'
+     # ./lib/rspec/abq/extensions.rb:0:in `block (3 levels) in run_specs'
+     # ./lib/rspec/abq/extensions.rb:0:in `map'
+     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_specs'
+     # ./lib/rspec/abq/extensions.rb:0:in `block in run_specs'
+     # ./lib/rspec/abq/extensions.rb:0:in `run_specs'
 
 Finished in 0.0 seconds (files took 0.0 seconds to load)
-0 examples, 0 failures
+2 examples, 1 failure
+
+Failed examples:
+
+rspec ./spec/fixture_specs/spec_with_capybara.rb:24 # a spec with capybara can fail
 
