@@ -2,13 +2,16 @@ require "time"
 
 module RSpec
   module Abq
+    # Formatters are used to format RSpec test results. In our case, we're using it to
+    # report test results to the abq socket.
     class Formatter
       RSpec::Core::Formatters.register self, :example_passed, :example_pending, :example_failed
 
-      def initialize(_output)
-        # we don't use the output IO for this formatter (we report everything via the socket)
+      # we don't use the output IO for this formatter (we report everything via the socket)
+      def initialize(_output) # rubocop:disable Lint/RedundantInitialize
       end
 
+      # called when an example is completed (this method is aliased to example_pending and example_failed)
       def example_passed(notification)
         Abq.protocol_write(Formatter.abq_result(notification.example))
       end
@@ -16,6 +19,7 @@ module RSpec
       alias_method :example_pending, :example_passed
       alias_method :example_failed, :example_passed
 
+      # takes a completed example and creates a abq-compatible test result
       def self.abq_result(example)
         execution_result = example.execution_result
         tags, meta = Manifest.extract_metadata_and_tags(example.metadata)
