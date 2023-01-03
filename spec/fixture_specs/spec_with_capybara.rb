@@ -15,6 +15,12 @@ end
 
 Capybara.app = Application
 
+if ENV['USE_SELENIUM']
+  require 'webdrivers/chromedriver'
+  Capybara.server = :webrick
+  Capybara.default_driver = :selenium_chrome_headless
+end
+
 RSpec.describe 'a spec with capybara', type: :feature do
   it 'can succeed' do
     visit "/"

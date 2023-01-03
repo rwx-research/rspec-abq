@@ -175,6 +175,12 @@ RSpec.describe "abq test" do
       assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", example, success: false)
     end
 
+    it "has consistent output for specs that use capybara & headless chrome", :aggregate_failures do |example|
+      EnvHelper.with_env("USE_SELENIUM" => "true") do
+        assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", example, success: false)
+      end
+    end
+
     # note: this doesn't test rspec-abq's hadnling of random ordering because each worker receives the same seed on the command line
     it "has consistent output for specs together with a hardcoded seed" do |example|
       assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --seed 35888", example, success: false)
