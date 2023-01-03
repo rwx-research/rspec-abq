@@ -238,5 +238,11 @@ RSpec.describe "abq test" do
         assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", example, success: false, hard_failure: true)
       end
     end
+
+    it "worker stdout is mostly empty when formatter is not set" do |example|
+      # -O /dev/null prevents rspec from loading `.rspec` (which sets the formatter)
+      result = assert_command_output_consistent("bundle exec rspec -O /dev/null --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
+      expect(result[:work][:stdout]).to eq("")
+    end
   end
 end
