@@ -17,8 +17,6 @@ FSPSE.
        +false
      # ./spec/fixture_specs/failing_specs.rb:0:in `block (2 levels) in <top (required)>'
      # ./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'
-     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_examples_with_abq'
-     # ./lib/rspec/abq.rb:0:in `send_test_result_and_advance'
      # ./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'
      # ./lib/rspec/abq/extensions.rb:0:in `each'
      # ./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'
@@ -40,8 +38,6 @@ FSPSE.
        the roof
      # ./spec/fixture_specs/raising_specs.rb:0:in `block (2 levels) in <top (required)>'
      # ./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'
-     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_examples_with_abq'
-     # ./lib/rspec/abq.rb:0:in `send_test_result_and_advance'
      # ./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'
      # ./lib/rspec/abq/extensions.rb:0:in `each'
      # ./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'

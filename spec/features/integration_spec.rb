@@ -82,7 +82,7 @@ RSpec.describe "abq test" do
   def sanitize_worker_output(output)
     sanitize_backtraces(
       output
-        .gsub(/Finished in \d+\.\d+ seconds \(files took \d+\.\d+ seconds to load\)/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
+        .gsub(/Finished in \d+\.\d+ seconds \(files took \d+(?:\.\d+)? seconds to load\)/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
     )
   end
 
@@ -188,6 +188,7 @@ RSpec.describe "abq test" do
         results[:work][:stdout] =
           results[:work][:stdout]
             .gsub(/Randomized with seed \d+/, "Randomized with seed this-is-not-random")
+            .gsub(/\d\)/, "0)") # prefix test numbers should be consistent
             .lines.sort.reject { |line| line.strip == "" }.join # sort lines because tests will not consistently be in order
         results
       end

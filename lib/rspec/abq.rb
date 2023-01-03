@@ -5,7 +5,7 @@ require "json"
 require "rspec/abq/extensions"
 require "rspec/abq/manifest"
 require "rspec/abq/ordering"
-require "rspec/abq/reporter"
+require "rspec/abq/formatter"
 require "rspec/abq/test_case"
 require "rspec/abq/version"
 
@@ -189,6 +189,8 @@ module RSpec
         RSpec.configuration.color = true
       end
 
+      RSpec.configuration.add_formatter(RSpec::Abq::Formatter)
+
       # the first message is the init_meta block of the manifest. This is used to share runtime configuration
       # information amongst worker processes. In RSpec, it is used to ensure that random ordering between workers
       # shares the same seed.
@@ -275,17 +277,6 @@ module RSpec
       json_msg = socket.read len
       return :abq_done if json_msg.nil?
       JSON.parse json_msg
-    end
-
-    # sends test results to ABQ and advances by one
-    # @!visibility private
-    def self.send_test_result_and_advance(&block)
-      reporter = Reporter.new
-      test_succeeded = block.call(reporter)
-      protocol_write(reporter.abq_result)
-      fetch_next_example
-      # return whether the test succeeded or not
-      test_succeeded
     end
   end
 end
