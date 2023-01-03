@@ -25,5 +25,5 @@ Finished in 0.0 seconds (files took 0.0 seconds to load)
 
 Failed examples:
 
-rspec ./spec/fixture_specs/spec_with_capybara.rb:24 # a spec with capybara can fail
+rspec ./spec/fixture_specs/spec_with_capybara.rb:30 # a spec with capybara can fail
 

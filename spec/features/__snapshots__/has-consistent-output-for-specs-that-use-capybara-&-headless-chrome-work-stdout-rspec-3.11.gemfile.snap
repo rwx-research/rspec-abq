@@ -1,0 +1,27 @@
+
+a spec with capybara
+  can succeed (FAILED - 1)
+  can fail (FAILED - 2)
+
+Failures:
+
+  1) a spec with capybara can succeed
+     Failure/Error: require 'webrick'
+
+     LoadError:
+       cannot load such file -- webrick
+
+  2) a spec with capybara can fail
+     Failure/Error: require 'webrick'
+
+     LoadError:
+       cannot load such file -- webrick
+
+Finished in 0.0 seconds (files took 0.0 seconds to load)
+2 examples, 2 failures
+
+Failed examples:
+
+rspec ./spec/fixture_specs/spec_with_capybara.rb:25 # a spec with capybara can succeed
+rspec ./spec/fixture_specs/spec_with_capybara.rb:30 # a spec with capybara can fail
+
