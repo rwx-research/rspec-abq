@@ -20,10 +20,10 @@ Failures:
      # ./lib/rspec/abq/extensions.rb:0:in `block in run_specs'
      # ./lib/rspec/abq/extensions.rb:0:in `run_specs'
 
-Finished in 0.07367 seconds (files took 1 second to load)
+Finished in 0.0 seconds (files took 0.0 seconds to load)
 2 examples, 1 failure
 
 Failed examples:
 
-rspec ./spec/fixture_specs/spec_with_capybara.rb:30 # a spec with capybara can fail
+rspec ./spec/fixture_specs/spec_with_capybara.rb:29 # a spec with capybara can fail
 
