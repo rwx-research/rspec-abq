@@ -125,7 +125,8 @@ module RSpec
           # if not quitting early, ensure we have an initial test
           Abq.fetch_next_example
 
-          # TODO count actual examples run by this native runner
+          # Note: this is all examples, not the examples run by ABQ. Because of that, the numbers in the worker
+          # summary will likely be wrong.
           examples_count = @world.example_count(example_groups)
           examples_passed = @configuration.reporter.report(examples_count) do |reporter|
             @configuration.with_suite_hooks do
