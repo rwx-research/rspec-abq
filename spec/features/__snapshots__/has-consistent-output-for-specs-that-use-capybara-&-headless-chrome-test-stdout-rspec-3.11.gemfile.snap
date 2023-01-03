@@ -1,9 +1,7 @@
+Starting test run with ID not-the-real-test-run-id
+.F
 
-a spec with capybara
-  can succeed
-  can fail (FAILED - 1)
-
-Failures:
+--- a spec with capybara can fail: FAILED ---
 
   1) a spec with capybara can fail
      Failure/Error: expect(page).to have_content("A huge website")
@@ -20,10 +18,8 @@ Failures:
      # ./lib/rspec/abq/extensions.rb:0:in `block in run_specs'
      # ./lib/rspec/abq/extensions.rb:0:in `run_specs'
 
-Finished in 0.0 seconds (files took 0.0 seconds to load)
-2 examples, 1 failure
+(completed in 0 ms)
 
-Failed examples:
 
-rspec ./spec/fixture_specs/spec_with_capybara.rb:29 # a spec with capybara can fail
-
+Finished in 0.00 seconds (0.00 seconds spent in test code)
+2 tests, 1 failures

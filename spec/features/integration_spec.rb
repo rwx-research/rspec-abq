@@ -82,7 +82,7 @@ RSpec.describe "abq test" do
   def sanitize_worker_output(output)
     sanitize_backtraces(
       output
-        .gsub(/Finished in \d+\.\d+ seconds \(files took \d+(?:\.\d+)? seconds to load\)/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
+        .gsub(/Finished in \d+\.\d+ seconds \(files took \d+(?:\.\d+)? second(?:s)? to load\)/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
     )
   end
 
@@ -173,6 +173,19 @@ RSpec.describe "abq test" do
 
     it "has consistent output for specs that use capybara", :aggregate_failures do |example|
       assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", example, success: false)
+    end
+
+    it "has consistent output for specs that use capybara & headless chrome", :aggregate_failures do |example|
+      EnvHelper.with_env("USE_SELENIUM" => "true") do
+        assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", example, success: false) do |result|
+          result[:work][:stdout] =
+            result[:work][:stdout]
+              .gsub(/^[\d \-:]+ WARN/, "2023-01-01 00:0:00 WARN")
+              .gsub(/127\.0\.0\.1:\d+/, "127.0.0.1:MADE_UP_TEST_PORT")
+
+          result
+        end
+      end
     end
 
     # note: this doesn't test rspec-abq's hadnling of random ordering because each worker receives the same seed on the command line
