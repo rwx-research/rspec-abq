@@ -8,6 +8,17 @@ end
 RSpec.describe RSpec::Abq do
   describe ".configure_rspec!", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
     let(:init_message) { {init_meta: {seed: 124, ordering: "defined"}} }
+    let(:configuration_double) do
+      instance_double(
+        RSpec::Core::Configuration,
+        :fail_fast => false,
+        :dry_run? => false,
+        :example_status_persistence_file_path= => nil,
+        :color_mode= => nil,
+        :color= => nil,
+        :add_formatter => nil
+      )
+    end
 
     before do
       # stub out socket communication
@@ -16,6 +27,12 @@ RSpec.describe RSpec::Abq do
 
       RSpec::Abq.instance_variable_set(:@fast_exit, false)
       RSpec::Abq.instance_variable_set(:@rspec_configured, false)
+
+      # don't execute the ordering setup -- it's tested in integrations
+      allow(RSpec::Abq::Ordering).to receive(:setup!)
+
+      # don't modify the current rspec instance's rspec config
+      allow(RSpec).to receive(:configuration).and_return(configuration_double)
     end
 
     context 'with the ABQ_GENERATE_MANIFEST env var set to "true"' do
@@ -29,6 +46,7 @@ RSpec.describe RSpec::Abq do
 
     it "if the manifest env var isn't set, it initializes" do
       expect(RSpec::Abq).to receive(:protocol_read)
+      expect(RSpec).to receive(:configuration)
       RSpec::Abq.configure_rspec!
     end
 
@@ -45,7 +63,7 @@ RSpec.describe RSpec::Abq do
 
     context "when the init message is not empty" do
       it "sets up ordering", :aggregate_failures do
-        expect(RSpec::Abq::Ordering).to receive(:setup!).with(stringify_keys(init_message[:init_meta]), anything)
+        expect(RSpec::Abq::Ordering).to receive(:setup!).with(stringify_keys(init_message[:init_meta]), configuration_double)
 
         RSpec::Abq.configure_rspec!
         expect(RSpec::Abq).not_to be_fast_exit
