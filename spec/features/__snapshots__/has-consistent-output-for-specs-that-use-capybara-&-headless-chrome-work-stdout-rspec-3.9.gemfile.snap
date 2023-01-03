@@ -3,8 +3,8 @@ a spec with capybara
 Capybara starting Puma...
 * Version 5.6.5 , codename: Birdie's Version
 * Min threads: 0, max threads: 4
-* Listening on http://127.0.0.1:58290
-2023-01-03 16:0:34 WARN Selenium [DEPRECATION] [:browser_options] :options as a parameter for driver initialization is deprecated. Use :capabilities with an Array of value capabilities/options if necessary instead.
+* Listening on http://127.0.0.1:MADE_UP_TEST_PORT
+2023-01-01 00:0:00 WARN Selenium [DEPRECATION] [:browser_options] :options as a parameter for driver initialization is deprecated. Use :capabilities with an Array of value capabilities/options if necessary instead.
   can succeed
   can fail (FAILED - 1)
 
