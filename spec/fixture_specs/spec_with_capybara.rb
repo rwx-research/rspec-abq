@@ -17,7 +17,6 @@ Capybara.app = Application
 
 if ENV['USE_SELENIUM']
   require 'webdrivers/chromedriver'
-  Capybara.server = :webrick
   Capybara.default_driver = :selenium_chrome_headless
 end
 

@@ -172,7 +172,14 @@ RSpec.describe "abq test" do
     end
 
     it "has consistent output for specs that use capybara", :aggregate_failures do |example|
-      assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", example, success: false)
+      assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", example, success: false) do |result|
+        result[:work][:stdout] =
+          result[:work][:stdout]
+            .gsub(/[\d\-:] WARN/, "2023-01-01 00:0:00 WARN")
+            .gsub(/127\.0\.0\.1:\d+/, "127.0.0.1:MADE_UP_TEST_PORT")
+
+        result
+      end
     end
 
     it "has consistent output for specs that use capybara & headless chrome", :aggregate_failures do |example|

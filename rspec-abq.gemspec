@@ -33,4 +33,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "selenium-webdriver", "4.1.0" # last version that supported ruby 2.6
   spec.add_development_dependency "webdrivers", "~> 5.2.0"
   spec.add_development_dependency "rack", "~> 2.2.5"
+  spec.add_development_dependency "puma", "~> 5.6.5" # last version that capybara 3.36.0 supports
 end
