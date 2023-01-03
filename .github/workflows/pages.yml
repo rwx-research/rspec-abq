@@ -31,7 +31,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and deploy YARD
     steps:
-      - uses: kachick/deploy-yard-to-pages@v1
-        # with:
-        # # default `doc` as default of `.yardopts`
-        # output-dir: 'docs'
+      # this ref is the last ref before they update to ruby 3.2
+      # when a newer version of nokogiri is released, we can go back to v1
+      - uses: kachick/deploy-yard-to-pages@91f58689606fd3c4d8d2cb86e193928483d88434
