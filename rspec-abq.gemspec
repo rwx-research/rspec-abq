@@ -29,4 +29,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "rspec-core", ">= 3.5.0", "< 3.13.0"
   spec.add_development_dependency "pry", "~> 0.14.1"
   spec.add_development_dependency "rspec-retry", "~> 0.6.2"
+  spec.add_development_dependency "capybara", "3.36.0" # last version that supported ruby 2.6
 end
