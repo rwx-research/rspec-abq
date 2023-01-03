@@ -82,7 +82,7 @@ RSpec.describe "abq test" do
   def sanitize_worker_output(output)
     sanitize_backtraces(
       output
-        .gsub(/Finished in \d+\.\d+ seconds \(files took \d+(?:\.\d+)? second(?:s)? to load\)/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
+        .gsub(/Finished in \d+(?:\.\d+)? second(?:s)? \(files took \d+(?:\.\d+)? second(?:s)? to load\)/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
     )
   end
 
