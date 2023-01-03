@@ -28,7 +28,7 @@ module RSpec
         #   - so we continue iterating until we get there
         # - or in another ExampleGroup
         #   - so we bail from this iteration and let the caller (run_with_abq) iterate to the right ExampleGroup
-        def run_examples_with_abq
+        def run_examples_with_abq(reporter)
           all_examples_succeeded = true
           ordering_strategy.order(filtered_examples).each do |considered_example|
             next unless Abq.target_test_case.is_example?(considered_example)
@@ -42,9 +42,10 @@ module RSpec
             # true &&= expression : expression will be run, fine!
             # false &&= expression: expression will NOT be run! bad!
             # we want to always run the test, even if the previous test failed.
-            result = Abq.send_test_result_and_advance { |abq_reporter| considered_example.run(instance, abq_reporter) }
-            all_examples_succeeded &&= result
+            succeeded = considered_example.run(instance, reporter)
+            all_examples_succeeded &&= succeeded
 
+            Abq.fetch_next_example
             break unless Abq.target_test_case.directly_in_group?(self)
           end
           all_examples_succeeded
@@ -69,7 +70,7 @@ module RSpec
             # the examples; otherwise, we just need to check the children groups.
             result_for_this_group =
               if Abq.target_test_case.directly_in_group?(self)
-                run_examples_with_abq
+                run_examples_with_abq(reporter)
               else
                 true
               end
@@ -88,7 +89,7 @@ module RSpec
             for_filtered_examples(reporter) do |example|
               next unless Abq.target_test_case.is_example?(example)
 
-              Abq.send_test_result_and_advance { |abq_reporter| example.fail_with_exception(abq_reporter, ex) }
+              example.fail_with_exception(abq_reporter, ex)
             end
 
             false
@@ -124,6 +125,7 @@ module RSpec
           # if not quitting early, ensure we have an initial test
           Abq.fetch_next_example
 
+          # TODO count actual examples run by this native runner
           examples_count = @world.example_count(example_groups)
           examples_passed = @configuration.reporter.report(examples_count) do |reporter|
             @configuration.with_suite_hooks do
