@@ -176,15 +176,33 @@ RSpec.describe "abq test" do
       assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", example, success: false)
     end
 
-    it "has consistent output for specs that use capybara & headless chrome", :aggregate_failures do |example|
-      EnvHelper.with_env("USE_SELENIUM" => "true") do
-        assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", example, success: false) do |result|
-          result[:work][:stdout] =
-            result[:work][:stdout]
-              .gsub(/^[\d \-:]+ WARN/, "2023-01-01 00:0:00 WARN")
-              .gsub(/127\.0\.0\.1:\d+/, "127.0.0.1:MADE_UP_TEST_PORT")
+    context "with headless chrome" do
+      def puma_sanitizer(results)
+        results[:work][:stdout] =
+          results[:work][:stdout]
+            .gsub(/^[\d \-:]+ WARN/, "2023-01-01 00:0:00 WARN")
+            .gsub(/127\.0\.0\.1:\d+/, "127.0.0.1:MADE_UP_TEST_PORT")
 
-          result
+        results
+      end
+
+      it "has consistent output for specs that use capybara & headless chrome", :aggregate_failures do |example|
+        EnvHelper.with_env("USE_SELENIUM" => "true") do
+          assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", example, success: false, &method(:puma_sanitizer))
+        end
+      end
+
+      # TODO: If we detect these screenshots, perhaps we should forward them to the test runner.
+      it "has consistent output for specs that use capybara & headless chrome & capybara-inline-screenshot", :aggregate_failures do |example|
+        EnvHelper.with_env(
+          "SAVE_SCREENSHOT" => "true", # enables capybara-inline-screenshot in `spec_with_capybara`
+          "CAPYBARA_INLINE_SCREENSHOT" => "artifact" # tells capybara-inline-screenshot to not base-64 encode the screenshot directly to STDOUT.
+        ) do
+          assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", example, success: false) do |results|
+            results[:work][:stdout]
+              .gsub!(/screenshot_.+(html|png)/, 'screenshot_2023-01-01-01-01-01.001.\1')
+            puma_sanitizer(results)
+          end
         end
       end
     end
