@@ -33,5 +33,5 @@ Finished in 0.0 seconds (files took 0.0 seconds to load)
 
 Failed examples:
 
-rspec ./spec/fixture_specs/failing_specs.rb:5 # a failing group has a failing test
+rspec ./spec/fixture_specs/failing_specs.rb:0 # a failing group has a failing test
 

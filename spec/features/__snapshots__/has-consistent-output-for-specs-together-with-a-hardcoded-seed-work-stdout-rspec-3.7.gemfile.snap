@@ -40,11 +40,11 @@ Pending: (Failures listed here are expected and do not affect your suite's statu
 
   2) a pending group has a pending test with xit
      # Temporarily skipped with xit
-     # ./spec/fixture_specs/pending_specs.rb:5
+     # ./spec/fixture_specs/pending_specs.rb:0
 
   3) a pending group has a pending group is pending despite not being marked as pending
      # Temporarily skipped with xdescribe
-     # ./spec/fixture_specs/pending_specs.rb:15
+     # ./spec/fixture_specs/pending_specs.rb:0
 
 Failures:
 
@@ -89,8 +89,8 @@ Finished in 0.0 seconds (files took 0.0 seconds to load)
 
 Failed examples:
 
-rspec ./spec/fixture_specs/failing_specs.rb:5 # a failing group has a failing test
-rspec ./spec/fixture_specs/raising_specs.rb:5 # a raising group has a raising test
+rspec ./spec/fixture_specs/failing_specs.rb:0 # a failing group has a failing test
+rspec ./spec/fixture_specs/raising_specs.rb:0 # a raising group has a raising test
 
 Randomized with seed 35888
 

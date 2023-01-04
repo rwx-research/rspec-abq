@@ -26,5 +26,5 @@ Finished in 0.0 seconds (files took 0.0 seconds to load)
 
 Failed examples:
 
-rspec ./spec/fixture_specs/raising_specs.rb:5 # a raising group has a raising test
+rspec ./spec/fixture_specs/raising_specs.rb:0 # a raising group has a raising test
 
