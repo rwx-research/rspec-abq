@@ -15,10 +15,13 @@ end
 
 Capybara.app = Application
 
-if ENV['USE_SELENIUM']
+if ENV['USE_SELENIUM'] || ENV['SAVE_SCREENSHOT']
   require 'webdrivers/chromedriver'
   Capybara.default_driver = :selenium_chrome_headless
+
+  require 'capybara-inline-screenshot/rspec' if ENV['SAVE_SCREENSHOT']
 end
+
 
 RSpec.describe 'a spec with capybara', type: :feature do
   it 'can succeed' do
