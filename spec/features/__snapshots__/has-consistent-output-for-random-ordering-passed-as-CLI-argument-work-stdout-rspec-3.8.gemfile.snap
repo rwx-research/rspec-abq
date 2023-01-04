@@ -15,8 +15,8 @@
      # ./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'
      # ./lib/rspec/abq/extensions.rb:0:in `run_with_abq'
      # ./spec/fixture_specs/pending_specs.rb:0:in `block (2 levels) in <top (required)>'
-     # ./spec/fixture_specs/pending_specs.rb:15
-     # ./spec/fixture_specs/pending_specs.rb:5
+     # ./spec/fixture_specs/pending_specs.rb:0
+     # ./spec/fixture_specs/pending_specs.rb:0
      # ./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'
      # No reason given
      # Temporarily skipped with xdescribe
