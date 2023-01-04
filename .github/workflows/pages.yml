@@ -1,7 +1,9 @@
-name: Deploy API docs to GitHub Pages
+name: Deploy YARD documentation to Pages
+
 on:
+  # Runs on pushes targeting the default branch
   push:
-    branches: ['main']
+    branches: [$default-branch]
     paths:
       - '.github/workflows/pages.yml'
       - '.yardopts'
@@ -10,9 +12,11 @@ on:
       - 'Gemfile'
       - '**.md'
       - '**.txt'
-    # Allows you to run this workflow manually from the Actions tab
+
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
@@ -20,17 +24,40 @@ permissions:
 
 # Allow one concurrent deployment
 concurrency:
-  group: 'pages'
+  group: "pages"
   cancel-in-progress: true
 
 jobs:
-  deploy_yard:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+          cache-version: 0
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v2
+      - name: Build Yard
+        run: bundle exec yard
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: doc
+
+  # Deployment job
+  deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    name: Build and deploy YARD
+    needs: build
     steps:
-      # this ref is the last ref before they update to ruby 3.2
-      # when a newer version of nokogiri is released, we can go back to v1
-      - uses: kachick/deploy-yard-to-pages@91f58689606fd3c4d8d2cb86e193928483d88434
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
