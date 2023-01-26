@@ -50,7 +50,7 @@ RSpec.describe RSpec::Abq do
       end
     end
 
-    it "if the manifest env var isn't set, it initializes" do
+    it "if the manifest env var isn't set, it initializes" do # rubocop:disable RSpec/MultipleExpectations
       expect(RSpec::Abq).to receive(:protocol_read)
       expect(RSpec).to receive(:configuration)
       RSpec::Abq.configure_rspec!

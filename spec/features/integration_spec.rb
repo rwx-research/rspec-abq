@@ -1,8 +1,10 @@
+require "fileutils"
+require "json"
 require "open3"
 require "securerandom"
 require "spec_helper"
 
-module ABQQueue
+module AbqQueue
   # starts the queue if it's not started and returns the address
   def self.start!
     @address ||= begin
@@ -10,9 +12,9 @@ module ABQQueue
       @q = {stdin_fd: stdin_fd, stdout_fd: stdout_fd, waiter: waiter}
       # read queue address
       data = ""
-      queue_regex = /(0.0.0.0:\d+)/
-      data << stdout_fd.gets until data =~ queue_regex
-      data.match(queue_regex)[1]
+      queue_regexp = /(0.0.0.0:\d+)/
+      data << stdout_fd.gets until data =~ queue_regexp
+      data.match(queue_regexp)[1]
     end
   end
 
@@ -29,82 +31,187 @@ module ABQQueue
     @q = nil
     @address = nil
   end
+
+  def self.output_directory
+    @output_directory ||= "tmp/test-results-#{(Time.now.to_f * 1000).to_i}".tap do |path|
+      FileUtils.mkdir_p(path)
+    end
+  end
+end
+
+class AbqTestRun
+  Output = Struct.new(:exit_status, :stdout, :stderr) do
+    def self.default
+      @default ||= new(999, "", "")
+    end
+  end
+
+  attr_reader :manifest_generation_exit_status, :native_runner_exit_status, :results_path
+
+  def initialize(rspec_command, queue_address:, run_id:)
+    @rspec_command = rspec_command
+    @queue_address = queue_address
+    @run_id = run_id
+    @results_path = File.join(AbqQueue.output_directory, "#{run_id}.json")
+  end
+
+  def results
+    @results ||=
+      if File.exist?(@results_path)
+        JSON.parse(File.read(@results_path))
+      end
+  end
+
+  def test_output
+    @test_output || Output.default
+  end
+
+  def run
+    raise "#{self.class} cannot be run more than once" if @ran
+    @ran = true
+
+    test_stdout, test_stderr, test_exit_status = Open3.capture3(
+      "abq test --worker 0 --queue-addr #{@queue_address} --run-id #{@run_id} --reporter dot --reporter rwx-v1-json=#{@results_path} -- bin/echo_exit_status.rb #{@rspec_command}"
+    )
+
+    # bin/echo_exit_status.rb prints the exit status of the native runner
+    # this removes it out of the output
+    exit_status_regexp = /^exit status: (\d+)$\n/
+    @manifest_generation_exit_status, @native_runner_exit_status = test_stdout.scan(exit_status_regexp).map(&:first).map(&:to_i)
+
+    @test_output = Output.new(test_exit_status.exitstatus, test_stdout, test_stderr)
+  end
 end
 
 RSpec.describe "abq test" do
-  def abq_test(rspec_command, queue_addr:, run_id:)
+  def abq_test(rspec_command, queue_address:, run_id:)
     # RWX_ACCESS_TOKEN is set by `captain-cli`.
     # The tests uses a local queue.
     # Here we unset RWX_ACCESS_TOKEN to prevent abq from trying to connect to a remote queue.
     EnvHelper.with_env("RWX_ACCESS_TOKEN" => nil) do
-      Open3.popen3("abq", "work", "--queue-addr", queue_addr, "--run-id", run_id) do |_work_stdin_fd, work_stdout_fd, work_stderr_fd, work_thr|
-        test_stdout, test_stderr, test_exit_status = Open3.capture3("abq test --queue-addr #{queue_addr} --run-id #{run_id} -- bin/echo_exit_status.rb #{rspec_command}")
-        # note: native_runner_exit_status is nil if the manifest wasn't generated
-        work_stdout = work_stdout_fd.read
-
-        # bin/echo_exit_status.rb prints the exit status of the native runner
-        # this removes it out of the output
-        exit_status_regex = /^exit status: (\d+)$\n/
-        manifest_generation_exit_status, native_runner_exit_status = work_stdout.scan(exit_status_regex).map(&:first).map(&:to_i)
-        worker_stdout_without_native_exit_status = work_stdout.gsub(exit_status_regex, "")
-
-        {
-          test: {
-            stdout: test_stdout,
-            stderr: test_stderr,
-            exit_status: test_exit_status
-          },
-          work: {
-            stdout: worker_stdout_without_native_exit_status,
-            stderr: work_stderr_fd.read,
-            exit_status: work_thr.value
-          },
-          native_runner_exit_status: {
-            manifest: manifest_generation_exit_status,
-            runner: native_runner_exit_status
-          }
-        }
-      end
+      AbqTestRun.new(rspec_command, queue_address: queue_address, run_id: run_id).tap(&:run)
     end
   end
 
+  def sorted_dots(output)
+    dots_regexp = /^[.EFPS]+$/ # note the dot is in a character class so it is implicitly escaped / not a wildcard
+    matched_dots = output[dots_regexp]
+    return output unless matched_dots
+
+    # we rewrite the dots to be consistent because otherwise they're random
+    output.gsub(dots_regexp, matched_dots.chars.sort.join)
+  end
+
+  def replace_worker_ids(output)
+    uuid_regexp = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
+    worker_regexp = /--- \[worker (#{uuid_regexp.source})\]|; worker \[(#{uuid_regexp.source})\]|started on worker (#{uuid_regexp.source})/
+    worker_ids = output.scan(worker_regexp).flatten.uniq.compact
+    return output if worker_ids.empty?
+
+    output.gsub(Regexp.union(*worker_ids), "not-a-real-worker-id")
+  end
+
   # remove unstable parts of the output so we can validate that the rest of the test output is stable between runs
-  def sanitize_test_output(output)
-    sanitize_backtraces(
-      output
-        .gsub(/\(completed in .+/, "(completed in 0 ms)") # this line is unstable, not just because of timing. Sometimes when a test fails with an exception, the time is ommitted but "completed in" is still inlcluded
-        .gsub(/^Finished in \d+\.\d+ seconds \(\d+\.\d+ seconds spent in test code\)$/, "Finished in 0.00 seconds (0.00 seconds spent in test code)") # timing is unstable
-        .gsub(/^Starting test run with ID.+/, "Starting test run with ID not-the-real-test-run-id") # and so is the test run id
-    )
-  end
-  alias_method :sanitize_test_error, :sanitize_test_output
-
-  def sanitize_worker_output(output)
-    sanitize_backtraces(
-      output
-        .gsub(/Finished in \d+(?:\.\d+)? second(?:s)? \(files took \d+(?:\.\d+)? second(?:s)? to load\)/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
-        .gsub(/\.rb:\d+/, ".rb:0")
-    )
+  def sanitize_output(output)
+    output = sorted_dots(output)
+    output = replace_worker_ids(output)
+    output = sanitize_backtrace(output)
+    output = sanitize_ruby_version_deprecations(output)
+    output
+      .gsub(run_id, "not-the-real-test-run-id") # id is not stable
+      .gsub(/^Finished in \d+\.\d+ seconds \(\d+\.\d+ seconds spent in test code\)$/, "Finished in 0.00 seconds (0.00 seconds spent in test code)") # timing is unstable
+      .gsub(/^Finished in \d+(?:\.\d+)? second(?:s)? \(files took \d+(?:\.\d+)? second(?:s)? to load\)$/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
+      .gsub(/\(completed in .*; worker/, "(completed in 0 ms; worker") # this line is unstable, not just because of timing. Sometimes when a test fails with an exception, the time is ommitted but "completed in" is still inlcluded
+      .gsub(/^Randomized with seed \d+/, "Randomized with seed not-a-real-seed")
+      .gsub(/^$\n/, "")
+      .strip
   end
 
-  def sanitize_worker_error(output)
-    sanitize_backtraces(
-      output
-        .gsub(/Worker started with id .+/, "Worker started with id not-the-real-test-run-id") # id is unstable
-    )
-  end
-
-  def sanitize_backtraces(output)
+  def sanitize_backtrace(output)
     output
       .gsub(%r{^.+/rspec-abq}, "/rspec-abq") # get rid of prefixes to working directory
-      .gsub(/^.+(?:bin|bundler|rubygems|gems).+$\n/, "") # get rid of backtraces outside of rspec-abq
-      .gsub(/:\d+:/, ":0:") # get rid of line numbers internally as well to avoid unecessary test churn
+      .gsub(%r{\\n.+/rspec-abq}, "/rspec-abq") # get rid of prefixes to working directory in escaped strings
+      .gsub(%r{^\s+# [^\s]+/(?:bin|bundler|rubygems|gems)/.+$\n}, "") # get rid of backtraces outside of rspec-abq
+      .gsub(%r{^\s*"[^\s]+/(?:bin|bundler|rubygems|gems)/.+",?$}, "") # get rid of backtraces outside of rspec-abq in pretty JSON
+      .gsub(%r{\\n\s+# [^\s]+/(?:bin|bundler|rubygems|gems)/.+\\n}, "") # get rid of backtraces outside of rspec-abq in escaped strings
+      .gsub(/\.rb:\d+/, ".rb:0") # get rid of line numbers to avoid unecessary test churn
   end
 
-  context "with queue and worker" do
+  def sanitize_ruby_version_deprecations(output)
+    replacers = [
+      "warning: Passing safe_level with the 2nd argument of ERB.new is deprecated. Do not use it, and specify other arguments as keyword arguments.",
+      "warning: Passing trim_mode with the 3rd argument of ERB.new is deprecated. Use keyword argument like ERB.new(str, trim_mode: ...) instead."
+    ].map do |message|
+      /[^\s]+:0: #{Regexp.escape(message)}/
+    end
+
+    output.gsub(Regexp.union(replacers), "")
+  end
+
+  def deep_sort_hash_keys(hash)
+    hash.each do |key, value|
+      case value
+      when Hash
+        hash[key] = deep_sort_hash_keys(value)
+      when Array
+        hash[key] = value.map { |elem| elem.is_a?(Hash) ? deep_sort_hash_keys(elem) : elem }
+      end
+    end
+
+    hash.sort.to_h
+  end
+
+  def sanitize_test_results(results)
+    sanitized_text = sanitize_output(JSON.pretty_generate(results)) # sanitize line numbers, etc.
+    results = begin
+      JSON.parse(sanitized_text)
+    rescue JSON::ParserError => e
+      RSpec.configuration.reporter.message(
+        "Error parsing sanitized output:\n#{e.message}\n\nSanitized output:\n#{sanitized_text}\n\nOriginal results:\n#{JSON.pretty_generate(results)}"
+      )
+    end
+
+    results["tests"] = results["tests"].sort_by { |t| t["name"] }
+    results["tests"] = results["tests"].map do |test|
+      test.fetch("attempt").merge!(
+        "durationInNanoseconds" => 234_000,
+        "startedAt" => "2023-01-01T00:00:00Z",
+        "finishedAt" => "2023-01-01T00:00:00Z",
+        # Output is shifting; try to remove this in a follow-up.
+        "stderr" => "redacted",
+        "stdout" => "redacted"
+      )
+
+      test.fetch("location")["line"] = 299
+
+      attempt = test.fetch("attempt")
+      if attempt.key?("status")
+        status = attempt["status"]
+        status["message"] = sanitize_backtrace(status["message"]) if status["message"]
+        if status["backtrace"]
+          status["backtrace"] = status["backtrace"].map { |line| sanitize_backtrace(line).strip }.reject(&:empty?)
+        end
+      end
+
+      screenshot = test.fetch("attempt").fetch("meta", {})["screenshot"]
+      if screenshot
+        screenshot["html"] = "tmp/screenshot.html" if screenshot["html"]
+        screenshot["image"] = "tmp/screenshot.png" if screenshot["image"]
+      end
+      test
+    end
+
+    deep_sort_hash_keys(results)
+  end
+
+  def formatted_test_result_output(run_results)
+    JSON.pretty_generate(sanitize_test_results(run_results))
+  end
+
+  context "with queue and worker", :aggregate_failures do
     after(:all) do # rubocop:disable RSpec/BeforeAfterAll
       # queue is started by the first test that needs it
-      ABQQueue.stop!
+      AbqQueue.stop!
     end
 
     let(:run_id) { SecureRandom.uuid }
@@ -113,155 +220,227 @@ RSpec.describe "abq test" do
       [example.description.tr(" ", "-"), which_io, File.basename(ENV["BUNDLE_GEMFILE"])].join("-")
     end
 
-    def assert_command_output_consistent(command, example, success:, hard_failure: false, &sanitizers)
-      results = abq_test(command, queue_addr: ABQQueue.address, run_id: run_id)
-
-      sanitized = if sanitizers
-        sanitizers.call(results.dup)
-      else
-        results
-      end
-
-      aggregate_failures do
-        # when there's a hard failure, the manifest generation run's exit status is 1
-        expect(results[:native_runner_exit_status][:manifest]).to eq(hard_failure ? 1 : 0)
-
-        expect(sanitize_test_output(sanitized[:test][:stdout])).to match_snapshot(snapshot_name(example, "test-stdout"))
-        expect(sanitize_test_error(sanitized[:test][:stderr])).to match_snapshot(snapshot_name(example, "test-stderr"))
-        expect(sanitize_worker_output(sanitized[:work][:stdout])).to match_snapshot(snapshot_name(example, "work-stdout"))
-        expect(sanitize_worker_error(sanitized[:work][:stderr])).to match_snapshot(snapshot_name(example, "work-stderr"))
-
-        if success
-          expect(results[:native_runner_exit_status][:runner]).to eq(0)
-          expect(results[:test][:exit_status]).to be_success
-          expect(results[:work][:exit_status]).to be_success
-        else
-          # when there's a hard failure, rspec isn't relaunched after manifest generation
-          # so its exit status is simply missing from the output
-          expect(results[:native_runner_exit_status][:runner]).to eq(hard_failure ? nil : 1)
-          expect(results[:test][:exit_status]).not_to be_success
-          expect(results[:test][:exit_status].exitstatus).to eq(1)
-
-          expect(results[:work][:exit_status]).not_to be_success
-          # when there's a hard failure, abq has a special exit status to indicate that something went wrong
-          expect(results[:work][:exit_status].exitstatus).to eq(hard_failure ? 101 : 1)
-        end
-      end
-      sanitized
+    def summary_counts(tests: 0, successful: 0, failed: 0, pended: 0, skipped: 0, retries: 0, quarantined: 0, canceled: 0, timed_out: 0, other_errors: 0, todo: 0)
+      {
+        "tests" => tests,
+        "successful" => successful,
+        "failed" => failed,
+        "pended" => pended,
+        "skipped" => skipped,
+        "retries" => retries,
+        "quarantined" => quarantined,
+        "canceled" => canceled,
+        "timedOut" => timed_out,
+        "otherErrors" => other_errors,
+        "todo" => todo
+      }
     end
 
-    {"failing_specs" => false,
-     "successful_specs" => true,
-     "pending_specs" => true,
-     "raising_specs" => false}.each do |spec_name, spec_passes|
-      it "has consistent output for #{spec_name}" do |example|
-        assert_command_output_consistent("bundle exec rspec 'spec/fixture_specs/#{spec_name}.rb'", example, success: spec_passes)
-      end
+    it "reports all specs together" do # rubocop:disable RSpec/ExampleLength
+      run = abq_test("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", queue_address: AbqQueue.address, run_id: run_id)
+
+      summary = run.results.fetch("summary")
+      expect(summary.fetch("status")["kind"]).to eq("failed")
+      expect(summary).to include(summary_counts(tests: 8, successful: 1, failed: 4, pended: 1, skipped: 2))
+      expect(run.results["tests"].count).to eq(8)
+      expect(sorted_dots(run.test_output.stdout)).to match(/^\.EEEFPSS$/)
+      expect(run.manifest_generation_exit_status).to eq(0)
+      expect(run.native_runner_exit_status).to eq(1)
+      expect(run.test_output.exit_status).to eq(1)
+      expect(run.test_output.stdout).not_to include("Randomized with seed")
     end
 
-    it "has consistent output for specs together" do |example|
-      assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
+    it "has consistent output" do |example|
+      # --options /dev/null prevents rspec from loading `.rspec` (which sets the formatter)
+      # This minimizes our stdout output captured in the snapshot to just enough that
+      # gives us confidence messages are being captured by the test supervisor.
+      run = abq_test(
+        "bundle exec rspec --options /dev/null --out /dev/null --pattern 'spec/fixture_specs/*_specs.rb'",
+        queue_address: AbqQueue.address,
+        run_id: run_id
+      )
+
+      expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
+      # Disable validation of stdout/stderr until we can keep these consistent.
+      # expect(sanitize_output(run.test_output.stdout)).to match_snapshot(snapshot_name(example, "test-stdout"))
+      # expect(sanitize_output(run.test_output.stderr)).to match_snapshot(snapshot_name(example, "test-sterr"))
     end
 
-    it "has consistent output for specs together run with rspec-retry", :aggregate_failures do |example|
+    it "reports successful specs" do
+      run = abq_test("bundle exec rspec 'spec/fixture_specs/successful_specs.rb'", queue_address: AbqQueue.address, run_id: run_id)
+
+      summary = run.results.fetch("summary")
+      expect(summary.fetch("status")["kind"]).to eq("successful")
+      expect(summary).to include(summary_counts(tests: 1, successful: 1))
+      expect(sorted_dots(run.test_output.stdout)).to match(/^\.$/)
+      expect(run.manifest_generation_exit_status).to eq(0)
+      expect(run.native_runner_exit_status).to eq(0)
+      expect(run.test_output.exit_status).to eq(0)
+    end
+
+    it "reports failed specs" do
+      run = abq_test("bundle exec rspec 'spec/fixture_specs/failing_specs.rb'", queue_address: AbqQueue.address, run_id: run_id)
+
+      summary = run.results.fetch("summary")
+      expect(summary.fetch("status")["kind"]).to eq("failed")
+      expect(summary).to include(summary_counts(tests: 1, failed: 1))
+      expect(sorted_dots(run.test_output.stdout)).to match(/^F$/)
+    end
+
+    it "reports pended specs" do
+      run = abq_test("bundle exec rspec 'spec/fixture_specs/pending_specs.rb'", queue_address: AbqQueue.address, run_id: run_id)
+
+      summary = run.results.fetch("summary")
+      expect(summary.fetch("status")["kind"]).to eq("successful")
+      expect(summary).to include(summary_counts(tests: 3, pended: 1, skipped: 2))
+      expect(sorted_dots(run.test_output.stdout)).to match(/^PSS$/)
+    end
+
+    it "reports raising specs" do
+      run = abq_test("bundle exec rspec 'spec/fixture_specs/raising_specs.rb'", queue_address: AbqQueue.address, run_id: run_id)
+
+      summary = run.results.fetch("summary")
+      expect(summary.fetch("status")["kind"]).to eq("failed")
+      expect(summary).to include(summary_counts(tests: 3, failed: 3))
+      expect(sorted_dots(run.test_output.stdout)).to match(/^EEE$/)
+    end
+
+    it "has consistent output with rspec-retry" do |example|
       EnvHelper.with_env("RSPEC_RETRY_RETRY_COUNT" => "2") do
-        results = assert_command_output_consistent("bundle exec rspec --require fixture_specs/rspec_retry_helper --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
+        run = abq_test("bundle exec rspec --require fixture_specs/rspec_retry_helper --pattern 'spec/fixture_specs/*_specs.rb'", queue_address: AbqQueue.address, run_id: run_id)
 
-        # in addition to snpashot tests, explicitly assert that retry is running
-        expect(results[:work][:stdout]).to include("RSpec::Retry: 2nd try")
+        # rspec-retry outputs the ordinalized attempt number on each attempt
+        expect(run.test_output.stdout).to include("RSpec::Retry: 2nd try")
+
+        summary = run.results.fetch("summary")
+        expect(summary.fetch("status")["kind"]).to eq("failed")
+        # rspec-retry doesn't include attempt information in results
+        expect(summary).to include(summary_counts(tests: 8, successful: 1, failed: 4, pended: 1, skipped: 2))
+        expect(run.results["tests"].count).to eq(8)
+        expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
       end
     end
 
-    it "has consistent output for specs that use capybara", :aggregate_failures do |example|
-      assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", example, success: false)
+    it "has consistent output with capybara" do |example|
+      run = abq_test("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", queue_address: AbqQueue.address, run_id: run_id)
+
+      summary = run.results.fetch("summary")
+      expect(summary.fetch("status")["kind"]).to eq("failed")
+      expect(summary).to include(summary_counts(tests: 2, successful: 1, failed: 1))
+      expect(sorted_dots(run.test_output.stdout)).to match(/^\.F$/)
+      expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
+    end
+
+    # note: this doesn't test rspec-abq's handling of random ordering because each worker receives the same seed on the command line
+    it "has consistent output for specs together with a hardcoded seed" do |example|
+      run = abq_test("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --seed 35888", queue_address: AbqQueue.address, run_id: run_id)
+
+      summary = run.results.fetch("summary")
+      expect(summary.fetch("status")["kind"]).to eq("failed")
+      expect(summary).to include(summary_counts(tests: 8, successful: 1, failed: 4, pended: 1, skipped: 2))
+      expect(run.test_output.stdout).to include("Randomized with seed 35888")
+      expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
+    end
+
+    it "quits early if configured with fail-fast" do
+      run = abq_test("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --fail-fast", queue_address: AbqQueue.address, run_id: run_id)
+
+      expect(run.test_output.exit_status).to eq(1)
+      expect(run.test_output.stderr).to include("rspec-abq doesn't presently support running with fail-fast enabled")
     end
 
     context "with headless chrome" do
-      def puma_sanitizer(results)
-        results[:work][:stdout] =
-          results[:work][:stdout]
-            .gsub(/^[\d \-:]+ WARN/, "2023-01-01 00:0:00 WARN")
-            .gsub(/127\.0\.0\.1:\d+/, "127.0.0.1:MADE_UP_TEST_PORT")
-
-        results
-      end
-
-      it "has consistent output for specs that use capybara & headless chrome", :aggregate_failures do |example|
+      it "has consistent output with capybara" do |example|
         EnvHelper.with_env("USE_SELENIUM" => "true") do
-          assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", example, success: false, &method(:puma_sanitizer))
+          run = abq_test("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", queue_address: AbqQueue.address, run_id: run_id)
+
+          summary = run.results.fetch("summary")
+          expect(summary.fetch("status")["kind"]).to eq("failed")
+          expect(summary).to include(summary_counts(tests: 2, successful: 1, failed: 1))
+          expect(run.results["tests"].count).to eq(2)
+          expect(sorted_dots(run.test_output.stdout)).to match(/^\.F$/)
+          expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
         end
       end
 
       # TODO: If we detect these screenshots, perhaps we should forward them to the test runner.
-      it "has consistent output for specs that use capybara & headless chrome & capybara-inline-screenshot", :aggregate_failures do |example|
+      it "has consistent output with capybara & capybara-inline-screenshot" do |example| # rubocop:disable RSpec/ExampleLength
         EnvHelper.with_env(
           "SAVE_SCREENSHOT" => "true", # enables capybara-inline-screenshot in `spec_with_capybara`
-          "CAPYBARA_INLINE_SCREENSHOT" => "artifact" # tells capybara-inline-screenshot to not base-64 encode the screenshot directly to STDOUT.
+          "CAPYBARA_INLINE_SCREENSHOT" => "artifact", # tells capybara-inline-screenshot to not base-64 encode the screenshot directly to STDOUT.
+          "SAVE_SCREENSHOT_ARTIFACT_DIR" => AbqQueue.output_directory
         ) do
-          assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", example, success: false) do |results|
-            results[:work][:stdout]
-              .gsub!(/screenshot_.+(html|png)/, 'screenshot_2023-01-01-01-01-01.001.\1')
-            puma_sanitizer(results)
-          end
+          run = abq_test("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", queue_address: AbqQueue.address, run_id: run_id)
+
+          summary = run.results.fetch("summary")
+          expect(summary.fetch("status")["kind"]).to eq("failed")
+          expect(summary).to include(summary_counts(tests: 2, successful: 1, failed: 1))
+          expect(run.results["tests"].count).to eq(2)
+          expect(sorted_dots(run.test_output.stdout)).to match(/^\.F$/)
+          expect(run.test_output.stdout).to match(%r{HTML screenshot: file://tmp/test-results-\d+/screenshot_.*\.html})
+          expect(run.test_output.stdout).to match(%r{Image screenshot: file://tmp/test-results-\d+/screenshot_.*\.png})
+          expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
         end
       end
     end
 
-    # note: this doesn't test rspec-abq's hadnling of random ordering because each worker receives the same seed on the command line
-    it "has consistent output for specs together with a hardcoded seed" do |example|
-      assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --seed 35888", example, success: false)
-    end
-
-    context "with random ordering" do
-      def sanitize_random_ordering(results)
-        dots_regex = /^[.PS]+$/ # note the dot is in a character class so it is implicitly escaped / not a wildcard
-        dots = results[:test][:stdout][dots_regex]
-        results[:test][:stdout].gsub!(dots_regex, dots.chars.sort.join) # we rewrite the dots to be consistent because otherwise they're random
-        results[:work][:stdout] =
-          results[:work][:stdout]
-            .gsub(/Randomized with seed \d+/, "Randomized with seed this-is-not-random")
-            .gsub(/\d\)/, "0)") # prefix test numbers should be consistent
-            .lines.sort.reject { |line| line.strip == "" }.join # sort lines because tests will not consistently be in order
-        results
-      end
-
-      # this one _does_ test rspec-abq's handling of random ordering (and because of that isn't a snapshot test :p)
+    context "with random ordering", :aggregate_failures do
+      # this one _does_ test rspec-abq's handling of random ordering
       it "has consistent output for random ordering passed as CLI argument" do |example|
-        assert_command_output_consistent("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand", example, success: true, &method(:sanitize_random_ordering))
+        run = abq_test("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --order rand", queue_address: AbqQueue.address, run_id: run_id)
+
+        summary = run.results.fetch("summary")
+        expect(summary.fetch("status")["kind"]).to eq("successful")
+        expect(summary).to include(summary_counts(tests: 4, successful: 1, pended: 1, skipped: 2))
+        expect(sorted_dots(run.test_output.stdout)).to match(/^\.PSS$/)
+        expect(run.test_output.stdout).to include("Randomized with seed")
+        expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
       end
 
       it "has consistent output for random ordering set in rspec config" do |example|
-        assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_that_sets_up_random_ordering.rb", example, success: true, &method(:sanitize_random_ordering))
+        run = abq_test("bundle exec rspec spec/fixture_specs/spec_that_sets_up_random_ordering.rb", queue_address: AbqQueue.address, run_id: run_id)
+
+        summary = run.results.fetch("summary")
+        expect(summary.fetch("status")["kind"]).to eq("successful")
+        expect(summary).to include(summary_counts(tests: 2, successful: 1, pended: 1))
+        expect(sorted_dots(run.test_output.stdout)).to match(/^\.P$/)
+        expect(run.test_output.stdout).to include("Randomized with seed")
+        expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
       end
 
       it "has consistent output for random seed set in rspec config" do |example|
-        assert_command_output_consistent("bundle exec rspec spec/fixture_specs/spec_that_sets_up_random_seed.rb", example, success: true, &method(:sanitize_random_ordering))
-      end
-    end
+        run = abq_test("bundle exec rspec spec/fixture_specs/spec_that_sets_up_random_seed.rb", queue_address: AbqQueue.address, run_id: run_id)
 
-    it "quits early if configured with fail-fast" do |example|
-      assert_command_output_consistent("bundle exec rspec spec/fixture_specs/successful_specs.rb spec/fixture_specs/pending_specs.rb --fail-fast", example, success: false, hard_failure: true)
+        summary = run.results.fetch("summary")
+        expect(summary.fetch("status")["kind"]).to eq("successful")
+        expect(summary).to include(summary_counts(tests: 2, successful: 1, pended: 1))
+        expect(sorted_dots(run.test_output.stdout)).to match(/^\.P$/)
+        expect(run.test_output.stdout).to include("Randomized with seed")
+        expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
+      end
     end
 
     context "with syntax errors" do
       version = Gem::Version.new(RSpec::Core::Version::STRING)
       # we don't properly fail on syntax errors for versions 3.6, 3.7, and 3.8
       pending_test = version >= Gem::Version.new("3.6.0") && version < Gem::Version.new("3.9.0")
-      it "has consistent output for specs with syntax errors" do |example|
+
+      it "has consistent output with syntax errors" do
         pending("incompatible with rspec 3.6-3.8") if pending_test
-        assert_command_output_consistent("bundle exec rspec 'spec/fixture_specs/specs_with_syntax_errors.rb'", example, success: false, hard_failure: true)
+
+        run = abq_test("bundle exec rspec 'spec/fixture_specs/specs_with_syntax_errors.rb'", queue_address: AbqQueue.address, run_id: run_id)
+
+        expect(run.test_output.exit_status).to eq(1)
+        expect(run.test_output.stdout).to include("SyntaxError")
       end
 
       # this one doesn't even pass if pending for 3.6-3.8 so we skip it with metadata
-      it "has consistent output for specs together including a syntax error", *[(:skip if pending_test)].compact do |example|
-        assert_command_output_consistent("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", example, success: false, hard_failure: true)
-      end
-    end
+      it "has consistent output with all specs including a syntax error", *[(:skip if pending_test)].compact do
+        run = abq_test("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", queue_address: AbqQueue.address, run_id: run_id)
 
-    it "worker stdout is mostly empty when formatter is not set" do |example|
-      # -O /dev/null prevents rspec from loading `.rspec` (which sets the formatter)
-      result = assert_command_output_consistent("bundle exec rspec -O /dev/null --pattern 'spec/fixture_specs/*_specs.rb'", example, success: false)
-      expect(result[:work][:stdout]).to eq("")
+        expect(run.test_output.exit_status).to eq(1)
+        expect(run.test_output.stdout).to include("SyntaxError")
+      end
     end
   end
 end

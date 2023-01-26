@@ -13,5 +13,3 @@ vendor/
 .direnv
 *.gem
 .gem
-screenshot_*.html
-screenshot_*.png
