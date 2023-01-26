@@ -1,7 +1,0 @@
-Worker started with id not-the-real-test-run-id
-ERROR:	rspec-abq doesn't presently support running with fail-fast enabled.
-	please disable fail-fast and try again.
-/rspec-abq/lib/rspec/abq.rb:0:in `check_configuration!': unsupported fail-fast detected. (RSpec::Abq::UnsupportedConfigurationError)
-/rspec-abq/lib/rspec/abq.rb:0:in `configure_rspec!'
-/rspec-abq/lib/rspec/abq/extensions.rb:0:in `ordered_example_groups'
-Worker quit before sending protocol version

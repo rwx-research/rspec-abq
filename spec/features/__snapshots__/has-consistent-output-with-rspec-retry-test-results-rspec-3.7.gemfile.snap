@@ -1,0 +1,298 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "kind": "RSpec",
+    "language": "Ruby"
+  },
+  "summary": {
+    "canceled": 0,
+    "failed": 4,
+    "otherErrors": 0,
+    "pended": 1,
+    "quarantined": 0,
+    "retries": 0,
+    "skipped": 2,
+    "status": {
+      "kind": "failed"
+    },
+    "successful": 1,
+    "tests": 8,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "attempt": {
+        "durationInNanoseconds": 234000,
+        "finishedAt": "2023-01-01T00:00:00Z",
+        "meta": {
+          "retry_attempts": 1,
+          "retry_exceptions": [
+            "\nexpected: true\n     got: false\n\n(compared using ==)\n",
+            "\nexpected: true\n     got: false\n\n(compared using ==)\n"
+          ]
+        },
+        "startedAt": "2023-01-01T00:00:00Z",
+        "status": {
+          "backtrace": [
+            "./spec/fixture_specs/failing_specs.rb:0:in `block (2 levels) in <top (required)>'",
+            "./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'",
+            "./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'",
+            "./lib/rspec/abq/extensions.rb:0:in `each'",
+            "./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'",
+            "./lib/rspec/abq/extensions.rb:0:in `run_with_abq'",
+            "./lib/rspec/abq/extensions.rb:0:in `block (3 levels) in run_specs'",
+            "./lib/rspec/abq/extensions.rb:0:in `map'",
+            "./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_specs'",
+            "./lib/rspec/abq/extensions.rb:0:in `block in run_specs'",
+            "./lib/rspec/abq/extensions.rb:0:in `run_specs'"
+          ],
+          "exception": "RSpec::Expectations::ExpectationNotMetError",
+          "kind": "failed",
+          "message": "\n  1) a failing group has a failing test\n     Failure/Error: expect(false).to eq(true)\n\n       expected: true\n            got: false\n\n       (compared using ==)\n     # ./spec/fixture_specs/failing_specs.rb:0:in `block (2 levels) in <top (required)>'\n     # ./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `each'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (3 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `map'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_specs'\n"
+        },
+        "stderr": "redacted",
+        "stdout": "redacted"
+      },
+      "id": "./spec/fixture_specs/failing_specs.rb[1:1]",
+      "lineage": [
+        "a failing group",
+        "has a failing test"
+      ],
+      "location": {
+        "file": "./spec/fixture_specs/failing_specs.rb",
+        "line": 299
+      },
+      "name": "a failing group has a failing test"
+    },
+    {
+      "attempt": {
+        "durationInNanoseconds": 234000,
+        "finishedAt": "2023-01-01T00:00:00Z",
+        "meta": {
+          "skip": "Temporarily skipped with xdescribe"
+        },
+        "startedAt": "2023-01-01T00:00:00Z",
+        "status": {
+          "kind": "skipped"
+        },
+        "stderr": "redacted",
+        "stdout": "redacted"
+      },
+      "id": "./spec/fixture_specs/pending_specs.rb[1:3:1]",
+      "lineage": [
+        "a pending group",
+        "has a pending group",
+        "is pending despite not being marked as pending"
+      ],
+      "location": {
+        "file": "./spec/fixture_specs/pending_specs.rb",
+        "line": 299
+      },
+      "name": "a pending group has a pending group is pending despite not being marked as pending"
+    },
+    {
+      "attempt": {
+        "durationInNanoseconds": 234000,
+        "finishedAt": "2023-01-01T00:00:00Z",
+        "meta": {
+          "retry_attempts": 0,
+          "retry_exceptions": [
+
+          ]
+        },
+        "startedAt": "2023-01-01T00:00:00Z",
+        "status": {
+          "kind": "pended"
+        },
+        "stderr": "redacted",
+        "stdout": "redacted"
+      },
+      "id": "./spec/fixture_specs/pending_specs.rb[1:2]",
+      "lineage": [
+        "a pending group",
+        "has a pending test with pending"
+      ],
+      "location": {
+        "file": "./spec/fixture_specs/pending_specs.rb",
+        "line": 299
+      },
+      "name": "a pending group has a pending test with pending"
+    },
+    {
+      "attempt": {
+        "durationInNanoseconds": 234000,
+        "finishedAt": "2023-01-01T00:00:00Z",
+        "meta": {
+          "skip": "Temporarily skipped with xit"
+        },
+        "startedAt": "2023-01-01T00:00:00Z",
+        "status": {
+          "kind": "skipped"
+        },
+        "stderr": "redacted",
+        "stdout": "redacted"
+      },
+      "id": "./spec/fixture_specs/pending_specs.rb[1:1]",
+      "lineage": [
+        "a pending group",
+        "has a pending test with xit"
+      ],
+      "location": {
+        "file": "./spec/fixture_specs/pending_specs.rb",
+        "line": 299
+      },
+      "name": "a pending group has a pending test with xit"
+    },
+    {
+      "attempt": {
+        "durationInNanoseconds": 234000,
+        "finishedAt": "2023-01-01T00:00:00Z",
+        "meta": {
+          "retry_attempts": 1,
+          "retry_exceptions": [
+            "the roof",
+            "the roof"
+          ]
+        },
+        "startedAt": "2023-01-01T00:00:00Z",
+        "status": {
+          "backtrace": [
+            "./spec/fixture_specs/raising_specs.rb:0:in `block (2 levels) in <top (required)>'",
+            "./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'",
+            "./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'",
+            "./lib/rspec/abq/extensions.rb:0:in `each'",
+            "./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'",
+            "./lib/rspec/abq/extensions.rb:0:in `run_with_abq'",
+            "./lib/rspec/abq/extensions.rb:0:in `block (3 levels) in run_specs'",
+            "./lib/rspec/abq/extensions.rb:0:in `map'",
+            "./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_specs'",
+            "./lib/rspec/abq/extensions.rb:0:in `block in run_specs'",
+            "./lib/rspec/abq/extensions.rb:0:in `run_specs'"
+          ],
+          "exception": "RuntimeError",
+          "kind": "failed",
+          "message": "\n  1) a raising group has a raising test\n     Failure/Error: raise 'the roof'\n\n     RuntimeError:\n       the roof\n     # ./spec/fixture_specs/raising_specs.rb:0:in `block (2 levels) in <top (required)>'\n     # ./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `each'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (3 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `map'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_specs'\n"
+        },
+        "stderr": "redacted",
+        "stdout": "redacted"
+      },
+      "id": "./spec/fixture_specs/raising_specs.rb[1:1]",
+      "lineage": [
+        "a raising group",
+        "has a raising test"
+      ],
+      "location": {
+        "file": "./spec/fixture_specs/raising_specs.rb",
+        "line": 299
+      },
+      "name": "a raising group has a raising test"
+    },
+    {
+      "attempt": {
+        "durationInNanoseconds": 234000,
+        "finishedAt": "2023-01-01T00:00:00Z",
+        "meta": {
+        },
+        "startedAt": "2023-01-01T00:00:00Z",
+        "status": {
+          "backtrace": [
+            "./spec/fixture_specs/raising_specs.rb:0:in `block (3 levels) in <top (required)>'",
+            "./lib/rspec/abq/extensions.rb:0:in `run_with_abq'",
+            "./lib/rspec/abq/extensions.rb:0:in `block in run_with_abq'",
+            "./lib/rspec/abq/extensions.rb:0:in `map'",
+            "./lib/rspec/abq/extensions.rb:0:in `run_with_abq'",
+            "./lib/rspec/abq/extensions.rb:0:in `block (3 levels) in run_specs'",
+            "./lib/rspec/abq/extensions.rb:0:in `map'",
+            "./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_specs'",
+            "./lib/rspec/abq/extensions.rb:0:in `block in run_specs'",
+            "./lib/rspec/abq/extensions.rb:0:in `run_specs'"
+          ],
+          "exception": "RuntimeError",
+          "kind": "failed",
+          "message": "\n  1) a raising group it can handle an exception in a before all hook should also fail\n     Failure/Error: raise \"raising from before(:all)\"\n\n     RuntimeError:\n       raising from before(:all)\n     # ./spec/fixture_specs/raising_specs.rb:0:in `block (3 levels) in <top (required)>'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `map'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (3 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `map'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_specs'\n"
+        },
+        "stderr": "redacted",
+        "stdout": "redacted"
+      },
+      "id": "./spec/fixture_specs/raising_specs.rb[1:2:2]",
+      "lineage": [
+        "a raising group",
+        "it can handle an exception in a before all hook",
+        "should also fail"
+      ],
+      "location": {
+        "file": "./spec/fixture_specs/raising_specs.rb",
+        "line": 299
+      },
+      "name": "a raising group it can handle an exception in a before all hook should also fail"
+    },
+    {
+      "attempt": {
+        "durationInNanoseconds": 234000,
+        "finishedAt": "2023-01-01T00:00:00Z",
+        "meta": {
+        },
+        "startedAt": "2023-01-01T00:00:00Z",
+        "status": {
+          "backtrace": [
+            "./spec/fixture_specs/raising_specs.rb:0:in `block (3 levels) in <top (required)>'",
+            "./lib/rspec/abq/extensions.rb:0:in `run_with_abq'",
+            "./lib/rspec/abq/extensions.rb:0:in `block in run_with_abq'",
+            "./lib/rspec/abq/extensions.rb:0:in `map'",
+            "./lib/rspec/abq/extensions.rb:0:in `run_with_abq'",
+            "./lib/rspec/abq/extensions.rb:0:in `block (3 levels) in run_specs'",
+            "./lib/rspec/abq/extensions.rb:0:in `map'",
+            "./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_specs'",
+            "./lib/rspec/abq/extensions.rb:0:in `block in run_specs'",
+            "./lib/rspec/abq/extensions.rb:0:in `run_specs'"
+          ],
+          "exception": "RuntimeError",
+          "kind": "failed",
+          "message": "\n  1) a raising group it can handle an exception in a before all hook should fail\n     Failure/Error: raise \"raising from before(:all)\"\n\n     RuntimeError:\n       raising from before(:all)\n     # ./spec/fixture_specs/raising_specs.rb:0:in `block (3 levels) in <top (required)>'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `map'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (3 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `map'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_specs'\n"
+        },
+        "stderr": "redacted",
+        "stdout": "redacted"
+      },
+      "id": "./spec/fixture_specs/raising_specs.rb[1:2:1]",
+      "lineage": [
+        "a raising group",
+        "it can handle an exception in a before all hook",
+        "should fail"
+      ],
+      "location": {
+        "file": "./spec/fixture_specs/raising_specs.rb",
+        "line": 299
+      },
+      "name": "a raising group it can handle an exception in a before all hook should fail"
+    },
+    {
+      "attempt": {
+        "durationInNanoseconds": 234000,
+        "finishedAt": "2023-01-01T00:00:00Z",
+        "meta": {
+          "retry_attempts": 0,
+          "retry_exceptions": [
+
+          ]
+        },
+        "startedAt": "2023-01-01T00:00:00Z",
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "redacted",
+        "stdout": "redacted"
+      },
+      "id": "./spec/fixture_specs/successful_specs.rb[1:1]",
+      "lineage": [
+        "a successful group",
+        "has a successful test"
+      ],
+      "location": {
+        "file": "./spec/fixture_specs/successful_specs.rb",
+        "line": 299
+      },
+      "name": "a successful group has a successful test"
+    }
+  ]
+}
