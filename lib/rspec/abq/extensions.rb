@@ -87,9 +87,10 @@ module RSpec
             # be sent to us from ABQ, we now loop over all the examples, and mark
             # every one that we must run in this group as a failure.
             for_filtered_examples(reporter) do |example|
-              next unless Abq.target_test_case.is_example?(example)
-
-              example.fail_with_exception(abq_reporter, ex)
+              if Abq.target_test_case.is_example?(example)
+                example.fail_with_exception(reporter, ex)
+                Abq.fetch_next_example
+              end
             end
 
             false
