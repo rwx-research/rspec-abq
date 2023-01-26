@@ -66,27 +66,20 @@ class AbqTestRun
     @test_output || Output.default
   end
 
-  def work_output
-    @work_output || Output.default
-  end
-
   def run
     raise "#{self.class} cannot be run more than once" if @ran
     @ran = true
 
-    Open3.popen3("abq", "work", "--queue-addr", @queue_address, "--run-id", @run_id) do |_work_stdin_fd, work_stdout_fd, work_stderr_fd, work_thr|
-      test_stdout, test_stderr, test_exit_status = Open3.capture3("abq test --queue-addr #{@queue_address} --run-id #{@run_id} --reporter dot --reporter rwx-v1-json=#{@results_path} -- bin/echo_exit_status.rb #{@rspec_command}")
-      # note: native_runner_exit_status is nil if the manifest wasn't generated
-      work_stdout = work_stdout_fd.read
+    test_stdout, test_stderr, test_exit_status = Open3.capture3(
+      "abq test --worker 0 --queue-addr #{@queue_address} --run-id #{@run_id} --reporter dot --reporter rwx-v1-json=#{@results_path} -- bin/echo_exit_status.rb #{@rspec_command}"
+    )
 
-      # bin/echo_exit_status.rb prints the exit status of the native runner
-      # this removes it out of the output
-      exit_status_regexp = /^exit status: (\d+)$\n/
-      @manifest_generation_exit_status, @native_runner_exit_status = work_stdout.scan(exit_status_regexp).map(&:first).map(&:to_i)
+    # bin/echo_exit_status.rb prints the exit status of the native runner
+    # this removes it out of the output
+    exit_status_regexp = /^exit status: (\d+)$\n/
+    @manifest_generation_exit_status, @native_runner_exit_status = test_stdout.scan(exit_status_regexp).map(&:first).map(&:to_i)
 
-      @test_output = Output.new(test_exit_status.exitstatus, test_stdout, test_stderr)
-      @work_output = Output.new(work_thr.value.exitstatus, work_stdout, work_stderr_fd.read)
-    end
+    @test_output = Output.new(test_exit_status.exitstatus, test_stdout, test_stderr)
   end
 end
 
@@ -231,24 +224,28 @@ RSpec.describe "abq test" do
 
       summary = run.results.fetch("summary")
       expect(summary.fetch("status")["kind"]).to eq("failed")
-      expect(summary).to include(summary_counts(tests: 6, successful: 1, failed: 2, pended: 1, skipped: 2))
-      expect(run.results["tests"].count).to eq(6)
-      expect(sorted_dots(run.test_output.stdout)).to match(/^\.EFPSS$/)
+      expect(summary).to include(summary_counts(tests: 8, successful: 1, failed: 4, pended: 1, skipped: 2))
+      expect(run.results["tests"].count).to eq(8)
+      expect(sorted_dots(run.test_output.stdout)).to match(/^\.EEEFPSS$/)
       expect(run.manifest_generation_exit_status).to eq(0)
       expect(run.native_runner_exit_status).to eq(1)
       expect(run.test_output.exit_status).to eq(1)
-      expect(run.work_output.exit_status).to eq(1)
-      expect(run.work_output.stdout).not_to include("Randomized with seed")
+      expect(run.test_output.stdout).not_to include("Randomized with seed")
     end
 
     it "has consistent output" do |example|
-      run = abq_test("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb'", queue_address: AbqQueue.address, run_id: run_id)
+      # --options /dev/null prevents rspec from loading `.rspec` (which sets the formatter)
+      # This minimizes our stdout output captured in the snapshot to just enough that
+      # gives us confidence messages are being captured by the test supervisor.
+      run = abq_test(
+        "bundle exec rspec --options /dev/null --out /dev/null --pattern 'spec/fixture_specs/*_specs.rb'",
+        queue_address: AbqQueue.address,
+        run_id: run_id
+      )
 
       expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
       expect(sanitize_output(run.test_output.stdout)).to match_snapshot(snapshot_name(example, "test-stdout"))
       expect(sanitize_output(run.test_output.stderr)).to match_snapshot(snapshot_name(example, "test-sterr"))
-      expect(sanitize_output(run.work_output.stdout)).to match_snapshot(snapshot_name(example, "work-stdout"))
-      expect(sanitize_output(run.work_output.stderr)).to match_snapshot(snapshot_name(example, "work-sterr"))
     end
 
     it "reports successful specs" do
@@ -261,7 +258,6 @@ RSpec.describe "abq test" do
       expect(run.manifest_generation_exit_status).to eq(0)
       expect(run.native_runner_exit_status).to eq(0)
       expect(run.test_output.exit_status).to eq(0)
-      expect(run.work_output.exit_status).to eq(0)
     end
 
     it "reports failed specs" do
@@ -287,8 +283,8 @@ RSpec.describe "abq test" do
 
       summary = run.results.fetch("summary")
       expect(summary.fetch("status")["kind"]).to eq("failed")
-      expect(summary).to include(summary_counts(tests: 1, failed: 1))
-      expect(sorted_dots(run.test_output.stdout)).to match(/^E$/)
+      expect(summary).to include(summary_counts(tests: 3, failed: 3))
+      expect(sorted_dots(run.test_output.stdout)).to match(/^EEE$/)
     end
 
     it "has consistent output with rspec-retry" do |example|
@@ -301,8 +297,8 @@ RSpec.describe "abq test" do
         summary = run.results.fetch("summary")
         expect(summary.fetch("status")["kind"]).to eq("failed")
         # rspec-retry doesn't include attempt information in results
-        expect(summary).to include(summary_counts(tests: 6, successful: 1, failed: 2, pended: 1, skipped: 2))
-        expect(run.results["tests"].count).to eq(6)
+        expect(summary).to include(summary_counts(tests: 8, successful: 1, failed: 4, pended: 1, skipped: 2))
+        expect(run.results["tests"].count).to eq(8)
         expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
       end
     end
@@ -323,31 +319,16 @@ RSpec.describe "abq test" do
 
       summary = run.results.fetch("summary")
       expect(summary.fetch("status")["kind"]).to eq("failed")
-      expect(summary).to include(summary_counts(tests: 6, successful: 1, failed: 2, pended: 1, skipped: 2))
+      expect(summary).to include(summary_counts(tests: 8, successful: 1, failed: 4, pended: 1, skipped: 2))
       expect(run.test_output.stdout).to include("Randomized with seed 35888")
       expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
     end
 
-    it "quits early with worker status 101 if configured with fail-fast" do
+    it "quits early if configured with fail-fast" do
       run = abq_test("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --fail-fast", queue_address: AbqQueue.address, run_id: run_id)
 
       expect(run.test_output.exit_status).to eq(1)
       expect(run.test_output.stderr).to include("rspec-abq doesn't presently support running with fail-fast enabled")
-      expect(run.work_output.exit_status).to eq(101)
-      expect(run.work_output.stdout).to include("rspec-abq doesn't presently support running with fail-fast enabled")
-    end
-
-    it "worker stdout is mostly empty when formatter is not set" do
-      # -O /dev/null prevents rspec from loading `.rspec` (which sets the formatter)
-      run = abq_test("bundle exec rspec -O /dev/null --pattern 'spec/fixture_specs/*_specs.rb'", queue_address: AbqQueue.address, run_id: run_id)
-      output = run.work_output.stdout
-        .gsub(/^--- .+ MANIFEST GENERATION ---$/, "")
-        .gsub(/^--- .+ AFTER completion ---$/, "")
-        .gsub(/^----- STDOUT$/, "")
-        .gsub(/^exit status: \d$/, "")
-        .strip
-
-      expect(output).to be_empty
     end
 
     context "with headless chrome" do
@@ -394,7 +375,7 @@ RSpec.describe "abq test" do
         expect(summary.fetch("status")["kind"]).to eq("successful")
         expect(summary).to include(summary_counts(tests: 4, successful: 1, pended: 1, skipped: 2))
         expect(sorted_dots(run.test_output.stdout)).to match(/^\.PSS$/)
-        expect(run.work_output.stdout).to include("Randomized with seed")
+        expect(run.test_output.stdout).to include("Randomized with seed")
         expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
       end
 
@@ -405,7 +386,7 @@ RSpec.describe "abq test" do
         expect(summary.fetch("status")["kind"]).to eq("successful")
         expect(summary).to include(summary_counts(tests: 2, successful: 1, pended: 1))
         expect(sorted_dots(run.test_output.stdout)).to match(/^\.P$/)
-        expect(run.work_output.stdout).to include("Randomized with seed")
+        expect(run.test_output.stdout).to include("Randomized with seed")
         expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
       end
 
@@ -416,7 +397,7 @@ RSpec.describe "abq test" do
         expect(summary.fetch("status")["kind"]).to eq("successful")
         expect(summary).to include(summary_counts(tests: 2, successful: 1, pended: 1))
         expect(sorted_dots(run.test_output.stdout)).to match(/^\.P$/)
-        expect(run.work_output.stdout).to include("Randomized with seed")
+        expect(run.test_output.stdout).to include("Randomized with seed")
         expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
       end
     end
@@ -433,8 +414,6 @@ RSpec.describe "abq test" do
 
         expect(run.test_output.exit_status).to eq(1)
         expect(run.test_output.stdout).to include("SyntaxError")
-        expect(run.work_output.exit_status).to eq(101)
-        expect(run.work_output.stdout).to include("SyntaxError")
       end
 
       # this one doesn't even pass if pending for 3.6-3.8 so we skip it with metadata
@@ -443,8 +422,6 @@ RSpec.describe "abq test" do
 
         expect(run.test_output.exit_status).to eq(1)
         expect(run.test_output.stdout).to include("SyntaxError")
-        expect(run.work_output.exit_status).to eq(101)
-        expect(run.work_output.stdout).to include("SyntaxError")
       end
     end
   end
