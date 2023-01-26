@@ -166,7 +166,7 @@ RSpec.describe "abq test" do
       JSON.parse(sanitized_text)
     rescue JSON::ParserError => e
       RSpec.configuration.reporter.message(
-        "Error parsing sanitized output:\n#{sanitized_text}\n\nOriginal results:\n#{JSON.pretty_generate(results)}"
+        "Error parsing sanitized output:\n#{e.message}\n\nSanitized output:\n#{sanitized_text}\n\nOriginal results:\n#{JSON.pretty_generate(results)}"
       )
     end
 
