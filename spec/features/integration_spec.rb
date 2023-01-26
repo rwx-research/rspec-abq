@@ -183,8 +183,9 @@ RSpec.describe "abq test" do
 
       test.fetch("location")["line"] = 299
 
-      if test.key?("status")
-        status = test["status"]
+      attempt = test.fetch("attempt")
+      if attempt.key?("status")
+        status = attempt["status"]
         status["message"] = sanitize_backtrace(status["message"]) if status["message"]
         if status["backtrace"]
           status["backtrace"] = status["backtrace"].map { |line| sanitize_backtrace(line).strip }.reject(&:empty?)
