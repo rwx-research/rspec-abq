@@ -116,13 +116,14 @@ RSpec.describe "abq test" do
     output = sorted_dots(output)
     output = replace_worker_ids(output)
     output = sanitize_backtrace(output)
+    output = sanitize_ruby_version_deprecations(output)
     output
       .gsub(run_id, "not-the-real-test-run-id") # id is not stable
       .gsub(/^Finished in \d+\.\d+ seconds \(\d+\.\d+ seconds spent in test code\)$/, "Finished in 0.00 seconds (0.00 seconds spent in test code)") # timing is unstable
       .gsub(/^Finished in \d+(?:\.\d+)? second(?:s)? \(files took \d+(?:\.\d+)? second(?:s)? to load\)$/, "Finished in 0.0 seconds (files took 0.0 seconds to load)") # timing is unstable
       .gsub(/\(completed in .*; worker/, "(completed in 0 ms; worker") # this line is unstable, not just because of timing. Sometimes when a test fails with an exception, the time is ommitted but "completed in" is still inlcluded
-      .gsub(/^$\n/, "")
       .gsub(/^Randomized with seed \d+/, "Randomized with seed not-a-real-seed")
+      .gsub(/^$\n/, "")
       .strip
   end
 
@@ -133,6 +134,17 @@ RSpec.describe "abq test" do
       .gsub(%r{^\s*# .+/(?:bin|bundler|rubygems|gems)/.+$\n}, "") # get rid of backtraces outside of rspec-abq
       .gsub(%r{\\n\s*# .+/(?:bin|bundler|rubygems|gems)/.+\\n}, "") # get rid of backtraces outside of rspec-abq in escaped strings
       .gsub(/\.rb:\d+/, ".rb:0") # get rid of line numbers to avoid unecessary test churn
+  end
+
+  def sanitize_ruby_version_deprecations(output)
+    replacers = [
+      "warning: Passing safe_level with the 2nd argument of ERB.new is deprecated. Do not use it, and specify other arguments as keyword arguments.",
+      "warning: Passing trim_mode with the 3rd argument of ERB.new is deprecated. Use keyword argument like ERB.new(str, trim_mode: ...) instead."
+    ].map do |message|
+      /[^\s]+:0: #{Regexp.escape(message)}/
+    end
+
+    output.gsub(Regexp.union(replacers), "")
   end
 
   def deep_sort_hash_keys(hash)
