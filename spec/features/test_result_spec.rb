@@ -58,6 +58,7 @@ RSpec.describe "test results", unless: RSpec::Abq.disable_tests_when_run_by_abq?
         test_result["test_result"]["output"]
           .gsub(/\e\[(\d+)(;\d+)*m/, "") # strip ANSI codes
           .gsub(/\n\s*/, "\n") # strip extra newline spaces, differs between rubies
+          .gsub(/:\d+:/, ":<line-number-cleaned-for-tests>:")
     end
     test_result
   end
