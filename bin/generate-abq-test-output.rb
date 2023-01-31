@@ -6,6 +6,7 @@ require 'fileutils'
 `git rm -r spec/**/__snapshots__`
 
 ENV['UPDATE_SNAPSHOTS'] = 'true'
+ENV['NO_COVERAGE'] = 'true'
 threads = Dir['gemfiles/*.gemfile'].map do |gemfile|
   Thread.new do
     system({"BUNDLE_GEMFILE" => gemfile}, "bundle exec rspec spec/features/integration_spec.rb")

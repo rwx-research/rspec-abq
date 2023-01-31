@@ -1,3 +1,15 @@
+unless ENV.key?("NO_COVERAGE")
+  require "simplecov"
+  if ENV.key?("ABQ_SOCKET")
+    # for nested rspec processes
+    SimpleCov.at_fork.call(Process.pid)
+  end
+
+  SimpleCov.start do
+    add_filter "/spec/"
+  end
+end
+
 require "bundler/setup"
 require "rspec/abq"
 require "rspec/snapshot"
