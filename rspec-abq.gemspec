@@ -36,4 +36,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rack", "~> 2.2.5"
   spec.add_development_dependency "puma", "~> 5.6.5" # last version that capybara 3.36.0 supports
   spec.add_development_dependency "capybara-inline-screenshot", "~> 2.2.1"
+  spec.add_development_dependency "simplecov", "~> 0.22.0"
 end

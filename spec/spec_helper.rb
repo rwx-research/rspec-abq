@@ -1,3 +1,9 @@
+require "simplecov"
+SimpleCov.at_fork.call(Process.pid) if ENV.key?("ABQ_SOCKET")
+SimpleCov.start do
+  add_filter "/spec/"
+end
+
 require "bundler/setup"
 require "rspec/abq"
 require "rspec/snapshot"
