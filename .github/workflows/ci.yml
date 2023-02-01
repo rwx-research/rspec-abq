@@ -117,7 +117,7 @@ jobs:
       success: ${{ steps.setoutput.outputs.success }}
     steps:
       - id: setoutput
-        run: echo "::set-output name=success::true"
+        run: echo "success=true" >> "$GITHUB_OUTPUT"
   rspec:
     runs-on: ubuntu-latest
     if: always() # always run, so we never skip the check
@@ -150,3 +150,13 @@ jobs:
           ruby-version: 3.1.0
           bundler-cache: true
       - run: bin/check_yard
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Lint github workflows
+        run: |
+          echo "::add-matcher::.github/actionlint-matcher.json"
+          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/3a2f2c755b6442ec7999b28dfd107e1bb9853389/scripts/download-actionlint.bash)
+          ./actionlint -color
+        shell: bash
