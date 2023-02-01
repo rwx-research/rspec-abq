@@ -76,9 +76,38 @@ jobs:
             --format documentation && bin/check_num_tests.rb
         if: ${{ matrix.ruby != 3.1 || matrix.gemfile != 3.12 }}
         timeout-minutes: 2
+      - name: Upload Coverage
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-${{ matrix.ruby }}-${{ matrix.gemfile }}
+          path: coverage/.resultset.json
 
   # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
   # this is used to summarize the matrix results into a single job (abq-work) that can be used as a required check
+  collate-coverage:
+    needs: rspec-matrix
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: actions/checkout@v3
+      - name: download coverage reports
+        uses: actions/download-artifact@v3
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1.0
+          bundler-cache: true
+      - name: collate coverage
+        run: |
+          gem install simplecov
+          ruby -e 'require "simplecov"; SimpleCov.collate Dir["**/.resultset.json"] { add_filter "/spec/" }'
+      - name: Upload Coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: coverage/
+
+
   rspec-github-workflow-wrapup-helper:
     needs: rspec-matrix # run after shards
     runs-on: ubuntu-latest
