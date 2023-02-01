@@ -8,10 +8,10 @@
     "canceled": 0,
     "failed": 0,
     "otherErrors": 0,
-    "pended": 1,
+    "pended": 3,
     "quarantined": 0,
     "retries": 0,
-    "skipped": 2,
+    "skipped": 0,
     "status": {
       "kind": "successful"
     },
@@ -21,81 +21,6 @@
     "todo": 0
   },
   "tests": [
-    {
-      "attempt": {
-        "durationInNanoseconds": 234000,
-        "finishedAt": "2023-01-01T00:00:00Z",
-        "meta": {
-          "skip": "Temporarily skipped with xdescribe"
-        },
-        "startedAt": "2023-01-01T00:00:00Z",
-        "status": {
-          "kind": "skipped"
-        },
-        "stderr": "redacted",
-        "stdout": "redacted"
-      },
-      "id": "./spec/fixture_specs/pending_specs.rb[1:3:1]",
-      "lineage": [
-        "a pending group",
-        "has a pending group",
-        "is pending despite not being marked as pending"
-      ],
-      "location": {
-        "file": "./spec/fixture_specs/pending_specs.rb",
-        "line": 299
-      },
-      "name": "a pending group has a pending group is pending despite not being marked as pending"
-    },
-    {
-      "attempt": {
-        "durationInNanoseconds": 234000,
-        "finishedAt": "2023-01-01T00:00:00Z",
-        "meta": {
-        },
-        "startedAt": "2023-01-01T00:00:00Z",
-        "status": {
-          "kind": "pended"
-        },
-        "stderr": "redacted",
-        "stdout": "redacted"
-      },
-      "id": "./spec/fixture_specs/pending_specs.rb[1:2]",
-      "lineage": [
-        "a pending group",
-        "has a pending test with pending"
-      ],
-      "location": {
-        "file": "./spec/fixture_specs/pending_specs.rb",
-        "line": 299
-      },
-      "name": "a pending group has a pending test with pending"
-    },
-    {
-      "attempt": {
-        "durationInNanoseconds": 234000,
-        "finishedAt": "2023-01-01T00:00:00Z",
-        "meta": {
-          "skip": "Temporarily skipped with xit"
-        },
-        "startedAt": "2023-01-01T00:00:00Z",
-        "status": {
-          "kind": "skipped"
-        },
-        "stderr": "redacted",
-        "stdout": "redacted"
-      },
-      "id": "./spec/fixture_specs/pending_specs.rb[1:1]",
-      "lineage": [
-        "a pending group",
-        "has a pending test with xit"
-      ],
-      "location": {
-        "file": "./spec/fixture_specs/pending_specs.rb",
-        "line": 299
-      },
-      "name": "a pending group has a pending test with xit"
-    },
     {
       "attempt": {
         "durationInNanoseconds": 234000,
@@ -119,6 +44,79 @@
         "line": 299
       },
       "name": "a successful group has a successful test"
+    },
+    {
+      "attempt": {
+        "durationInNanoseconds": 234000,
+        "finishedAt": "2023-01-01T00:00:00Z",
+        "meta": {
+        },
+        "startedAt": "2023-01-01T00:00:00Z",
+        "status": {
+          "kind": "pended"
+        },
+        "stderr": "redacted",
+        "stdout": "redacted"
+      },
+      "id": "./spec/fixture_specs/pending_specs.rb[1:3:1]",
+      "lineage": [
+        "pending tests",
+        "a pending group via a tag",
+        "is pending despite not being marked as pending"
+      ],
+      "location": {
+        "file": "./spec/fixture_specs/pending_specs.rb",
+        "line": 299
+      },
+      "name": "pending tests a pending group via a tag is pending despite not being marked as pending"
+    },
+    {
+      "attempt": {
+        "durationInNanoseconds": 234000,
+        "finishedAt": "2023-01-01T00:00:00Z",
+        "meta": {
+        },
+        "startedAt": "2023-01-01T00:00:00Z",
+        "status": {
+          "kind": "pended"
+        },
+        "stderr": "redacted",
+        "stdout": "redacted"
+      },
+      "id": "./spec/fixture_specs/pending_specs.rb[1:2]",
+      "lineage": [
+        "pending tests",
+        "has a pending test with a tag"
+      ],
+      "location": {
+        "file": "./spec/fixture_specs/pending_specs.rb",
+        "line": 299
+      },
+      "name": "pending tests has a pending test with a tag"
+    },
+    {
+      "attempt": {
+        "durationInNanoseconds": 234000,
+        "finishedAt": "2023-01-01T00:00:00Z",
+        "meta": {
+        },
+        "startedAt": "2023-01-01T00:00:00Z",
+        "status": {
+          "kind": "pended"
+        },
+        "stderr": "redacted",
+        "stdout": "redacted"
+      },
+      "id": "./spec/fixture_specs/pending_specs.rb[1:1]",
+      "lineage": [
+        "pending tests",
+        "has a pending test with pending"
+      ],
+      "location": {
+        "file": "./spec/fixture_specs/pending_specs.rb",
+        "line": 299
+      },
+      "name": "pending tests has a pending test with pending"
     }
   ]
 }

@@ -2,17 +2,16 @@
   {
     "test_result": {
       "status": {
-        "type": "skipped"
+        "type": "pending"
       },
       "id": "./spec/fixture_specs/pending_specs.rb[1:1]",
-      "display_name": "a pending group has a pending test with xit",
+      "display_name": "pending tests has a pending test with pending",
       "output": null,
       "runtime": "<cleaned for test>",
       "tags": [
         "pending"
       ],
       "meta": {
-        "skip": "Temporarily skipped with xit"
       },
       "location": {
         "file": "./spec/fixture_specs/pending_specs.rb",
@@ -21,8 +20,8 @@
       "started_at": "<cleaned for test>",
       "finished_at": "<cleaned for test>",
       "lineage": [
-        "a pending group",
-        "has a pending test with xit"
+        "pending tests",
+        "has a pending test with pending"
       ]
     }
   },
@@ -32,7 +31,7 @@
         "type": "pending"
       },
       "id": "./spec/fixture_specs/pending_specs.rb[1:2]",
-      "display_name": "a pending group has a pending test with pending",
+      "display_name": "pending tests has a pending test with a tag",
       "output": null,
       "runtime": "<cleaned for test>",
       "tags": [
@@ -42,30 +41,29 @@
       },
       "location": {
         "file": "./spec/fixture_specs/pending_specs.rb",
-        "line": 9
+        "line": 10
       },
       "started_at": "<cleaned for test>",
       "finished_at": "<cleaned for test>",
       "lineage": [
-        "a pending group",
-        "has a pending test with pending"
+        "pending tests",
+        "has a pending test with a tag"
       ]
     }
   },
   {
     "test_result": {
       "status": {
-        "type": "skipped"
+        "type": "pending"
       },
       "id": "./spec/fixture_specs/pending_specs.rb[1:3:1]",
-      "display_name": "a pending group has a pending group is pending despite not being marked as pending",
+      "display_name": "pending tests a pending group via a tag is pending despite not being marked as pending",
       "output": null,
       "runtime": "<cleaned for test>",
       "tags": [
         "pending"
       ],
       "meta": {
-        "skip": "Temporarily skipped with xdescribe"
       },
       "location": {
         "file": "./spec/fixture_specs/pending_specs.rb",
@@ -74,8 +72,8 @@
       "started_at": "<cleaned for test>",
       "finished_at": "<cleaned for test>",
       "lineage": [
-        "a pending group",
-        "has a pending group",
+        "pending tests",
+        "a pending group via a tag",
         "is pending despite not being marked as pending"
       ]
     }
