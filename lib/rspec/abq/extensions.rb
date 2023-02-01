@@ -78,7 +78,12 @@ module RSpec
             results_for_descendants = ordering_strategy.order(children).map { |child| child.run_with_abq(reporter) }.all?
             result_for_this_group && results_for_descendants
           rescue RSpec::Core::Pending::SkipDeclaredInExample => ex
-            for_filtered_examples(reporter) { |example| example.skip_with_exception(reporter, ex) }
+            for_filtered_examples(reporter) do |example|
+              if Abq.target_test_case.is_example?(example)
+                example.skip_with_exception(reporter, ex)
+                Abq.fetch_next_example
+              end
+            end
             true
           rescue RSpec::Support::AllExceptionsExceptOnesWeMustNotRescue => ex
             # If an exception reaches here, that means we must fail the entire
