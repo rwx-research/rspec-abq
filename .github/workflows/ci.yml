@@ -76,6 +76,12 @@ jobs:
             --format documentation && bin/check_num_tests.rb
         if: ${{ matrix.ruby != 3.1 || matrix.gemfile != 3.12 }}
         timeout-minutes: 2
+      - name: Upload Coverage
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-${{ matrix.ruby }}-${{ matrix.gemfile }}
+          path: coverage/
 
   # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
   # this is used to summarize the matrix results into a single job (abq-work) that can be used as a required check
