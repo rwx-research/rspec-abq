@@ -241,9 +241,9 @@ RSpec.describe "abq test" do
 
       summary = run.results.fetch("summary")
       expect(summary.fetch("status")["kind"]).to eq("failed")
-      expect(summary).to include(summary_counts(tests: 8, successful: 1, failed: 4, pended: 1, skipped: 2))
-      expect(run.results["tests"].count).to eq(8)
-      expect(sorted_dots(run.test_output.stdout)).to match(/^\.EEEFPSS$/)
+      expect(summary).to include(summary_counts(tests: 15, successful: 1, failed: 5, pended: 3, skipped: 6))
+      expect(run.results["tests"].count).to eq(15)
+      expect(sorted_dots(run.test_output.stdout)).to match(/^\.EEEEFPPPSSSSSS$/)
       expect(run.manifest_generation_exit_status).to eq(0)
       expect(run.native_runner_exit_status).to eq(1)
       expect(run.test_output.exit_status).to eq(1)
@@ -283,8 +283,8 @@ RSpec.describe "abq test" do
 
       summary = run.results.fetch("summary")
       expect(summary.fetch("status")["kind"]).to eq("failed")
-      expect(summary).to include(summary_counts(tests: 1, failed: 1))
-      expect(sorted_dots(run.test_output.stdout)).to match(/^F$/)
+      expect(summary).to include(summary_counts(tests: 2, failed: 2))
+      expect(sorted_dots(run.test_output.stdout)).to match(/^EF$/)
     end
 
     it "reports pended specs" do
@@ -292,8 +292,17 @@ RSpec.describe "abq test" do
 
       summary = run.results.fetch("summary")
       expect(summary.fetch("status")["kind"]).to eq("successful")
-      expect(summary).to include(summary_counts(tests: 3, pended: 1, skipped: 2))
-      expect(sorted_dots(run.test_output.stdout)).to match(/^PSS$/)
+      expect(summary).to include(summary_counts(tests: 3, pended: 3, skipped: 0))
+      expect(sorted_dots(run.test_output.stdout)).to match(/^PPP$/)
+    end
+
+    it "reports skipped specs" do
+      run = abq_test("bundle exec rspec 'spec/fixture_specs/skipped_specs.rb'", queue_address: AbqQueue.address, run_id: run_id)
+
+      summary = run.results.fetch("summary")
+      expect(summary.fetch("status")["kind"]).to eq("successful")
+      expect(summary).to include(summary_counts(tests: 6, pended: 0, skipped: 6))
+      expect(sorted_dots(run.test_output.stdout)).to match(/^SSSSSS$/)
     end
 
     it "reports raising specs" do
@@ -315,8 +324,8 @@ RSpec.describe "abq test" do
         summary = run.results.fetch("summary")
         expect(summary.fetch("status")["kind"]).to eq("failed")
         # rspec-retry doesn't include attempt information in results
-        expect(summary).to include(summary_counts(tests: 8, successful: 1, failed: 4, pended: 1, skipped: 2))
-        expect(run.results["tests"].count).to eq(8)
+        expect(summary).to include(summary_counts(tests: 15, successful: 1, failed: 5, pended: 3, skipped: 6))
+        expect(run.results["tests"].count).to eq(15)
         expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
       end
     end
@@ -337,7 +346,7 @@ RSpec.describe "abq test" do
 
       summary = run.results.fetch("summary")
       expect(summary.fetch("status")["kind"]).to eq("failed")
-      expect(summary).to include(summary_counts(tests: 8, successful: 1, failed: 4, pended: 1, skipped: 2))
+      expect(summary).to include(summary_counts(tests: 15, successful: 1, failed: 5, pended: 3, skipped: 6))
       expect(run.test_output.stdout).to include("Randomized with seed 35888")
       expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
     end
@@ -391,8 +400,8 @@ RSpec.describe "abq test" do
 
         summary = run.results.fetch("summary")
         expect(summary.fetch("status")["kind"]).to eq("successful")
-        expect(summary).to include(summary_counts(tests: 4, successful: 1, pended: 1, skipped: 2))
-        expect(sorted_dots(run.test_output.stdout)).to match(/^\.PSS$/)
+        expect(summary).to include(summary_counts(tests: 4, successful: 1, pended: 3, skipped: 0))
+        expect(sorted_dots(run.test_output.stdout)).to match(/^\.PPP$/)
         expect(run.test_output.stdout).to include("Randomized with seed")
         expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
       end

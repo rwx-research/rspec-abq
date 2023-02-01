@@ -38,5 +38,45 @@
         "has a failing test"
       ]
     }
+  },
+  {
+    "test_result": {
+      "status": {
+        "type": "error",
+        "exception": "RuntimeError",
+        "backtrace": [
+          "./spec/fixture_specs/failing_specs.rb:<line-number-cleaned-for-tests>:in `block (3 levels) in <top (required)>'",
+          "./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `run_with_abq'",
+          "./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block in run_with_abq'",
+          "./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `map'",
+          "./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `run_with_abq'",
+          "./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block (3 levels) in run_specs'",
+          "./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `map'",
+          "./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block (2 levels) in run_specs'",
+          "./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block in run_specs'",
+          "./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `run_specs'"
+        ]
+      },
+      "id": "./spec/fixture_specs/failing_specs.rb[1:2:1]",
+      "display_name": "a failing group failing in a before block is failing despite being successful",
+      "output": "\n1) a failing group failing in a before block is failing despite being successful\nFailure/Error: before(:all) { fail('because') }\nRuntimeError:\nbecause\n# ./spec/fixture_specs/failing_specs.rb:<line-number-cleaned-for-tests>:in `block (3 levels) in <top (required)>'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `run_with_abq'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block in run_with_abq'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `map'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `run_with_abq'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block (3 levels) in run_specs'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `map'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block (2 levels) in run_specs'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block in run_specs'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `run_specs'\n",
+      "runtime": "<cleaned for test>",
+      "tags": [
+
+      ],
+      "meta": {
+      },
+      "location": {
+        "file": "./spec/fixture_specs/failing_specs.rb",
+        "line": 12
+      },
+      "started_at": "<cleaned for test>",
+      "finished_at": "<cleaned for test>",
+      "lineage": [
+        "a failing group",
+        "failing in a before block",
+        "is failing despite being successful"
+      ]
+    }
   }
 ]
