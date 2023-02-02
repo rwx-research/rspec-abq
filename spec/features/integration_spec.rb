@@ -85,10 +85,11 @@ end
 
 RSpec.describe "abq test" do
   def abq_test(rspec_command, queue_address:, run_id:)
-    # RWX_ACCESS_TOKEN is set by `captain-cli`.
+    # RWX_ACCESS_TOKEN is used by `captain-cli` but is also interpreted by abq to connect to a remote queue
     # The tests uses a local queue.
-    # Here we unset RWX_ACCESS_TOKEN to prevent abq from trying to connect to a remote queue.
-    EnvHelper.with_env("RWX_ACCESS_TOKEN" => nil) do
+    # Unset RWX_ACCESS_TOKEN to prevent abq from trying to connect to a remote queue.
+    # captain-cli also sets ABQ_SET_EXIT_CODE and ABQ_STATE_FILE but we don't want our nested abq to be aware of them.
+    EnvHelper.with_env("RWX_ACCESS_TOKEN" => nil, "ABQ_SET_EXIT_CODE" => nil, "ABQ_STATE_FILE" => nil) do
       AbqTestRun.new(rspec_command, queue_address: queue_address, run_id: run_id).tap(&:run)
     end
   end

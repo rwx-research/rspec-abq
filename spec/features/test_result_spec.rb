@@ -1,5 +1,4 @@
 require "json"
-require "open3"
 require "spec_helper"
 
 RSpec.describe "test results", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
