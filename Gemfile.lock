@@ -9,7 +9,7 @@ GIT
 PATH
   remote: .
   specs:
-    rspec-abq (1.0.6)
+    rspec-abq (1.0.7)
       rspec-core (>= 3.5.0, < 3.13.0)
 
 GEM
@@ -123,7 +123,7 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.12.3)
     simplecov_json_formatter (0.1.4)
-    sorbet-runtime (0.5.10634)
+    sorbet-runtime (0.5.10647)
     standard (1.22.1)
       language_server-protocol (~> 3.17.0.2)
       rubocop (= 1.42.0)
