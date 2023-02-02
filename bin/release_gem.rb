@@ -117,9 +117,9 @@ RELEASE_TEMPLATE = <<~RELEASE_TEMPLATE
 
   # 🪙 Changelog 🪵
   ## Bugs
-  - fixed a cool bug [#123] (thanks @Janice !)
+  - fixed a cool bug [#000]
   ## Enhancements
-  - now we can do spacetravel[#1337] (cheers to @Bobak ! )
+  - now we can do spacetravel[#000]
 RELEASE_TEMPLATE
 
 Tempfile.create do |f|
