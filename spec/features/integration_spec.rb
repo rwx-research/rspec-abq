@@ -324,8 +324,7 @@ RSpec.describe "abq test" do
 
         summary = run.results.fetch("summary")
         expect(summary.fetch("status")["kind"]).to eq("failed")
-        # rspec-retry doesn't include attempt information in results
-        expect(summary).to include(summary_counts(tests: 15, successful: 1, failed: 5, pended: 3, skipped: 6))
+        expect(summary).to include(summary_counts(tests: 15, successful: 1, failed: 5, pended: 3, skipped: 6, retries: 2))
         expect(run.results["tests"].count).to eq(15)
         expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
       end
