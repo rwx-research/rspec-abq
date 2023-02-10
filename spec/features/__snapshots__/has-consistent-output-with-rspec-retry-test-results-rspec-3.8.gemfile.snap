@@ -10,7 +10,7 @@
     "otherErrors": 0,
     "pended": 3,
     "quarantined": 0,
-    "retries": 0,
+    "retries": 2,
     "skipped": 6,
     "status": {
       "kind": "failed"
@@ -102,7 +102,18 @@
         "file": "./spec/fixture_specs/failing_specs.rb",
         "line": 299
       },
-      "name": "a failing group has a failing test"
+      "name": "a failing group has a failing test",
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 0,
+          "meta": {
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\nexpected: true\n     got: false\n\n(compared using ==)\n\nDiff:\n@@ -1 +1 @@\n-true\n+false\n"
+          }
+        }
+      ]
     },
     {
       "attempt": {
@@ -146,7 +157,18 @@
         "file": "./spec/fixture_specs/raising_specs.rb",
         "line": 299
       },
-      "name": "a raising group has a raising test"
+      "name": "a raising group has a raising test",
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 0,
+          "meta": {
+          },
+          "status": {
+            "kind": "failed",
+            "message": "the roof"
+          }
+        }
+      ]
     },
     {
       "attempt": {
