@@ -148,8 +148,20 @@ module RSpec
       Extensions.setup!
     end
 
+    # Base ABQ error.
+    Error = Class.new(StandardError)
+
     # raised when check_configuration fails
-    UnsupportedConfigurationError = Class.new(StandardError)
+    UnsupportedConfigurationError = Class.new(Error)
+
+    # Failed to connect and initialize handshake.
+    ConnectionFailed = Class.new(Error)
+
+    # Communication between abq sockets follows the following protocol:
+    #   - The first 4 bytes an unsigned 32-bit integer (big-endian) representing
+    #     the size of the rest of the message.
+    #   - The rest of the message is a JSON-encoded payload.
+    ConnectionBroken = Class.new(Error)
 
     # raises if RSpec is configured in a way that's incompatible with rspec-abq
     def self.check_configuration!(config)
@@ -214,12 +226,16 @@ module RSpec
 
     # Creates the socket to communicate with the worker and sends the worker the protocol
     # @!visibility private
-    def self.socket
-      @socket ||= TCPSocket.new(*ENV[ABQ_SOCKET].split(":")).tap do |socket|
-        # Messages sent to/received from the ABQ worker should be done so ASAP.
-        # Since we're on a local network, we don't care about packet reduction here.
-        socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
-        protocol_write(NATIVE_RUNNER_SPAWNED_MESSAGE, socket)
+    def self.socket(connect_timeout: 5)
+      @socket ||= begin
+        Socket.tcp(*ENV[ABQ_SOCKET].split(":"), connect_timeout: connect_timeout).tap do |socket|
+          # Messages sent to/received from the ABQ worker should be done so ASAP.
+          # Since we're on a local network, we don't care about packet reduction here.
+          socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+          protocol_write(NATIVE_RUNNER_SPAWNED_MESSAGE, socket)
+        end
+      rescue
+        raise ConnectionFailed, "Unable to connect to ABQ socket #{ENV[ABQ_SOCKET]}"
       end
     end
 
@@ -245,25 +261,18 @@ module RSpec
         end
     end
 
-    # Communication between abq sockets follows the following protocol:
-    #   - The first 4 bytes an unsigned 32-bit integer (big-endian) representing
-    #     the size of the rest of the message.
-    #   - The rest of the message is a JSON-encoded payload.
-    class AbqConnBroken < StandardError
-    end
-
     # Writes a message to an Abq socket using the 4-byte header protocol.
     #
     # @param socket [TCPSocket]
     # @param msg
     def self.protocol_write(msg, socket = Abq.socket)
       json_msg = JSON.dump msg
-      begin
-        socket.write [json_msg.bytesize].pack("N")
-        socket.write json_msg
-      rescue
-        raise AbqConnBroken
-      end
+      socket.write [json_msg.bytesize].pack("N")
+      socket.write json_msg
+    rescue SystemCallError, IOError
+      raise ConnectionBroken
+    rescue
+      raise Error
     end
 
     # Writes a message to an Abq socket using the 4-byte header protocol.
@@ -273,10 +282,16 @@ module RSpec
     def self.protocol_read(socket = Abq.socket)
       len_bytes = socket.read 4
       return :abq_done if len_bytes.nil?
+
       len = len_bytes.unpack1("N")
       json_msg = socket.read len
       return :abq_done if json_msg.nil?
+
       JSON.parse json_msg
+    rescue SystemCallError, IOError
+      raise ConnectionBroken
+    rescue
+      raise Error
     end
   end
 end

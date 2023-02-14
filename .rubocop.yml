@@ -24,3 +24,6 @@ RSpec/ExampleLength:
 
 RSpec/MessageSpies:
   EnforcedStyle: receive
+
+RSpec/MultipleMemoizedHelpers:
+  Max: 10

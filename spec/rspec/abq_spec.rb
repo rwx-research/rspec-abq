@@ -78,13 +78,14 @@ RSpec.describe RSpec::Abq do
   end
 
   describe "socket communication", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
-    host = "127.0.0.1"
+    let(:host) { "127.0.0.1" }
+    let(:port) { server.addr[1] }
     let(:server) { TCPServer.new(host, 0) }
-    let(:client_sock) { TCPSocket.new(host, server.addr[1]) }
+    let(:client_sock) { TCPSocket.new(host, port) }
     let(:server_sock) { server.accept }
 
     around do |example|
-      EnvHelper.with_env("ABQ_SOCKET" => "#{host}:#{server.addr[1]}") do
+      EnvHelper.with_env("ABQ_SOCKET" => "#{host}:#{port}") do
         example.call
       end
       RSpec::Abq.instance_eval { @socket = nil }
@@ -99,6 +100,15 @@ RSpec.describe RSpec::Abq do
         expect(server_sock.read(4).unpack1("N")).to eq(payload_length)
         expect(server_sock.read(payload_length)).to eq(symbol_payload.to_json)
       end
+
+      it "wraps errors with ConnectionBroken" do
+        socket = client_sock # touch before closing server
+        server.close
+
+        expect do
+          RSpec::Abq.protocol_write(symbol_payload, socket)
+        end.to raise_error(RSpec::Abq::ConnectionBroken)
+      end
     end
 
     describe ".protocol_read" do
@@ -109,6 +119,18 @@ RSpec.describe RSpec::Abq do
 
         expect(RSpec::Abq.protocol_read(server_sock)).to eq(JSON.parse(msg_payload))
       end
+
+      it "wraps errors with ConnectionBroken" do
+        msg_payload = '{"a":1,"b":2}'
+        client_sock.write([msg_payload.length].pack("N"))
+        client_sock.write(msg_payload)
+
+        server_sock.close
+
+        expect do
+          RSpec::Abq.protocol_read(server_sock)
+        end.to raise_error(RSpec::Abq::ConnectionBroken)
+      end
     end
 
     describe ".socket" do
@@ -118,6 +140,16 @@ RSpec.describe RSpec::Abq do
         }
         RSpec::Abq.protocol_write({"init_meta" => {"seed" => 4, "ordering_class" => "RSpec::Core::Ordering::Identity"}}, server_sock)
         expect(RSpec::Abq.protocol_read(server_sock)).to(eq(stringify_keys(RSpec::Abq::NATIVE_RUNNER_SPAWNED_MESSAGE)))
+      end
+
+      it "fails with ConnectionFailed when connection times out" do
+        # Force this error to avoid flakiness.
+        allow(Socket).to receive(:tcp).with(host, port.to_s, connect_timeout: 0.001)
+          .and_raise(Errno::ETIMEDOUT, "forced error")
+
+        expect do
+          RSpec::Abq.socket(connect_timeout: 0.001)
+        end.to raise_error(RSpec::Abq::ConnectionFailed)
       end
     end
   end
