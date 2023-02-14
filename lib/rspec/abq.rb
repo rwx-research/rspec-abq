@@ -228,7 +228,7 @@ module RSpec
     # @!visibility private
     def self.socket(connect_timeout: 5)
       @socket ||= begin
-        TCPSocket.new(*ENV[ABQ_SOCKET].split(":"), connect_timeout: connect_timeout, resolv_timeout: 5).tap do |socket|
+        Socket.tcp(*ENV[ABQ_SOCKET].split(":"), connect_timeout: connect_timeout, resolv_timeout: 5).tap do |socket|
           # Messages sent to/received from the ABQ worker should be done so ASAP.
           # Since we're on a local network, we don't care about packet reduction here.
           socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)

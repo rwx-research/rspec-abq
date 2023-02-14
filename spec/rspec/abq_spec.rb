@@ -78,13 +78,14 @@ RSpec.describe RSpec::Abq do
   end
 
   describe "socket communication", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
-    host = "127.0.0.1"
+    let(:host) { "127.0.0.1" }
+    let(:port) { server.addr[1] }
     let(:server) { TCPServer.new(host, 0) }
-    let(:client_sock) { TCPSocket.new(host, server.addr[1]) }
+    let(:client_sock) { TCPSocket.new(host, port) }
     let(:server_sock) { server.accept }
 
     around do |example|
-      EnvHelper.with_env("ABQ_SOCKET" => "#{host}:#{server.addr[1]}") do
+      EnvHelper.with_env("ABQ_SOCKET" => "#{host}:#{port}") do
         example.call
       end
       RSpec::Abq.instance_eval { @socket = nil }
@@ -143,10 +144,11 @@ RSpec.describe RSpec::Abq do
 
       it "fails with ConnectionFailed when connection times out" do
         # Force this error to avoid flakiness.
-        allow(RSpec::Abq).to receive(:protocol_write).and_raise(Errno::ETIMEDOUT, "forced error")
+        allow(Socket).to receive(:tcp).with(host, port.to_s, {connect_timeout: 0.001, resolv_timeout: 5})
+          .and_raise(Errno::ETIMEDOUT, "forced error")
 
         expect do
-          RSpec::Abq.socket(connect_timeout: 0.00000001)
+          RSpec::Abq.socket(connect_timeout: 0.001)
         end.to raise_error(RSpec::Abq::ConnectionFailed)
       end
     end
