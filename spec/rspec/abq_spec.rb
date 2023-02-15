@@ -6,6 +6,13 @@ def stringify_keys(hash)
 end
 
 RSpec.describe RSpec::Abq do
+  before do
+    # reset instance vars
+    RSpec::Abq.instance_variables.each do |instance_var|
+      RSpec::Abq.remove_instance_variable(instance_var)
+    end
+  end
+
   describe ".configure_rspec!", unless: RSpec::Abq.disable_tests_when_run_by_abq? do
     let(:init_message) { {init_meta: {seed: 124, ordering: "defined"}} }
     let(:configuration_double) do
@@ -30,9 +37,6 @@ RSpec.describe RSpec::Abq do
       # stub out socket communication
       allow(RSpec::Abq).to receive(:protocol_read).and_return(stringify_keys(init_message))
       allow(RSpec::Abq).to receive(:protocol_write)
-
-      RSpec::Abq.instance_variable_set(:@fast_exit, false)
-      RSpec::Abq.instance_variable_set(:@rspec_configured, false)
 
       # don't execute the ordering setup -- it's tested in integrations
       allow(RSpec::Abq::Ordering).to receive(:setup!)
@@ -88,7 +92,10 @@ RSpec.describe RSpec::Abq do
       EnvHelper.with_env("ABQ_SOCKET" => "#{host}:#{port}") do
         example.call
       end
-      RSpec::Abq.instance_eval { @socket = nil }
+
+      RSpec::Abq.instance_variables.each do |instance_var|
+        RSpec::Abq.remove_instance_variable(instance_var)
+      end
     end
 
     describe ".protocol_write" do
@@ -142,9 +149,9 @@ RSpec.describe RSpec::Abq do
         expect(RSpec::Abq.protocol_read(server_sock)).to(eq(stringify_keys(RSpec::Abq::NATIVE_RUNNER_SPAWNED_MESSAGE)))
       end
 
-      it "fails with ConnectionFailed when connection times out" do
+      it "fails with ConnectionFailed when connection times out", aggregate_failures: true do
         # Force this error to avoid flakiness.
-        allow(Socket).to receive(:tcp).with(host, port.to_s, connect_timeout: 0.001)
+        expect(Socket).to receive(:tcp).with(host, port.to_s, connect_timeout: 0.001)
           .and_raise(Errno::ETIMEDOUT, "forced error")
 
         expect do

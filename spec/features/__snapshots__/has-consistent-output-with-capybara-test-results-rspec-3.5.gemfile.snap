@@ -26,6 +26,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          },
           "type": "feature"
         },
         "startedAt": "2023-01-01T00:00:00Z",
@@ -66,6 +70,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          },
           "type": "feature"
         },
         "startedAt": "2023-01-01T00:00:00Z",
