@@ -146,9 +146,9 @@ RSpec.describe RSpec::Abq do
         expect(RSpec::Abq.protocol_read(server_sock)).to(eq(stringify_keys(RSpec::Abq::NATIVE_RUNNER_SPAWNED_MESSAGE)))
       end
 
-      it "fails with ConnectionFailed when connection times out" do
+      it "fails with ConnectionFailed when connection times out", aggregate_failures: true do
         # Force this error to avoid flakiness.
-        allow(Socket).to receive(:tcp).with(host, port.to_s, connect_timeout: 0.001)
+        expect(Socket).to receive(:tcp).with(host, port.to_s, connect_timeout: 0.001)
           .and_raise(Errno::ETIMEDOUT, "forced error")
 
         expect do
