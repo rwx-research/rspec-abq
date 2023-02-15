@@ -29,12 +29,12 @@ Gem::Specification.new do |spec|
   spec.add_dependency "rspec-core", ">= 3.5.0", "< 3.13.0"
   spec.add_development_dependency "pry", "~> 0.14.1"
   spec.add_development_dependency "rspec-retry", "~> 0.6.2"
-  spec.add_development_dependency "capybara", "3.36.0" # last version that supported ruby 2.6
-  spec.add_development_dependency "selenium-webdriver", "4.1.0" # last version that supported ruby 2.6
-  spec.add_development_dependency "nokogiri", "~> 1.13.10" # last version that supported ruby 2.6
+  spec.add_development_dependency "capybara", "~> 3.38.0"
+  spec.add_development_dependency "selenium-webdriver", "~> 4.8.0"
+  spec.add_development_dependency "nokogiri", "~> 1.14.2"
   spec.add_development_dependency "webdrivers", "~> 5.2.0"
   spec.add_development_dependency "rack", "~> 2.2.5"
-  spec.add_development_dependency "puma", "~> 5.6.5" # last version that capybara 3.36.0 supports
+  spec.add_development_dependency "puma", "~> 6.1.0"
   spec.add_development_dependency "capybara-inline-screenshot", "~> 2.2.1"
   spec.add_development_dependency "simplecov", "~> 0.22.0"
 end

@@ -38,7 +38,7 @@ require 'rspec/abq'
 
 This gem is actively tested against
 
-- rubies 2.6-3.1
+- rubies 2.7-3.1
 - rspecs 3.5-3.12
 
 as well as a handful of rspec plugins:
