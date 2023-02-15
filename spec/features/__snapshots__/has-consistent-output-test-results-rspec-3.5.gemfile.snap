@@ -26,6 +26,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          }
         },
         "startedAt": "2023-01-01T00:00:00Z",
         "status": {
@@ -65,6 +69,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          }
         },
         "startedAt": "2023-01-01T00:00:00Z",
         "status": {
@@ -104,6 +112,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          }
         },
         "startedAt": "2023-01-01T00:00:00Z",
         "status": {
@@ -143,6 +155,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          }
         },
         "startedAt": "2023-01-01T00:00:00Z",
         "status": {
@@ -182,6 +198,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          }
         },
         "startedAt": "2023-01-01T00:00:00Z",
         "status": {
@@ -221,6 +241,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          }
         },
         "startedAt": "2023-01-01T00:00:00Z",
         "status": {
@@ -245,6 +269,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          }
         },
         "startedAt": "2023-01-01T00:00:00Z",
         "status": {
@@ -270,6 +298,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          }
         },
         "startedAt": "2023-01-01T00:00:00Z",
         "status": {
@@ -294,6 +326,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          }
         },
         "startedAt": "2023-01-01T00:00:00Z",
         "status": {
@@ -318,6 +354,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          }
         },
         "startedAt": "2023-01-01T00:00:00Z",
         "status": {
@@ -343,6 +383,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          }
         },
         "startedAt": "2023-01-01T00:00:00Z",
         "status": {
@@ -367,6 +411,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          },
           "skip": "Temporarily skipped with xdescribe"
         },
         "startedAt": "2023-01-01T00:00:00Z",
@@ -393,6 +441,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          }
         },
         "startedAt": "2023-01-01T00:00:00Z",
         "status": {
@@ -418,6 +470,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          }
         },
         "startedAt": "2023-01-01T00:00:00Z",
         "status": {
@@ -442,6 +498,10 @@
         "durationInNanoseconds": 234000,
         "finishedAt": "2023-01-01T00:00:00Z",
         "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          },
           "skip": "Temporarily skipped with xit"
         },
         "startedAt": "2023-01-01T00:00:00Z",
