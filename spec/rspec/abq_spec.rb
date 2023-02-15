@@ -92,7 +92,10 @@ RSpec.describe RSpec::Abq do
       EnvHelper.with_env("ABQ_SOCKET" => "#{host}:#{port}") do
         example.call
       end
-      RSpec::Abq.instance_eval { @socket = nil }
+
+      RSpec::Abq.instance_variables.each do |instance_var|
+        RSpec::Abq.remove_instance_variable(instance_var)
+      end
     end
 
     describe ".protocol_write" do
