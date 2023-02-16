@@ -27,7 +27,8 @@ module RSpec
       # @!visibility private
       def self.extract_metadata_and_tags(metadata)
         # we use `.dup.reject! because `.reject` raises a warning (because it doesn't dup procs)`
-        user_metadata = metadata.dup.reject! { |k, _v| RESERVED_METADATA_KEYS.include?(k) }
+        user_metadata = metadata.dup
+        user_metadata.reject! { |k, _v| RESERVED_METADATA_KEYS.include?(k) }
         tags_array, metadata_array = user_metadata.partition { |_k, v| v == true }
         [tags_array.map(&:first), metadata_array.to_h]
       end
