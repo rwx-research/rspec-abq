@@ -44,8 +44,8 @@ module RSpec
             file: example.metadata[:file_path],
             line: example.metadata[:line_number]
           },
-          started_at: execution_result.started_at.utc.iso8601,
-          finished_at: execution_result.finished_at.utc.iso8601,
+          started_at: execution_result.started_at.utc.iso8601(6), # anything higher-prescision just yielded 0s
+          finished_at: execution_result.finished_at.utc.iso8601(6),
           lineage: RSpec::Core::Metadata.ascend(example.metadata).map { |meta| meta[:description] }.reverse
         }
 
