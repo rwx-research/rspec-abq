@@ -105,7 +105,7 @@ unless current_branch == "main"
   exit(1)
 end
 
-run_and_print("gem tag --push")
+run_and_print("gem tag --sign --push")
 
 RELEASE_TEMPLATE = <<~RELEASE_TEMPLATE
   # 🙈 #{version_to_release} Title of Github Release Prefixed By Version and Fun Emoji!
