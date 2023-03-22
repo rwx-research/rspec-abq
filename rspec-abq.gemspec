@@ -33,7 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "selenium-webdriver", "~> 4.8.0"
   spec.add_development_dependency "nokogiri", "~> 1.14.2"
   spec.add_development_dependency "webdrivers", "~> 5.2.0"
-  spec.add_development_dependency "rack", "~> 2.2.5"
+  spec.add_development_dependency "rack", "~> 2.2.6.4"
   spec.add_development_dependency "puma", "~> 6.1.0"
   spec.add_development_dependency "capybara-inline-screenshot", "~> 2.2.1"
   spec.add_development_dependency "simplecov", "~> 0.22.0"

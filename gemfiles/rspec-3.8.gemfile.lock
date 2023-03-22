@@ -104,7 +104,7 @@ DEPENDENCIES
   nokogiri (~> 1.14.2)
   pry (~> 0.14.1)
   puma (~> 6.1.0)
-  rack (~> 2.2.5)
+  rack (~> 2.2.6.4)
   rspec (~> 3.8, < 3.9)
   rspec-abq!
   rspec-retry (~> 0.6.2)
