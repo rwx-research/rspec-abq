@@ -201,6 +201,10 @@ module RSpec
         RSpec.configuration.color = true
       end
 
+      # RSpec only adds a default formatter if there are no formatters.
+      # Abq::Formatter is used for internal communication over the ABQ protocol, not for $stdout.
+      RSpec.configuration.add_formatter(RSpec.configuration.default_formatter) if RSpec.configuration.formatters.empty?
+
       RSpec.configuration.add_formatter(RSpec::Abq::Formatter)
 
       # the first message is the init_meta block of the manifest. This is used to share runtime configuration
