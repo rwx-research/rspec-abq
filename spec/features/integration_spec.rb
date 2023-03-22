@@ -246,8 +246,8 @@ RSpec.describe "abq test" do
       expect(run.results["tests"].count).to eq(15)
       expect(sorted_dots(run.test_output.stdout)).to match(/^\.EEEEFPPPSSSSSS$/)
       expect(run.manifest_generation_exit_status).to eq(0)
-      expect(run.native_runner_exit_status).to eq(1)
-      expect(run.test_output.exit_status).to eq(1)
+      expect(run.native_runner_exit_status).to eq(1).or eq(101)
+      expect(run.test_output.exit_status).to eq(1).or eq(101)
       expect(run.test_output.stdout).not_to include("Randomized with seed")
     end
 
@@ -354,8 +354,9 @@ RSpec.describe "abq test" do
     it "quits early if configured with fail-fast" do
       run = abq_test("bundle exec rspec --pattern 'spec/fixture_specs/*_specs.rb' --fail-fast", queue_address: AbqQueue.address, run_id: run_id)
 
-      expect(run.test_output.exit_status).to eq(1)
-      expect(run.test_output.stderr).to include("rspec-abq doesn't presently support running with fail-fast enabled")
+      # Sometime after 1.3.1, these expected values will stabilize. For now, we'll support a couple versions of ABQ.
+      expect(run.test_output.exit_status).to eq(1).or eq(101)
+      expect(run.test_output.stdout + run.test_output.stderr).to include("rspec-abq doesn't presently support running with fail-fast enabled")
     end
 
     context "with headless chrome" do
@@ -439,7 +440,7 @@ RSpec.describe "abq test" do
 
         run = abq_test("bundle exec rspec 'spec/fixture_specs/specs_with_syntax_errors.rb'", queue_address: AbqQueue.address, run_id: run_id)
 
-        expect(run.test_output.exit_status).to eq(1)
+        expect(run.test_output.exit_status).to eq(1).or eq(101)
         expect(run.test_output.stdout).to include("SyntaxError")
       end
 
@@ -447,7 +448,7 @@ RSpec.describe "abq test" do
       it "has consistent output with all specs including a syntax error", *[(:skip if pending_test)].compact do
         run = abq_test("bundle exec rspec --pattern 'spec/fixture_specs/**/*.rb'", queue_address: AbqQueue.address, run_id: run_id)
 
-        expect(run.test_output.exit_status).to eq(1)
+        expect(run.test_output.exit_status).to eq(1).or eq(101)
         expect(run.test_output.stdout).to include("SyntaxError")
       end
     end
