@@ -22,7 +22,9 @@ RSpec.describe RSpec::Abq do
           :fail_fast => false,
           :dry_run? => false,
           :example_status_persistence_file_path= => nil,
-          :add_formatter => nil
+          :add_formatter => nil,
+          :default_formatter => "progress",
+          :formatters => []
         }.merge(
           if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.6.0")
             {:color_mode= => nil}
@@ -77,6 +79,34 @@ RSpec.describe RSpec::Abq do
 
         RSpec::Abq.configure_rspec!
         expect(RSpec::Abq).not_to be_fast_exit
+      end
+    end
+
+    context "when no formatters are configured" do
+      before { allow(configuration_double).to receive(:formatters).and_return([]) }
+
+      it "adds the default formatter" do
+        expect(configuration_double).to receive(:add_formatter).with("progress")
+        RSpec::Abq.configure_rspec!
+      end
+
+      it "adds the ABQ formatter" do
+        expect(configuration_double).to receive(:add_formatter).with(RSpec::Abq::Formatter)
+        RSpec::Abq.configure_rspec!
+      end
+    end
+
+    context "when formatters are already configured" do
+      before { allow(configuration_double).to receive(:formatters).and_return(["progress"]) }
+
+      it "does not add the default formatter" do
+        expect(configuration_double).not_to receive(:add_formatter).with("progress")
+        RSpec::Abq.configure_rspec!
+      end
+
+      it "adds the ABQ formatter" do
+        expect(configuration_double).to receive(:add_formatter).with(RSpec::Abq::Formatter)
+        RSpec::Abq.configure_rspec!
       end
     end
   end
