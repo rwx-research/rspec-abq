@@ -2,7 +2,7 @@
 
 :globe_with_meridians: [abq.build](https://abq.build) &ensp;
 :bird: [@rwx_research](https://twitter.com/rwx_research) &ensp;
-:speech_balloon: [discord](https://discord.gg/h4ha5Cue7j) &ensp;
+:speech_balloon: [discord](https://www.rwx.com/discord) &ensp;
 :books: [documentation](https://www.rwx.com/docs/abq)
 
 [ABQ](https://github.com/rwx-research/abq) is a universal test runner that runs test suites in parallel.
