@@ -5,7 +5,7 @@
 :speech_balloon: [discord](https://www.rwx.com/discord) &ensp;
 :books: [documentation](https://www.rwx.com/docs/abq)
 
-ABQ (:octocat: [rwx-research/abq](https://github.com/rwx-research/abq))) is a universal test runner that runs test suites in parallel.
+ABQ (:octocat: [rwx-research/abq](https://github.com/rwx-research/abq)) is a universal test runner that runs test suites in parallel.
 It’s the best tool for splitting test suites into parallel jobs locally or on CI.
 
 The `rspec-abq` gem provides the RSpec bindings for ABQ.
