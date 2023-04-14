@@ -1,85 +1,40 @@
-# Rspec::Abq
+# RSpec bindings for ABQ
 
-This gem helps you use rspec with abq.
+:globe_with_meridians: [abq.build](https://abq.build) &ensp;
+:bird: [@rwx_research](https://twitter.com/rwx_research) &ensp;
+:speech_balloon: [discord](https://discord.gg/h4ha5Cue7j) &ensp;
+:books: [documentation](https://www.rwx.com/docs/abq)
+
+[ABQ](https://github.com/rwx-research/abq) is a universal test runner that runs test suites in parallel.
+It’s the best tool for splitting test suites into parallel jobs locally or on CI.
+
+The `rspec-abq` gem provides the RSpec bindings for ABQ.
+
+To use ABQ, check out the documentation on [getting started](https://www.rwx.com/docs/abq/getting-started).
+
+## Demo
+
+Here's a demo of running an RSpec test suite, and then using `abq` to run it in parallel.
+ABQ invokes any test command passed to it, so you can continue using your native test framework CLI with any arguments it supports.
+
+![abq-demo.svg](abq-demo.svg)
 
 ## Installation
 
-Add this line to your application's Gemfile:
+Include the `rspec-abq` gem in your `Gemfile`.
+Commonly, it's added under a test group.
 
 ```ruby
 group :test do
-    gem 'rspec-core'
-    ...
-    gem 'rspec-abq'
+  gem "rspec-abq"
 end
 ```
 
-And then execute:
-
-```bash
-bundle
-```
-
-## Usage
-
-Use the included binary with abq:
-
-```bash
-abq test -- bundle exec rspec
-```
-
-If abq displays "Worker quit before sending protocol version", try adding this line to your application's `spec/spec_helper.rb`:
-
-```ruby
-require 'rspec/abq'
-```
-
-## Compatibility
-
-This gem is actively tested against
-
-- rubies 2.7-3.1
-- rspecs 3.5-3.12
-
-as well as a handful of rspec plugins:
-
-- rspec-retry 0.6.2
-- capybara 3.36.0
-- selenium-webdriver 4.1.0
-- capybara-inline-screenshot 2.2.1 (see note below)
-
-### Usage with capybara-inline-screenshot (or capybara-screenshot)
-
-#### tldr
-
-1. run rspec with a compatible `--format` option:
-
-    ```sh
-    abq test -- bundle exec rspec --format documentation
-    ```
-
-2. check for screenshots in the worker output
-
-#### What's happening?
-
-By default, rspec-abq only sends rspec-output to the test process. Because of this, custom formatting (e.g. that
-done by capybara-inline-screenshot) is lost.
-
-If you want to enable custom formatting (which will show inline screenshots), enable a
-capybara-inline-screenshot compatible formatter (`progress` or `documentation`). This will output rspec results
-(including screenshots) from the worker processeses.
-
-Note: the test process output will still only have the aggregate results without screenshots.
+See [the docs](https://www.rwx.com/docs/abq/test-frameworks/rspec) for more notes on installation and compatibility with other RSpec libraries.
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-### Releasing the gem
-
-use the release script, `./release_gem.rb`
+For working on `rspec-abq` itself, see [DEVELOPMENT.md](DEVELOPMENT.md)
 
 ## Contributing
 
