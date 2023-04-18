@@ -29,7 +29,7 @@ RSpec.describe RSpec::Abq do
           if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.6.0")
             {:color_mode= => nil}
           else
-            {:color= => nil}
+            {:color= => nil, :tty= => true}
           end
         )
       )
