@@ -134,7 +134,7 @@ RSpec.describe "abq test" do
       .gsub(%r{\\n.+/rspec-abq}, "/rspec-abq") # get rid of prefixes to working directory in escaped strings
       .gsub(%r{^\s+# [^\s]+/(?:bin|bundler|rubygems|gems)/.+$\n}, "") # get rid of backtraces outside of rspec-abq
       .gsub(%r{^\s*"[^\s]+/(?:bin|bundler|rubygems|gems)/.+",?$}, "") # get rid of backtraces outside of rspec-abq in pretty JSON
-      .gsub(%r{\\n\s+# [^\s]+/(?:bin|bundler|rubygems|gems)/.+\\n}, "") # get rid of backtraces outside of rspec-abq in escaped strings
+      .gsub(%r{\\n\s+(?:\\u001b\[36m)?# [^\s]+/(?:bin|bundler|rubygems|gems)/.+\\n}, "") # get rid of backtraces outside of rspec-abq in escaped strings
       .gsub(/\.rb:\d+/, ".rb:0") # get rid of line numbers to avoid unecessary test churn
   end
 
