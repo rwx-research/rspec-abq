@@ -199,6 +199,7 @@ module RSpec
         RSpec.configuration.color_mode = :on
       else
         RSpec.configuration.color = true
+        RSpec.configuration.tty = true
       end
 
       # RSpec only adds a default formatter if there are no formatters.

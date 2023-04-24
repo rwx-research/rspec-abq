@@ -134,7 +134,7 @@ RSpec.describe "abq test" do
       .gsub(%r{\\n.+/rspec-abq}, "/rspec-abq") # get rid of prefixes to working directory in escaped strings
       .gsub(%r{^\s+# [^\s]+/(?:bin|bundler|rubygems|gems)/.+$\n}, "") # get rid of backtraces outside of rspec-abq
       .gsub(%r{^\s*"[^\s]+/(?:bin|bundler|rubygems|gems)/.+",?$}, "") # get rid of backtraces outside of rspec-abq in pretty JSON
-      .gsub(%r{\\n\s+# [^\s]+/(?:bin|bundler|rubygems|gems)/.+\\n}, "") # get rid of backtraces outside of rspec-abq in escaped strings
+      .gsub(%r{\\n\s+(?:\\u001b\[36m)?# [^\s]+/(?:bin|bundler|rubygems|gems)/.+\\n}, "") # get rid of backtraces outside of rspec-abq in escaped strings
       .gsub(/\.rb:\d+/, ".rb:0") # get rid of line numbers to avoid unecessary test churn
   end
 
@@ -380,7 +380,11 @@ RSpec.describe "abq test" do
           "CAPYBARA_INLINE_SCREENSHOT" => "artifact", # tells capybara-inline-screenshot to not base-64 encode the screenshot directly to STDOUT.
           "SAVE_SCREENSHOT_ARTIFACT_DIR" => AbqQueue.output_directory
         ) do
-          run = abq_test("bundle exec rspec spec/fixture_specs/spec_with_capybara.rb", queue_address: AbqQueue.address, run_id: run_id)
+          # the arguments "--options /dev/null" prevents rspec from reading .rspec which sets a formatter.
+          # prior to https://github.com/rwx-research/rspec-abq/pull/110, capybara-inline-screenshot required a formatter
+          # to be set to work correctly. As of 110, it no longer has that requirement because the formatter is set by
+          # default
+          run = abq_test("bundle exec rspec --options /dev/null spec/fixture_specs/spec_with_capybara.rb", queue_address: AbqQueue.address, run_id: run_id)
 
           summary = run.results.fetch("summary")
           expect(summary.fetch("status")["kind"]).to eq("failed")
