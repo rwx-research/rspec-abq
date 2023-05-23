@@ -2,6 +2,7 @@ require "set"
 require "rspec/core"
 require "socket"
 require "json"
+require "rspec/abq/instrumentation"
 require "rspec/abq/extensions"
 require "rspec/abq/manifest"
 require "rspec/abq/ordering"
@@ -271,9 +272,12 @@ module RSpec
     # @param socket [TCPSocket]
     # @param msg
     def self.protocol_write(msg, socket = Abq.socket)
-      json_msg = JSON.dump msg
-      socket.write [json_msg.bytesize].pack("N")
-      socket.write json_msg
+      Instrumentation.instrument("protocol_write") do
+        json_msg = JSON.dump msg
+        puts "json_msg: #{json_msg[0...300]}" if Instrumentation.instrumentation_enabled?
+        socket.write [json_msg.bytesize].pack("N")
+        socket.write json_msg
+      end
     rescue SystemCallError, IOError
       raise ConnectionBroken
     rescue
@@ -285,14 +289,16 @@ module RSpec
     # @param socket [TCPSocket]
     # @return msg
     def self.protocol_read(socket = Abq.socket)
-      len_bytes = socket.read 4
-      return :abq_done if len_bytes.nil?
+      Instrumentation.instrument("protocol_read") do
+        len_bytes = socket.read 4
+        return :abq_done if len_bytes.nil?
 
-      len = len_bytes.unpack1("N")
-      json_msg = socket.read len
-      return :abq_done if json_msg.nil?
+        len = len_bytes.unpack1("N")
+        json_msg = socket.read len
+        return :abq_done if json_msg.nil?
 
-      JSON.parse json_msg
+        JSON.parse json_msg
+      end
     rescue SystemCallError, IOError
       raise ConnectionBroken
     rescue

@@ -121,7 +121,9 @@ module RSpec
         def run_specs(example_groups)
           if !!ENV[ABQ_GENERATE_MANIFEST]
             # before abq can start workers, it asks for a manifest
-            RSpec::Abq::Manifest.write_manifest(example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry)
+            Instrumentation.instrument("run_specs_for_manifest_generation") do
+              RSpec::Abq::Manifest.write_manifest(example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry)
+            end
             # gracefully quit after manifest generation. The worker will launch another instance of rspec with an init_message
             return 0
           end
