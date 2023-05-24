@@ -145,6 +145,7 @@ module RSpec
     # @return [void]
     def self.setup_extensions_if_enabled!
       return unless enabled?
+      perform_handshake!
       Extensions.setup!
     end
 
@@ -253,6 +254,8 @@ module RSpec
       # the target_test_case is the test case the abq worker wants results for
       # @!visibility private
       attr_reader :target_test_case
+
+      alias_method :perform_handshake!, :socket
     end
 
     # pulls next example from the abq worker and sets it to #target_test_case
