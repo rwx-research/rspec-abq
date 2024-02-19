@@ -5,9 +5,10 @@ require_relative "lib/rspec/abq/version"
 Gem::Specification.new do |spec|
   spec.name = "rspec-abq"
   spec.version = RSpec::Abq::VERSION
-  spec.authors = ["Ayaz Hafiz", "Michael Glass"]
-  spec.email = ["ayaz@rwx.com", "me@rwx.com"]
+  spec.authors = ["rwx", "Ayaz Hafiz", "Michael Glass"]
+  spec.email = ["support@rwx.com"]
   spec.license = "MIT"
+  spec.required_ruby_version = ">= 3.0.0"
 
   spec.summary = "RSpec::Abq allows for parallel rspec runs using abq"
   spec.description = "RSpec::Abq is an rspec plugin that replaces its ordering with one that is controlled by abq. It allows for parallelization of rspec on a single machine or across multiple workers."
