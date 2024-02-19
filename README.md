@@ -1,6 +1,6 @@
 # RSpec bindings for ABQ
 
-:globe_with_meridians: [abq.build](https://abq.build) &ensp;
+:globe_with_meridians: [website](https://www.rwx.com/abq) &ensp;
 :bird: [@rwx_research](https://twitter.com/rwx_research) &ensp;
 :speech_balloon: [discord](https://www.rwx.com/discord) &ensp;
 :books: [documentation](https://www.rwx.com/docs/abq)
