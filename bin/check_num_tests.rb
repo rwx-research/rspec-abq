@@ -9,7 +9,7 @@ DEFAULT_TEST_JSON_PATH = 'tmp/rspec.json'
 EXPECTED_TEST_NUMBER_SNAPSHOT_PATH = 'spec/NUM_TESTS'
 
 json_path = ARGV[0] || DEFAULT_TEST_JSON_PATH
-unless File.exists?(json_path)
+unless File.exist?(json_path)
   warn "no test file found at #{json_path}"
   warn "usage: bin/snapshot_num_tests.rb (path to json file) (default: #{DEFAULT_TEST_JSON_PATH}"
   exit 1

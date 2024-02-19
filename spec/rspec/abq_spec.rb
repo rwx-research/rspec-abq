@@ -180,6 +180,14 @@ RSpec.describe RSpec::Abq do
       end
 
       it "fails with ConnectionFailed when connection times out", aggregate_failures: true do
+        ruby_3_2_or_greater = Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("3.2.0")
+        if ruby_3_2_or_greater && RSpec::Core::Version::STRING == "3.10.2"
+          pending "This is failing on RSpec 3.10 but passing on 3.8, 3.9, and 3.11+. Assuming bug in that verison of RSpec."
+          # The failure is.
+          # #<Socket (class)> received :tcp with unexpected arguments
+          # expected: ("127.0.0.1", "43809", {:connect_timeout=>1})
+          #      got: ("127.0.0.1", "43809", {:connect_timeout=>1})
+        end
         # Force this error to avoid flakiness.
         expect(Socket).to receive(:tcp).with(host, port.to_s, connect_timeout: 0.001)
           .and_raise(Errno::ETIMEDOUT, "forced error")
