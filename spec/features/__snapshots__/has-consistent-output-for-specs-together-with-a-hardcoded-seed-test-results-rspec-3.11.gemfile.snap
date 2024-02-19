@@ -4,6 +4,9 @@
     "kind": "RSpec",
     "language": "Ruby"
   },
+  "otherErrors": [
+
+  ],
   "summary": {
     "canceled": 0,
     "failed": 5,
