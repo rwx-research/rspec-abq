@@ -6,7 +6,7 @@ source "https://rubygems.org"
 gemspec
 
 # and the specific patch version of rspec
-gem "rspec", "~> 3.12"
+gem "rspec", "~> 3.13"
 
 group :development do
   gem "rake", "~> 13.0"

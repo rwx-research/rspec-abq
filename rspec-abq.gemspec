@@ -27,7 +27,7 @@ Gem::Specification.new do |spec|
   spec.files = `git ls-files -- lib/*`.split("\n") + %w[README.md LICENSE.md]
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "rspec-core", ">= 3.8.0", "< 3.13.0"
+  spec.add_dependency "rspec-core", ">= 3.8.0", "< 3.14.0"
   spec.add_development_dependency "pry", "~> 0.14.1"
   spec.add_development_dependency "rspec-retry", "~> 0.6.2"
   spec.add_development_dependency "capybara", "~> 3.40"
