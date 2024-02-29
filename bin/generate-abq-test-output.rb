@@ -33,10 +33,10 @@ threads.map(&:join)
 `bundle exec rspec --dry-run --format json | jq '.examples | length' > spec/NUM_TESTS`
 
 # symlink the results for the latest gemfile to the results for the default gemfile
-Dir['spec/**/*-rspec-3.12.gemfile.snap'].each do |path|
+Dir['spec/**/*-rspec-3.13.gemfile.snap'].each do |path|
   Dir.chdir(File.dirname(path)) do
     source = File.basename(path)
-    target = source.sub('rspec-3.12.gemfile', 'Gemfile')
+    target = source.sub('rspec-3.13.gemfile', 'Gemfile')
     FileUtils.rm(target) if File.exist? target
     FileUtils.ln_s(source, target)
   end
