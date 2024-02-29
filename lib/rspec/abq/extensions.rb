@@ -119,6 +119,10 @@ module RSpec
         #   or the configured failure exit status (1 by default) if specs
         #   failed.
         def run_specs(example_groups)
+          if Gem::Version.new(RSpec::Core::Version::STRING) >= Gem::Version.new("3.11.0") && RSpec.world.rspec_is_quitting
+            return exit_code(false)
+          end
+
           if !!ENV[ABQ_GENERATE_MANIFEST]
             # before abq can start workers, it asks for a manifest
             RSpec::Abq::Manifest.write_manifest(example_groups, RSpec.configuration.seed, RSpec.configuration.ordering_registry)
