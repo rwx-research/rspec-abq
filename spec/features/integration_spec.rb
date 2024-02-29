@@ -135,7 +135,8 @@ RSpec.describe "abq test" do
       .gsub(%r{^\s+# [^\s]+/(?:bin|bundler|rubygems|gems)/.+$\n}, "") # get rid of backtraces outside of rspec-abq
       .gsub(%r{^\s*"[^\s]+/(?:bin|bundler|rubygems|gems)/.+",?$}, "") # get rid of backtraces outside of rspec-abq in pretty JSON
       .gsub(%r{\\n\s+(?:\\e\[36m)?# [^\s]+/(?:bin|bundler|rubygems|gems)/.+$\\n}, "") # get rid of backtraces outside of rspec-abq in escaped strings
-      .gsub(%r{^\s*"<internal:kernel>:187:in\s+`loop'",\n}, "") # this is showing up on select version combinations of ruby and rspec
+      .gsub(%r{^\s*"<internal:kernel>:\d+:in\s+`loop'",\n}, "") # this is showing up on select version combinations of ruby and rspec
+      .gsub(%r{^\s*# <internal:kernel>:\d+:in\s+`loop'\n}, "") # this is showing up on select version combinations of ruby and rspec
       .gsub(/\.rb:\d+/, ".rb:0") # get rid of line numbers to avoid unecessary test churn
   end
 
