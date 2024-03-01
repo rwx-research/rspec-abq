@@ -61,8 +61,8 @@ VERSION_PROMPT = <<~VERSION_PROMPT
   🔢version in `RSpec::Abq::VERSION is the same as the latest version.
   do you want to ...
   1: bump the PATCH version %{major}.%{minor}.%{bumped_patch}
-  2: bump the MINOR version %{major}.%{bumped_minor}.%{patch}
-  3: bump the MAJOR version %{bumped_major}.%{minor}.%{patch}
+  2: bump the MINOR version %{major}.%{bumped_minor}.0
+  3: bump the MAJOR version %{bumped_major}.0.0
   (1/2/3):
 VERSION_PROMPT
 
