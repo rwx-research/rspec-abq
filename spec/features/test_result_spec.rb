@@ -116,7 +116,8 @@ RSpec.describe "test results", unless: RSpec::Abq.disable_tests_when_run_by_abq?
     "failing_specs",
     "successful_specs",
     "pending_specs",
-    "raising_specs"
+    "raising_specs",
+    "shared_examples_specs",
   ].each do |spec_name|
     it "has consistent results for #{spec_name}" do |example|
       assert_test_results_consistent(spec_name, "bundle exec rspec --order defined 'spec/fixture_specs/#{spec_name}.rb'")

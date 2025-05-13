@@ -18,8 +18,8 @@
     "status": {
       "kind": "failed"
     },
-    "successful": 1,
-    "tests": 15,
+    "successful": 2,
+    "tests": 16,
     "timedOut": 0,
     "todo": 0
   },
@@ -238,6 +238,35 @@
         "line": 299
       },
       "name": "a raising group it can handle an exception in a before all hook should fail"
+    },
+    {
+      "attempt": {
+        "durationInNanoseconds": 234000,
+        "finishedAt": "2023-01-01T00:00:00Z",
+        "meta": {
+          "abq_metadata": {
+            "runner": 1,
+            "worker": 0
+          }
+        },
+        "startedAt": "2023-01-01T00:00:00Z",
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "redacted",
+        "stdout": "redacted"
+      },
+      "id": "./spec/fixture_specs/shared_examples_specs.rb[1:1:1]",
+      "lineage": [
+        "a shared group",
+        "behaves like a shared example",
+        "has a shared test"
+      ],
+      "location": {
+        "file": "./spec/fixture_specs/shared_examples_specs.rb",
+        "line": 299
+      },
+      "name": "a shared group behaves like a shared example has a shared test"
     },
     {
       "attempt": {
