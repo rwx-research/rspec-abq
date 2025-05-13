@@ -1,0 +1,29 @@
+[
+  {
+    "test_result": {
+      "status": {
+        "type": "success"
+      },
+      "id": "./spec/fixture_specs/shared_examples_specs.rb[1:1:1]",
+      "display_name": "a shared group behaves like a shared example has a shared test",
+      "output": null,
+      "runtime": "<cleaned for test>",
+      "tags": [
+
+      ],
+      "meta": {
+      },
+      "location": {
+        "file": "./spec/fixture_specs/shared_examples_specs.rb",
+        "line": 4
+      },
+      "started_at": "<cleaned for test>",
+      "finished_at": "<cleaned for test>",
+      "lineage": [
+        "a shared group",
+        "behaves like a shared example",
+        "has a shared test"
+      ]
+    }
+  }
+]

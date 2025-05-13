@@ -244,9 +244,9 @@ RSpec.describe "abq test" do
 
       summary = run.results.fetch("summary")
       expect(summary.fetch("status")["kind"]).to eq("failed")
-      expect(summary).to include(summary_counts(tests: 15, successful: 1, failed: 5, pended: 3, skipped: 6))
-      expect(run.results["tests"].count).to eq(15)
-      expect(sorted_dots(run.test_output.stdout)).to match(/^\.EEEEFPPPSSSSSS$/)
+      expect(summary).to include(summary_counts(tests: 16, successful: 2, failed: 5, pended: 3, skipped: 6))
+      expect(run.results["tests"].count).to eq(16)
+      expect(sorted_dots(run.test_output.stdout)).to match(/^\..EEEEFPPPSSSSSS$/)
       expect(run.manifest_generation_exit_status).to eq(0)
       expect(run.native_runner_exit_status).to eq(1).or eq(101)
       expect(run.test_output.exit_status).to eq(1).or eq(101)
@@ -317,6 +317,11 @@ RSpec.describe "abq test" do
       expect(sorted_dots(run.test_output.stdout)).to match(/^EEE$/)
     end
 
+    it "reports the correct file for tests using shared examples" do
+      run = abq_test("bundle exec rspec 'spec/fixture_specs/shared_examples_specs.rb'", queue_address: AbqQueue.address, run_id: run_id)
+      expect(run.results.fetch("tests").first.fetch("location").fetch("file")).to eq("./spec/fixture_specs/shared_examples_specs.rb")
+    end
+
     it "has consistent output with rspec-retry" do |example|
       EnvHelper.with_env("RSPEC_RETRY_RETRY_COUNT" => "2") do
         run = abq_test("bundle exec rspec --require fixture_specs/rspec_retry_helper --pattern 'spec/fixture_specs/*_specs.rb'", queue_address: AbqQueue.address, run_id: run_id)
@@ -326,8 +331,8 @@ RSpec.describe "abq test" do
 
         summary = run.results.fetch("summary")
         expect(summary.fetch("status")["kind"]).to eq("failed")
-        expect(summary).to include(summary_counts(tests: 15, successful: 1, failed: 5, pended: 3, skipped: 6, retries: 2))
-        expect(run.results["tests"].count).to eq(15)
+        expect(summary).to include(summary_counts(tests: 16, successful: 2, failed: 5, pended: 3, skipped: 6, retries: 2))
+        expect(run.results["tests"].count).to eq(16)
         expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
       end
     end
@@ -348,7 +353,7 @@ RSpec.describe "abq test" do
 
       summary = run.results.fetch("summary")
       expect(summary.fetch("status")["kind"]).to eq("failed")
-      expect(summary).to include(summary_counts(tests: 15, successful: 1, failed: 5, pended: 3, skipped: 6))
+      expect(summary).to include(summary_counts(tests: 16, successful: 2, failed: 5, pended: 3, skipped: 6))
       expect(run.test_output.stdout).to include("Randomized with seed 35888")
       expect(formatted_test_result_output(run.results)).to match_snapshot(snapshot_name(example, "test-results"))
     end

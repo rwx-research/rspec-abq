@@ -41,7 +41,7 @@ module RSpec
           tags: tags,
           meta: meta,
           location: {
-            file: example.metadata[:file_path],
+            file: example.id.split(".rb").first + ".rb",
             line: example.metadata[:line_number]
           },
           started_at: execution_result.started_at.utc.iso8601(6), # anything higher-prescision just yielded 0s
