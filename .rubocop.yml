@@ -11,10 +11,10 @@ AllCops:
   TargetRubyVersion: 3.0
   NewCops: enable
   Exclude:
-    - 'bin/*' # don't worry about binstubs
-    - '.git/**/*'
-    - 'vendor/**/*' # where github action stores cached bundle
-    - 'spec/fixture_specs/**/*'
+    - "bin/*" # don't worry about binstubs
+    - ".git/**/*"
+    - "vendor/**/*" # where github action stores cached bundle
+    - "spec/fixture_specs/**/*"
 
 RSpec/DescribedClass:
   EnforcedStyle: explicit

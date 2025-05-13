@@ -16,7 +16,6 @@ end
 Capybara.app = Application
 
 if ENV["USE_SELENIUM"] || ENV["SAVE_SCREENSHOT"]
-  require "webdrivers/chromedriver"
   Capybara.default_driver = :selenium_chrome_headless
 
   if ENV["SAVE_SCREENSHOT"]
