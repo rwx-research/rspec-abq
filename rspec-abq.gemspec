@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.authors = ["rwx", "Ayaz Hafiz", "Michael Glass"]
   spec.email = ["support@rwx.com"]
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.0.0"
+  spec.required_ruby_version = ">= 3.2.0"
 
   spec.summary = "RSpec::Abq allows for parallel rspec runs using abq"
   spec.description = "RSpec::Abq is an rspec plugin that replaces its ordering with one that is controlled by abq. It allows for parallelization of rspec on a single machine or across multiple workers."
@@ -31,11 +31,10 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "pry", "~> 0.14.1"
   spec.add_development_dependency "rspec-retry", "~> 0.6.2"
   spec.add_development_dependency "capybara", "~> 3.40"
-  spec.add_development_dependency "selenium-webdriver", "~> 4.10.0"
-  spec.add_development_dependency "nokogiri", "~> 1.16"
-  spec.add_development_dependency "webdrivers", "~> 5.3"
-  spec.add_development_dependency "rack", "~> 2.2"
-  spec.add_development_dependency "puma", "~> 6.4"
+  spec.add_development_dependency "selenium-webdriver", "~> 4.32"
+  spec.add_development_dependency "nokogiri", "~> 1.18"
+  spec.add_development_dependency "rack", "~> 3.1"
+  spec.add_development_dependency "puma", "~> 6.6"
   spec.add_development_dependency "capybara-inline-screenshot", "~> 2.2.1"
   spec.add_development_dependency "simplecov", "~> 0.22.0"
 end
