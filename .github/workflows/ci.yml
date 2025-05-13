@@ -79,8 +79,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
+          include-hidden-files: true
           name: coverage-${{ matrix.ruby }}-${{ matrix.gemfile }}
-          path: coverage/.resultset.json
+          path: coverage/
 
   # strategy borrowed from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
   # this is used to summarize the matrix results into a single job (abq-work) that can be used as a required check
@@ -103,6 +104,7 @@ jobs:
       - name: Upload Coverage
         uses: actions/upload-artifact@v4
         with:
+          include-hidden-files: true
           name: coverage
           path: coverage/
 
