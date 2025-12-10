@@ -2,6 +2,8 @@ require "set"
 require "rspec/core"
 require "socket"
 require "json"
+require "fileutils"
+require "rspec/abq/debug_logger"
 require "rspec/abq/extensions"
 require "rspec/abq/manifest"
 require "rspec/abq/ordering"
@@ -145,7 +147,7 @@ module RSpec
     # @return [void]
     def self.setup_extensions_if_enabled!
       return unless enabled?
-      perform_handshake!
+      DebugLogger.log_operation("perform_handshake!") { perform_handshake! }
       Extensions.setup!
     end
 
@@ -213,7 +215,7 @@ module RSpec
       # information amongst worker processes. In RSpec, it is used to ensure that random ordering between workers
       # shares the same seed.
       init_message = protocol_read
-      protocol_write(INIT_SUCCESS_MESSAGE)
+      DebugLogger.log_operation("protocol_write(INIT_SUCCESS_MESSAGE)") { protocol_write(INIT_SUCCESS_MESSAGE) }
 
       if init_message["fast_exit"]
         @fast_exit = true
@@ -234,13 +236,17 @@ module RSpec
     # @!visibility private
     def self.socket(connect_timeout: 5)
       @socket ||= begin
-        Socket.tcp(*ENV[ABQ_SOCKET].split(":"), connect_timeout: connect_timeout).tap do |socket|
+        sock = DebugLogger.log_operation("socket_connect") do
+          Socket.tcp(*ENV[ABQ_SOCKET].split(":"), connect_timeout: connect_timeout)
+        end
+        sock.tap do |socket|
           # Messages sent to/received from the ABQ worker should be done so ASAP.
           # Since we're on a local network, we don't care about packet reduction here.
           socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
           protocol_write(NATIVE_RUNNER_SPAWNED_MESSAGE, socket)
         end
-      rescue
+      rescue => e
+        DebugLogger.log("socket: connection failed - #{e.class}: #{e.message}")
         raise ConnectionFailed, "Unable to connect to ABQ socket #{ENV[ABQ_SOCKET]}"
       end
     end
@@ -275,11 +281,16 @@ module RSpec
     # @param msg
     def self.protocol_write(msg, socket = Abq.socket)
       json_msg = JSON.dump msg
-      socket.write [json_msg.bytesize].pack("N")
-      socket.write json_msg
-    rescue SystemCallError, IOError
+      msg_type = msg[:type] || msg["type"] || (msg[:test_result] ? "test_result" : "unknown")
+      DebugLogger.log_operation("protocol_write(#{msg_type})") do
+        socket.write [json_msg.bytesize].pack("N")
+        socket.write json_msg
+      end
+    rescue SystemCallError, IOError => e
+      DebugLogger.log("protocol_write: connection broken - #{e.class}: #{e.message}")
       raise ConnectionBroken
-    rescue
+    rescue => e
+      DebugLogger.log("protocol_write: error - #{e.class}: #{e.message}")
       raise Error
     end
 
@@ -287,18 +298,20 @@ module RSpec
     #
     # @param socket [TCPSocket]
     # @return msg
-    def self.protocol_read(socket = Abq.socket)
-      len_bytes = socket.read 4
+    def self.protocol_read(socket = Abq.socket, context: nil)
+      len_bytes = DebugLogger.log_operation("protocol_read(#{context || "unknown"}::len)") { socket.read 4 }
       return :abq_done if len_bytes.nil?
 
       len = len_bytes.unpack1("N")
-      json_msg = socket.read len
+      json_msg = DebugLogger.log_operation("protocol_read(#{context || "unknown"}::msg)") { socket.read len }
       return :abq_done if json_msg.nil?
 
       JSON.parse json_msg
-    rescue SystemCallError, IOError
+    rescue SystemCallError, IOError => e
+      DebugLogger.log("protocol_read: connection broken - #{e.class}: #{e.message}")
       raise ConnectionBroken
-    rescue
+    rescue => e
+      DebugLogger.log("protocol_read: error - #{e.class}: #{e.message}")
       raise Error
     end
   end
