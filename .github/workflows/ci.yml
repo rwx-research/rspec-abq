@@ -58,10 +58,11 @@ jobs:
           captain run \
             --suite-id rspec-abq \
             --test-results tmp/rspec.json \
+            --reporter rwx-v1-json=./tmp/rwx.json \
             -- \
             bundle exec rspec \
               --format json --out tmp/rspec.json \
-              --format documentation && bin/check_num_tests.rb
+              --format documentation && bin/check_num_tests.rb tmp/rwx.json
         if: ${{ matrix.ruby == 3.3 && matrix.gemfile == 3.13 }}
         env:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
@@ -70,7 +71,7 @@ jobs:
         run: |
           bundle exec rspec \
             --format json --out tmp/rspec.json \
-            --format documentation && bin/check_num_tests.rb
+            --format documentation && bin/check_num_tests.rb tmp/rspec.json
         if: ${{ matrix.ruby != 3.3 || matrix.gemfile != 3.13 }}
         timeout-minutes: 5
       - name: Upload Coverage

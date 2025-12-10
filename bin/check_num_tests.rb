@@ -5,20 +5,29 @@
 #
 # Here, we compare the number of tests run to the expected number.
 
-DEFAULT_TEST_JSON_PATH = 'tmp/rspec.json'
 EXPECTED_TEST_NUMBER_SNAPSHOT_PATH = 'spec/NUM_TESTS'
 
-json_path = ARGV[0] || DEFAULT_TEST_JSON_PATH
+json_path = ARGV[0]
 unless File.exist?(json_path)
   warn "no test file found at #{json_path}"
-  warn "usage: bin/snapshot_num_tests.rb (path to json file) (default: #{DEFAULT_TEST_JSON_PATH}"
+  warn "usage: bin/check_num_tests.rb ./path-to-json-file"
   exit 1
 end
 
 require 'json'
 
-actual_num_tests = JSON.parse(File.read(json_path))['examples'].length
 expected_num_tests = File.read(EXPECTED_TEST_NUMBER_SNAPSHOT_PATH).strip.to_i
+
+parsed = JSON.parse(File.read(json_path))
+actual_num_tests =
+  if parsed.key?("examples")
+    parsed["examples"].length
+  elsif parsed.key?("summary")
+    parsed["summary"]["tests"]
+  else
+    warn "could not find examples or summary.test_count in #{json_path}"
+    exit 1
+  end
 
 if actual_num_tests != expected_num_tests
   warn "We ran #{actual_num_tests} tests, but expected to run #{expected_num_tests}."
