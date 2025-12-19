@@ -87,6 +87,8 @@
           "backtrace": [
             "./spec/fixture_specs/failing_specs.rb:0:in `block (2 levels) in <top (required)>'",
             "./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'",
+            "./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_examples_with_abq'",
+            "./lib/rspec/abq/debug_logger.rb:0:in `log_operation'",
             "./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'",
             "./lib/rspec/abq/extensions.rb:0:in `each'",
             "./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'",
@@ -99,7 +101,7 @@
           ],
           "exception": "RSpec::Expectations::ExpectationNotMetError",
           "kind": "failed",
-          "message": "\n  1) a failing group has a failing test\n     Failure/Error: expect(false).to eq(true)\n\n       expected: true\n            got: false\n\n       (compared using ==)\n\n       Diff:\n       @@ -1 +1 @@\n       -true\n       +false\n     # ./spec/fixture_specs/failing_specs.rb:0:in `block (2 levels) in <top (required)>'\n     # ./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `each'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (3 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `map'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_specs'\n"
+          "message": "\n  1) a failing group has a failing test\n     Failure/Error: expect(false).to eq(true)\n\n       expected: true\n            got: false\n\n       (compared using ==)\n\n       Diff:\n       @@ -1 +1 @@\n       -true\n       +false\n     # ./spec/fixture_specs/failing_specs.rb:0:in `block (2 levels) in <top (required)>'\n     # ./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_examples_with_abq'\n     # ./lib/rspec/abq/debug_logger.rb:0:in `log_operation'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `each'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (3 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `map'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_specs'\n"
         },
         "stderr": "redacted",
         "stdout": "redacted"
@@ -150,6 +152,8 @@
           "backtrace": [
             "./spec/fixture_specs/raising_specs.rb:0:in `block (2 levels) in <top (required)>'",
             "./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'",
+            "./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_examples_with_abq'",
+            "./lib/rspec/abq/debug_logger.rb:0:in `log_operation'",
             "./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'",
             "./lib/rspec/abq/extensions.rb:0:in `each'",
             "./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'",
@@ -162,7 +166,7 @@
           ],
           "exception": "RuntimeError",
           "kind": "failed",
-          "message": "\n  1) a raising group has a raising test\n     Failure/Error: raise 'the roof'\n\n     RuntimeError:\n       the roof\n     # ./spec/fixture_specs/raising_specs.rb:0:in `block (2 levels) in <top (required)>'\n     # ./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `each'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (3 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `map'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_specs'\n"
+          "message": "\n  1) a raising group has a raising test\n     Failure/Error: raise 'the roof'\n\n     RuntimeError:\n       the roof\n     # ./spec/fixture_specs/raising_specs.rb:0:in `block (2 levels) in <top (required)>'\n     # ./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_examples_with_abq'\n     # ./lib/rspec/abq/debug_logger.rb:0:in `log_operation'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `each'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (3 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `map'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_specs'\n"
         },
         "stderr": "redacted",
         "stdout": "redacted"

@@ -40,6 +40,8 @@
           "backtrace": [
             "./spec/fixture_specs/spec_with_capybara.rb:0:in `block (2 levels) in <top (required)>'",
             "./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'",
+            "./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_examples_with_abq'",
+            "./lib/rspec/abq/debug_logger.rb:0:in `log_operation'",
             "./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'",
             "./lib/rspec/abq/extensions.rb:0:in `each'",
             "./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'",
@@ -52,7 +54,7 @@
           ],
           "exception": "RSpec::Expectations::ExpectationNotMetError",
           "kind": "failed",
-          "message": "\n  1) a spec with capybara can fail\n     Failure/Error: expect(page).to have_content(\"A huge website\")\n       expected to find text \"A huge website\" in \"A tiny website\"\n     # ./spec/fixture_specs/spec_with_capybara.rb:0:in `block (2 levels) in <top (required)>'\n     # ./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `each'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (3 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `map'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_specs'\n"
+          "message": "\n  1) a spec with capybara can fail\n     Failure/Error: expect(page).to have_content(\"A huge website\")\n       expected to find text \"A huge website\" in \"A tiny website\"\n     # ./spec/fixture_specs/spec_with_capybara.rb:0:in `block (2 levels) in <top (required)>'\n     # ./spec/spec_helper.rb:0:in `block (2 levels) in <top (required)>'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_examples_with_abq'\n     # ./lib/rspec/abq/debug_logger.rb:0:in `log_operation'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `each'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_examples_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_with_abq'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (3 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `map'\n     # ./lib/rspec/abq/extensions.rb:0:in `block (2 levels) in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `block in run_specs'\n     # ./lib/rspec/abq/extensions.rb:0:in `run_specs'\n"
         },
         "stderr": "redacted",
         "stdout": "redacted"

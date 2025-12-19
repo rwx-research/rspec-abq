@@ -7,6 +7,8 @@
         "backtrace": [
           "./spec/fixture_specs/failing_specs.rb:<line-number-cleaned-for-tests>:in `block (2 levels) in <top (required)>'",
           "./spec/spec_helper.rb:<line-number-cleaned-for-tests>:in `block (2 levels) in <top (required)>'",
+          "./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block (2 levels) in run_examples_with_abq'",
+          "./lib/rspec/abq/debug_logger.rb:<line-number-cleaned-for-tests>:in `log_operation'",
           "./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block in run_examples_with_abq'",
           "./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `each'",
           "./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `run_examples_with_abq'",
@@ -20,7 +22,7 @@
       },
       "id": "./spec/fixture_specs/failing_specs.rb[1:1]",
       "display_name": "a failing group has a failing test",
-      "output": "\n1) a failing group has a failing test\nFailure/Error: expect(false).to eq(true)\nexpected: true\ngot: false\n(compared using ==)\nDiff:\n@@ -1 +1 @@\n-true\n+false\n# ./spec/fixture_specs/failing_specs.rb:<line-number-cleaned-for-tests>:in `block (2 levels) in <top (required)>'\n# ./spec/spec_helper.rb:<line-number-cleaned-for-tests>:in `block (2 levels) in <top (required)>'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block in run_examples_with_abq'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `each'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `run_examples_with_abq'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `run_with_abq'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block (3 levels) in run_specs'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `map'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block (2 levels) in run_specs'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block in run_specs'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `run_specs'\n",
+      "output": "\n1) a failing group has a failing test\nFailure/Error: expect(false).to eq(true)\nexpected: true\ngot: false\n(compared using ==)\nDiff:\n@@ -1 +1 @@\n-true\n+false\n# ./spec/fixture_specs/failing_specs.rb:<line-number-cleaned-for-tests>:in `block (2 levels) in <top (required)>'\n# ./spec/spec_helper.rb:<line-number-cleaned-for-tests>:in `block (2 levels) in <top (required)>'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block (2 levels) in run_examples_with_abq'\n# ./lib/rspec/abq/debug_logger.rb:<line-number-cleaned-for-tests>:in `log_operation'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block in run_examples_with_abq'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `each'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `run_examples_with_abq'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `run_with_abq'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block (3 levels) in run_specs'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `map'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block (2 levels) in run_specs'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `block in run_specs'\n# ./lib/rspec/abq/extensions.rb:<line-number-cleaned-for-tests>:in `run_specs'\n",
       "runtime": "<cleaned for test>",
       "tags": [
 
