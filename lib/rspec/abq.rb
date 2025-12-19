@@ -214,7 +214,7 @@ module RSpec
       # the first message is the init_meta block of the manifest. This is used to share runtime configuration
       # information amongst worker processes. In RSpec, it is used to ensure that random ordering between workers
       # shares the same seed.
-      init_message = protocol_read
+      init_message = protocol_read(context: "init_message")
       DebugLogger.log_operation("protocol_write(INIT_SUCCESS_MESSAGE)") { protocol_write(INIT_SUCCESS_MESSAGE) }
 
       if init_message["fast_exit"]
@@ -266,7 +266,7 @@ module RSpec
 
     # pulls next example from the abq worker and sets it to #target_test_case
     # @!visibility private
-    def self.fetch_next_example(message = protocol_read)
+    def self.fetch_next_example(message = protocol_read(context: "next_example"))
       @target_test_case =
         if message == :abq_done
           TestCase.end_marker
