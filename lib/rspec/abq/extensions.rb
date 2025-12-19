@@ -42,7 +42,7 @@ module RSpec
             # true &&= expression : expression will be run, fine!
             # false &&= expression: expression will NOT be run! bad!
             # we want to always run the test, even if the previous test failed.
-            succeeded = considered_example.run(instance, reporter)
+            succeeded = DebugLogger.log_operation("run_example") { considered_example.run(instance, reporter) }
             all_examples_succeeded &&= succeeded
 
             Abq.fetch_next_example
