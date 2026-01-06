@@ -47,11 +47,11 @@ GEM
     method_source (1.1.0)
     mini_mime (1.1.5)
     nio4r (2.7.5)
-    nokogiri (1.18.10-arm64-darwin)
+    nokogiri (1.19.0-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.18.10-x86_64-darwin)
+    nokogiri (1.19.0-x86_64-darwin)
       racc (~> 1.4)
-    nokogiri (1.18.10-x86_64-linux-gnu)
+    nokogiri (1.19.0-x86_64-linux-gnu)
       racc (~> 1.4)
     pry (0.14.2)
       coderay (~> 1.1)
@@ -103,6 +103,7 @@ PLATFORMS
   arm64-darwin-24
   x86_64-darwin-21
   x86_64-linux
+  x86_64-linux-gnu
 
 DEPENDENCIES
   capybara (~> 3.40)
